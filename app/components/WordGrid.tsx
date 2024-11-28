@@ -13,7 +13,7 @@ export function WordGrid({
       arabic: string;
       transliteration: string;
       category: string;
-      type: 'verb' | 'noun' | 'adjective' | 'phrase';
+      type: string;
     }>;
     view: 'list' | 'flashcard';
     progress: Record<string, 'learned' | 'learning' | 'new'>;
