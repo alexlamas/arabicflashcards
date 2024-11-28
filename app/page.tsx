@@ -11,6 +11,8 @@ import { ViewToggle } from './components/ViewToggle';
 import { AuthWrapper } from './components/AuthWrapper';
 import { supabase } from './supabase';
 import type { WordProgress } from './supabase';
+import { useRouter } from 'next/navigation'
+
 
 type ProgressState = 'learned' | 'learning' | 'new';
 type ProgressMap = Record<string, ProgressState>;
