@@ -1,0 +1,316 @@
+{
+  "words": [
+    {
+      "english": "Smart/Quick",
+      "arabic": "ذَكي",
+      "transliteration": "Zaki",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Pleasant/Nice",
+      "arabic": "ظَرِف",
+      "transliteration": "Zarif",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Kind/Sweet",
+      "arabic": "طَيِّب",
+      "transliteration": "Tayyib",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Well-mannered",
+      "arabic": "آدَمي",
+      "transliteration": "Adami",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Helpful",
+      "arabic": "متعاوِن",
+      "transliteration": "Mit'awin",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Courageous",
+      "arabic": "شُجاع",
+      "transliteration": "Shuja'",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Clean",
+      "arabic": "نضيف",
+      "transliteration": "Ndif",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Stylish",
+      "arabic": "مذوِق",
+      "transliteration": "Mzawwa'",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Organized",
+      "arabic": "مرَتَّب",
+      "transliteration": "Mrattab",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Well-behaved",
+      "arabic": "خَلوق",
+      "transliteration": "Khalu'",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Lucky",
+      "arabic": "مَحظوظ",
+      "transliteration": "Mahzuz",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Affectionate",
+      "arabic": "حَنون",
+      "transliteration": "Hanun",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Beautiful",
+      "arabic": "حلو",
+      "transliteration": "Helu",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Patient",
+      "arabic": "صًبور",
+      "transliteration": "Sabur",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "Athletic",
+      "arabic": "ريّاضي",
+      "transliteration": "Riyadi",
+      "category": "Personal Qualities & Emotions"
+    },
+    {
+      "english": "To stumble/be messy",
+      "arabic": "اتفركش",
+      "transliteration": "Itfarkash",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To be late",
+      "arabic": "اتأخّر",
+      "transliteration": "It'akhar",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To spoil",
+      "arabic": "غَنَّج",
+      "transliteration": "Ghannaj",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To raise",
+      "arabic": "رَبّى",
+      "transliteration": "Rabba",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To get attached",
+      "arabic": "اتعَلَّق",
+      "transliteration": "It'alla'",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To lay down",
+      "arabic": "اتمَدَّد",
+      "transliteration": "Tmaddad",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To swing",
+      "arabic": "اتمَرجَح",
+      "transliteration": "Tmarjah",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To cry",
+      "arabic": "بِكي",
+      "transliteration": "Biki",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To force someone",
+      "arabic": "جَبَر",
+      "transliteration": "Jabar",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To call",
+      "arabic": "اتَّصَل",
+      "transliteration": "Ittasal",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To mix",
+      "arabic": "خَلَط",
+      "transliteration": "Khalat",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To destroy",
+      "arabic": "دَمَّر",
+      "transliteration": "Dammar",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To cheat",
+      "arabic": "خان",
+      "transliteration": "Khan",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "To repeat",
+      "arabic": "كَرَّر",
+      "transliteration": "Karrar",
+      "category": "Actions & Verbs"
+    },
+    {
+      "english": "Bored",
+      "arabic": "ضجران",
+      "transliteration": "Dajran",
+      "category": "Daily Life"
+    },
+    {
+      "english": "Mixer",
+      "arabic": "خلّاط",
+      "transliteration": "Khallat",
+      "category": "Daily Life"
+    },
+    {
+      "english": "Garbage",
+      "arabic": "زبالة",
+      "transliteration": "Zbele",
+      "category": "Daily Life"
+    },
+    {
+      "english": "To heat (food)",
+      "arabic": "سَخَّن",
+      "transliteration": "Sakhkhan",
+      "category": "Daily Life"
+    },
+    {
+      "english": "Safe",
+      "arabic": "آمِن",
+      "transliteration": "Amin",
+      "category": "Daily Life"
+    },
+    {
+      "english": "Type/kind",
+      "arabic": "صنف",
+      "transliteration": "Sinf",
+      "category": "Daily Life"
+    },
+    {
+      "english": "Types/kinds",
+      "arabic": "أصناف",
+      "transliteration": "Asnaf",
+      "category": "Daily Life"
+    },
+    {
+      "english": "Cloudy",
+      "arabic": "مغَيمِة",
+      "transliteration": "Mghayyime",
+      "category": "Weather & Environment"
+    },
+    {
+      "english": "Temperature high",
+      "arabic": "درجة الحَرارَة عاليِة",
+      "transliteration": "Darajit l-harara 'aliye",
+      "category": "Weather & Environment"
+    },
+    {
+      "english": "Temperature low",
+      "arabic": "درجة الحَرارَة واطيِة",
+      "transliteration": "Darajit l-harara watye",
+      "category": "Weather & Environment"
+    },
+    {
+      "english": "Winter clothes",
+      "arabic": "تياب شَتْوِيّة",
+      "transliteration": "Tyeb shatwiyye",
+      "category": "Weather & Environment"
+    },
+    {
+      "english": "Shopping",
+      "arabic": "التَّسَوُّق",
+      "transliteration": "It-tasawwo'",
+      "category": "Leisure & Hobbies"
+    },
+    {
+      "english": "To read",
+      "arabic": "قري",
+      "transliteration": "Qiri",
+      "category": "Leisure & Hobbies"
+    },
+    {
+      "english": "Swimming",
+      "arabic": "سباحة",
+      "transliteration": "Sbaha",
+      "category": "Leisure & Hobbies"
+    },
+    {
+      "english": "Skiing",
+      "arabic": "تزلج",
+      "transliteration": "Tazalloj",
+      "category": "Leisure & Hobbies"
+    },
+    {
+      "english": "Horse riding",
+      "arabic": "ركوب الخيل",
+      "transliteration": "Rukub l-kheil",
+      "category": "Leisure & Hobbies"
+    },
+    {
+      "english": "Camping",
+      "arabic": "مخيم",
+      "transliteration": "Mukhayyam",
+      "category": "Leisure & Hobbies"
+    },
+    {
+      "english": "Ceasefire",
+      "arabic": "هدنة",
+      "transliteration": "Hudne",
+      "category": "Modern Issues"
+    },
+    {
+      "english": "Prisoner",
+      "arabic": "أسير",
+      "transliteration": "Asir",
+      "category": "Modern Issues"
+    },
+    {
+      "english": "Prisoner exchange",
+      "arabic": "تبادُل أسرى",
+      "transliteration": "Tabadol asra",
+      "category": "Modern Issues"
+    },
+    {
+      "english": "Safe region",
+      "arabic": "منطقَة آمنِة",
+      "transliteration": "Manti'a amne",
+      "category": "Modern Issues"
+    },
+    {
+      "english": "Immigration",
+      "arabic": "الهجرة",
+      "transliteration": "Il-hijra",
+      "category": "Modern Issues"
+    },
+    {
+      "english": "Community",
+      "arabic": "مجتمع",
+      "transliteration": "Mujtama'",
+      "category": "Modern Issues"
+    }
+  ]
+}
