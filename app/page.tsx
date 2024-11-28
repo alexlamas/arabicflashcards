@@ -11,7 +11,6 @@ import { ViewToggle } from './components/ViewToggle';
 import { AuthWrapper } from './components/AuthWrapper';
 import { supabase } from './supabase';
 import type { WordProgress } from './supabase';
-import { PostgrestError } from '@supabase/supabase-js';  // Add this import
 
 type ProgressState = 'learned' | 'learning' | 'new';
 type ProgressMap = Record<string, ProgressState>;

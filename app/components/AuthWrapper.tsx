@@ -5,10 +5,12 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { Session } from '@supabase/supabase-js'  // Add this import
+
 
 
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any>(null)
+    const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
