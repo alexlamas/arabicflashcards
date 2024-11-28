@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { words } from './data/words.json';
+import wordsData from './data/words.json';
 import { SearchBar } from './components/SearchBar';
 import { CategoryFilter } from './components/CategoryFilter';
 import { WordGrid } from './components/WordGrid';
@@ -15,6 +15,8 @@ import { PostgrestError } from '@supabase/supabase-js';  // Add this import
 
 type ProgressState = 'learned' | 'learning' | 'new';
 type ProgressMap = Record<string, ProgressState>;
+
+const words = wordsData.words; 
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

@@ -6,6 +6,7 @@ import { supabase } from '../supabase'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 
+
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(null)
 
