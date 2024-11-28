@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check, ArrowClockwise } from "@phosphor-icons/react";
 
 // app/components/WordGrid.tsx
 export function WordGrid({ 
@@ -12,6 +13,7 @@ export function WordGrid({
       arabic: string;
       transliteration: string;
       category: string;
+      type: 'verb' | 'noun' | 'adjective' | 'phrase';
     }>;
     view: 'list' | 'flashcard';
     progress: Record<string, 'learned' | 'learning' | 'new'>;
@@ -32,6 +34,21 @@ export function WordGrid({
         [english]: status
       });
     };
+
+    const getTypeColor = (type: string) => {
+      switch (type) {
+        case 'verb':
+          return 'text-blue-500';
+        case 'noun':
+          return 'text-purple-500';
+        case 'adjective':
+          return 'text-green-500';
+        case 'phrase':
+          return 'text-orange-500';
+        default:
+          return 'text-gray-500';
+      }
+    };
   
     if (view === 'flashcard') {
       return (
@@ -48,11 +65,16 @@ export function WordGrid({
             >
               {flipped[word.english] ? (
                 <>
-                  <div className="text-2xl text-right mb-2">{word.arabic}</div>
-                  <div className="text-gray-600">{word.transliteration}</div>
+                  <div className="text-3xl mb-4 tracking-wider font-arabic">{word.arabic}</div>
+                  <div className="text-gray-600 text-sm">{word.transliteration}</div>
                 </>
               ) : (
-                <div className="text-xl font-medium">{word.english}</div>
+                <>
+                  <div className="text-xl font-medium">{word.english}</div>
+                  <div className={`text-xs mt-1 font-medium ${getTypeColor(word.type)}`}>
+                    {word.type}
+                  </div>
+                </>
               )}
               <div className="mt-4 flex gap-2 justify-end">
                 <button
@@ -60,18 +82,26 @@ export function WordGrid({
                     e.stopPropagation();
                     handleProgress(word.english, 'learned');
                   }}
-                  className="p-1 rounded hover:bg-green-100"
+                  className="p-1.5 rounded-md transition-colors hover:bg-green-100 text-green-600"
+                  aria-label="Mark as learned"
                 >
-                  ✓
+                  <Check 
+                    size={18} 
+                    weight={progress[word.english] === 'learned' ? "fill" : "regular"}
+                  />
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleProgress(word.english, 'learning');
                   }}
-                  className="p-1 rounded hover:bg-yellow-100"
+                  className="p-1.5 rounded-md transition-colors hover:bg-yellow-100 text-yellow-600"
+                  aria-label="Mark as still learning"
                 >
-                  ⟳
+                  <ArrowClockwise 
+                    size={18} 
+                    weight={progress[word.english] === 'learning' ? "fill" : "regular"}
+                  />
                 </button>
               </div>
             </div>
@@ -91,22 +121,35 @@ export function WordGrid({
               'bg-white'
             }`}
           >
-            <div className="font-medium">{word.english}</div>
-            <div className="text-xl text-right mt-2">{word.arabic}</div>
-            <div className="text-sm text-gray-600">{word.transliteration}</div>
-            <div className="text-xs text-gray-400 mt-2">{word.category}</div>
+            <div className="flex justify-between items-start">
+              <div className="font-medium">{word.english}</div>
+              <div className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-600">
+                {word.type}
+              </div>
+            </div>
+            <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
+            <div className="text-sm text-gray-400">{word.transliteration}</div>
+
             <div className="mt-4 flex gap-2 justify-end">
               <button
                 onClick={() => handleProgress(word.english, 'learned')}
-                className="p-1 rounded hover:bg-green-100"
+                className="p-1.5 rounded-md transition-colors hover:bg-green-100 text-green-600"
+                aria-label="Mark as learned"
               >
-                ✓
+                <Check 
+                  size={18} 
+                  weight={progress[word.english] === 'learned' ? "fill" : "regular"}
+                />
               </button>
               <button
                 onClick={() => handleProgress(word.english, 'learning')}
-                className="p-1 rounded hover:bg-yellow-100"
+                className="p-1.5 rounded-md transition-colors hover:bg-yellow-100 text-yellow-600"
+                aria-label="Mark as still learning"
               >
-                ⟳
+                <ArrowClockwise 
+                  size={18} 
+                  weight={progress[word.english] === 'learning' ? "fill" : "regular"}
+                />
               </button>
             </div>
           </div>
