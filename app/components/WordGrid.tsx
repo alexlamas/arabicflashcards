@@ -57,7 +57,7 @@ const ProgressButtons: React.FC<{
   };
 
   return (
-    <div className="flex gap-2 justify-end">
+    <div className="flex gap-1 justify-end">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -114,14 +114,13 @@ const ProgressButtons: React.FC<{
               : "Mark as learning"}
           </TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <SentenceGenerator
-            word={{
-              english: word.english,
-              arabic: word.arabic,
-            }}
-          />
-        </Tooltip>
+
+        <SentenceGenerator
+          word={{
+            english: word.english,
+            arabic: word.arabic,
+          }}
+        />
       </TooltipProvider>
     </div>
   );

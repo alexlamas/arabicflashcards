@@ -8,6 +8,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CircleNotch, MagicWand } from "@phosphor-icons/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SentenceGeneratorProps {
   word: {
@@ -59,14 +64,19 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hover:bg-black/5"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MagicWand className="w-4 h-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hover:bg-black/5 h-8 w-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MagicWand className="w-4 h-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Generate a sentence</TooltipContent>
+        </Tooltip>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
