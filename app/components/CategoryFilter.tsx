@@ -67,22 +67,12 @@ function CategoryButton({
 }: CategoryButtonProps) {
   return (
     <Button
-      variant={isSelected ? "default" : "ghost"}
-      className={cn(
-        "w-full justify-between h-auto px-4 py-2",
-        isSelected ? "bg-primary hover:bg-primary/90" : "hover:bg-accent"
-      )}
+      variant={isSelected ? "secondary" : "ghost"}
+      className={cn("w-full justify-between h-auto px-4 py-2")}
       onClick={onClick}
     >
       <span className="truncate">{children}</span>
-      <span
-        className={cn(
-          "ml-2 text-xs",
-          isSelected ? "text-primary-foreground" : "text-muted-foreground"
-        )}
-      >
-        {count}
-      </span>
+      <span className={cn("ml-2 text-xs")}>{count}</span>
     </Button>
   );
 }

@@ -76,7 +76,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   ) : (
     <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="default" size="sm">
           Log in to track progress
         </Button>
       </DialogTrigger>
