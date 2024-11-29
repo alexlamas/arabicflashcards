@@ -14,9 +14,9 @@ type ProgressType = "learned" | "learning" | "new";
 const getProgressBackground = (progress: ProgressType | undefined) => {
   switch (progress) {
     case "learned":
-      return "bg-green-50 !border border-green-200 shadow-sm transition";
+      return "bg-green-50 border-green-200 shadow-sm transition";
     case "learning":
-      return "bg-yellow-50 !border border-yellow-200 shadow-sm transition";
+      return "bg-yellow-50 border-yellow-200 shadow-sm transition";
     default:
       return "bg-white";
   }
