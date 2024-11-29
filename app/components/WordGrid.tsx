@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { Check, X, CircleWavyQuestion } from "@phosphor-icons/react";
+import {
+  Check,
+  X,
+  SmileyNervous,
+  ArrowCounterClockwise,
+} from "@phosphor-icons/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WordType {
   english: string;
@@ -48,9 +59,10 @@ const ProgressButtons: React.FC<{
           handleProgress("learned");
         }}
         className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-          progress[word.english] === "learned" && "text-emerald-800"
+          progress[word.english] === "learned" &&
+          "text-emerald-800 no-pointer-events"
         }
-          ${progress[word.english] === "learning" && "text-gray-400"}
+          ${progress[word.english] === "learning" && "hidden"}
         `}
         aria-label="Mark as learned"
       >
@@ -65,29 +77,36 @@ const ProgressButtons: React.FC<{
           handleProgress("learning");
         }}
         className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-          progress[word.english] === "learning" && "text-amber-800"
+          progress[word.english] === "learning" && "text-amber-600"
         }
-        ${progress[word.english] === "learned" && "text-gray-400"}
+        ${progress[word.english] === "learned" && "hidden"}
         `}
         aria-label="Mark as still learning"
       >
-        <CircleWavyQuestion
+        <SmileyNervous
           size={18}
-          weight={progress[word.english] === "learning" ? "bold" : "regular"}
+          weight={progress[word.english] === "learning" ? "fill" : "regular"}
         />
       </button>
       {(progress[word.english] === "learning" ||
         progress[word.english] === "learned") && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleProgress("new");
-          }}
-          className="p-1.5 rounded-md transition hover:bg-black/5 text-gray-400"
-          aria-label="Clear progress"
-        >
-          <X size={18} />
-        </button>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleProgress("new");
+                }}
+                className="p-1.5 rounded-md transition hover:bg-black/5"
+                aria-label="Clear progress"
+              >
+                <ArrowCounterClockwise size={18} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Reset progress</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   );

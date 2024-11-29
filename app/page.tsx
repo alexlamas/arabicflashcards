@@ -7,7 +7,7 @@ import { CategoryFilter } from "./components/CategoryFilter";
 import { WordGrid } from "./components/WordGrid";
 import { Stats } from "./components/Stats";
 import { ViewToggle } from "./components/ViewToggle";
-import { AuthWrapper } from "./components/AuthWrapper";
+import { AuthWrapper, useAuth } from "./components/AuthWrapper";
 import ArabicKeyboard from "./components/ArabicKeyboard";
 import { SortDropdown } from "./components/SortDropdown";
 import { WordService } from "./services/supabaseService";
@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 
 const words = wordsData.words;
 
-export default function Home() {
+function HomeContent() {
+  const { session, isLoading: isAuthLoading } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("list");
@@ -31,24 +32,46 @@ export default function Home() {
     []
   );
 
+  // Load progress whenever the session changes
   useEffect(() => {
+    let mounted = true;
+
     async function loadProgress() {
       try {
+        if (!session?.user) {
+          if (mounted) {
+            setProgress({});
+            setLoading(false);
+          }
+          return;
+        }
+
         const wordProgress = await WordService.getProgress();
-        const progressMap: ProgressMap = {};
-        wordProgress.forEach((item) => {
-          progressMap[item.word_english] = item.status;
-        });
-        setProgress(progressMap);
+        if (mounted) {
+          const progressMap: ProgressMap = {};
+          wordProgress.forEach((item) => {
+            progressMap[item.word_english] = item.status;
+          });
+          setProgress(progressMap);
+        }
       } catch (error) {
         console.error("Error loading progress:", error);
+        if (mounted) {
+          setProgress({});
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
     loadProgress();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [session]);
 
   const filteredWords = useFilteredWords({
     words,
@@ -67,8 +90,11 @@ export default function Home() {
 
   const handleProgressChange = async (newProgress: ProgressMap) => {
     try {
-      const user = await WordService.getCurrentUser();
-      if (!user) return;
+      if (!session?.user) {
+        // If no user is logged in, just update the local state
+        setProgress(newProgress);
+        return;
+      }
 
       const changedWord = Object.keys(newProgress).find(
         (word) => newProgress[word] !== progress[word]
@@ -77,7 +103,7 @@ export default function Home() {
       if (!changedWord) return;
 
       await WordService.updateProgress(
-        user.id,
+        session.user.id,
         changedWord,
         newProgress[changedWord]
       );
@@ -88,46 +114,56 @@ export default function Home() {
     }
   };
 
+  if (isAuthLoading || loading) {
+    return null; // Or a loading spinner
+  }
+
   return (
-    <AuthWrapper>
-      <main className="p-8">
-        <div
-          className={cn(
-            "max-w-7xl mx-auto transition-opacity duration-500",
-            loading ? "opacity-0" : "opacity-100"
-          )}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <SearchBar value={searchTerm} onChange={setSearchTerm} />
-            <div className="inline-flex gap-2 items-center">
-              <SortDropdown value={sortBy} onChange={setSortBy} />
-              <ArabicKeyboard />
-              <ViewToggle current={view} onChange={setView} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-1">
-              <Stats stats={stats} />
-              <CategoryFilter
-                categories={categories}
-                selected={selectedCategory}
-                onChange={setSelectedCategory}
-                counts={stats.byCategory}
-              />
-            </div>
-
-            <div className="lg:col-span-3">
-              <WordGrid
-                words={filteredWords}
-                view={view}
-                progress={progress}
-                onProgressChange={handleProgressChange}
-              />
-            </div>
+    <main className="p-8">
+      <div
+        className={cn(
+          "max-w-7xl mx-auto transition-opacity duration-500",
+          loading ? "opacity-0" : "opacity-100"
+        )}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} />
+          <div className="inline-flex gap-2 items-center">
+            <SortDropdown value={sortBy} onChange={setSortBy} />
+            <ArabicKeyboard />
+            <ViewToggle current={view} onChange={setView} />
           </div>
         </div>
-      </main>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
+            <Stats stats={stats} />
+            <CategoryFilter
+              categories={categories}
+              selected={selectedCategory}
+              onChange={setSelectedCategory}
+              counts={stats.byCategory}
+            />
+          </div>
+
+          <div className="lg:col-span-3">
+            <WordGrid
+              words={filteredWords}
+              view={view}
+              progress={progress}
+              onProgressChange={handleProgressChange}
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthWrapper>
+      <HomeContent />
     </AuthWrapper>
   );
 }
