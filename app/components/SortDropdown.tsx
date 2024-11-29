@@ -1,6 +1,11 @@
-// app/components/SortDropdown.tsx
-import { CaretDown } from "@phosphor-icons/react";
-import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 type SortOption = {
   label: string;
@@ -8,9 +13,9 @@ type SortOption = {
 };
 
 const sortOptions: SortOption[] = [
-  { label: "Alphabetical", value: "alphabetical" },
-  { label: "By Progress", value: "progress" },
-  { label: "By Word Type", value: "type" },
+  { label: "alphabetical", value: "alphabetical" },
+  { label: "by progress", value: "progress" },
+  { label: "by word type", value: "type" },
 ];
 
 export function SortDropdown({
@@ -20,43 +25,27 @@ export function SortDropdown({
   value: SortOption["value"];
   onChange: (value: SortOption["value"]) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const currentOption = sortOptions.find((option) => option.value === value);
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-white text-sm hover:bg-gray-50 transition-colors"
-      >
-        <span>Sort {currentOption?.label}</span>
-        <CaretDown
-          size={16}
-          weight="bold"
-          className={`text-gray-500 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full mt-1 w-full bg-white border rounded-lg shadow-lg py-1 z-10">
-          {sortOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors
-                ${value === option.value ? "bg-blue-50 text-blue-600" : ""}
-              `}
-            >
-              Sort {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="h-8">
+          Sort {currentOption?.label}
+          <ChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[200px]">
+        {sortOptions.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            className={value === option.value ? "bg-accent" : ""}
+          >
+            Sort {option.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

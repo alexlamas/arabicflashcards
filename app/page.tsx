@@ -111,28 +111,28 @@ export default function Home() {
     []
   );
 
-  const sortWords = (words: typeof wordsData.words) => {
-    return [...words].sort((a, b) => {
-      switch (sortBy) {
-        case "alphabetical":
-          return a.english.localeCompare(b.english);
-        case "progress":
-          const progressOrder = { learned: 0, learning: 1, new: 2 };
-          const aProgress = progress[a.english] || "new";
-          const bProgress = progress[b.english] || "new";
-          return progressOrder[aProgress] - progressOrder[bProgress];
-        case "type":
-          return a.type.localeCompare(b.type);
-        default:
-          return 0;
-      }
-    });
-  };
   const [sortBy, setSortBy] = useState<"alphabetical" | "progress" | "type">(
     "alphabetical"
   );
 
   const filteredWords = useMemo(() => {
+    const sortWords = (words: typeof wordsData.words) => {
+      return [...words].sort((a, b) => {
+        switch (sortBy) {
+          case "alphabetical":
+            return a.english.localeCompare(b.english);
+          case "progress":
+            const progressOrder = { learned: 0, learning: 1, new: 2 };
+            const aProgress = progress[a.english] || "new";
+            const bProgress = progress[b.english] || "new";
+            return progressOrder[aProgress] - progressOrder[bProgress];
+          case "type":
+            return a.type.localeCompare(b.type);
+          default:
+            return 0;
+        }
+      });
+    };
     return sortWords(
       words.filter((word) => {
         const matchesCategory =
@@ -145,7 +145,7 @@ export default function Home() {
         return matchesCategory && matchesSearch;
       })
     );
-  }, [selectedCategory, searchTerm, words, sortBy, progress]);
+  }, [selectedCategory, searchTerm, progress, sortBy]);
 
   const stats = useMemo(
     () => ({
@@ -162,7 +162,7 @@ export default function Home() {
         {} as Record<string, number>
       ),
     }),
-    [categories, filteredWords.length, progress, words]
+    [categories, filteredWords.length, progress]
   );
 
   return (

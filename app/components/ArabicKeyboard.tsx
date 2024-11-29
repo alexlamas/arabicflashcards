@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Keyboard } from "@phosphor-icons/react";
 import React, { useState } from "react";
 
@@ -62,12 +63,9 @@ const ArabicKeyboard: React.FC = () => {
 
   return (
     <div>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="px-3 py-3 bg-gray-100 text-white rounded-lg hover:bg-gray-200 transition"
-      >
-        <Keyboard size={16} className="text-gray-600" />
-      </button>
+      <Button variant={"outline"} size="sm" onClick={() => setIsOpen(true)}>
+        <Keyboard size={16} />
+      </Button>
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
