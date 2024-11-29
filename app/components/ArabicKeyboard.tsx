@@ -69,36 +69,34 @@ const ArabicKeyboard: React.FC = () => {
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl">
+          <div className="bg-white rounded-xl p-6 max-w-full ">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Arabic Keyboard</h2>
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition"
               >
-                ✕
-              </button>
+                Close
+              </Button>
             </div>
 
             <div className="space-y-2" dir="ltr">
               {keyboardLayout.map((row, rowIdx) => (
                 <div key={rowIdx} className="flex justify-center gap-1">
                   {row.map((item) => (
-                    <button
+                    <Button
                       key={item.letter}
-                      className="w-12 h-12 text-2xl font-arabic border rounded-lg bg-white 
-                          hover:bg-blue-50 transition-all focus:outline-none"
                       onMouseEnter={() => setHoveredLetter(item)}
                       onMouseLeave={() => setHoveredLetter(null)}
+                      className="w-20 h-20 text-3xl"
                     >
                       {hoveredLetter === item ? (
-                        <span className="text-lg font-mono text-blue-600">
-                          {item.sound}
-                        </span>
+                        <span className="text-2xl font-mono">{item.sound}</span>
                       ) : (
                         <span>{item.letter}</span>
                       )}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               ))}
