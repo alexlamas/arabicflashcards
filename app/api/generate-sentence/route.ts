@@ -2,11 +2,17 @@
 import { NextResponse } from 'next/server';
 import { ClaudeService } from '@/app/services/claudeService';
 
+// Define a type for potential errors
+type ApiError = Error & {
+  name?: string;
+  status?: number;
+  message: string;
+};
+
 export async function POST(req: Request) {
   try {
-    // Add request timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
       const { word } = await req.json();
@@ -25,18 +31,20 @@ export async function POST(req: Request) {
     } finally {
       clearTimeout(timeoutId);
     }
-  } catch (error: any) {
-    console.error('API Error:', error);
+  } catch (error: unknown) { // Type as unknown first
+    // Type guard for our ApiError type
+    const apiError = error as ApiError;
+    console.error('API Error:', apiError);
 
     // Handle specific error types
-    if (error.name === 'AbortError') {
+    if (apiError.name === 'AbortError') {
       return NextResponse.json(
         { error: 'Request timed out' },
         { status: 408 }
       );
     }
 
-    if (error.message.includes('parse')) {
+    if (apiError.message.includes('parse')) {
       return NextResponse.json(
         { error: 'Invalid response from AI service' },
         { status: 500 }
@@ -47,7 +55,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { 
         error: 'Failed to generate sentence',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? apiError.message : undefined
       },
       { status: 500 }
     );

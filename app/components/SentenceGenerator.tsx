@@ -62,7 +62,7 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2"
+          className="hover:bg-black/5"
           onClick={(e) => e.stopPropagation()}
         >
           <MagicWand className="w-4 h-4" />
