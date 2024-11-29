@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  Check,
-  SmileyNervous,
-  ArrowCounterClockwise,
-} from "@phosphor-icons/react";
+import { Check, SmileyNervous } from "@phosphor-icons/react";
 import {
   Tooltip,
   TooltipContent,
