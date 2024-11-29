@@ -24,11 +24,11 @@ export function Stats({
         <div className="h-full flex">
           <div
             style={{ width: `${learnedPercent}%` }}
-            className="bg-green-500 transition-all duration-300"
+            className="bg-emerald-500 transition-all duration-300"
           />
           <div
             style={{ width: `${learningPercent}%` }}
-            className="bg-yellow-500 transition-all duration-300"
+            className="bg-amber-500 transition-all duration-300"
           />
           <div
             style={{ width: `${newPercent}%` }}
@@ -39,17 +39,17 @@ export function Stats({
 
       <div className="space-y-2">
         {/* Status items with colored dots */}
-        <div className="flex justify-between items-center text-green-600">
+        <div className="flex justify-between items-center text-emerald-600">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
             <span>Learned:</span>
           </div>
           <span className="font-medium">{stats.learned}</span>
         </div>
 
-        <div className="flex justify-between items-center text-yellow-600">
+        <div className="flex justify-between items-center text-amber-600">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
             <span>Learning:</span>
           </div>
           <span className="font-medium">{stats.learning}</span>

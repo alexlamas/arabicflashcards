@@ -47,28 +47,43 @@ const ProgressButtons: React.FC<{
           e.stopPropagation();
           handleProgress("learned");
         }}
-        className="p-1.5 rounded-md transition hover:bg-black/5"
+        className={`p-1.5 rounded-md transition hover:bg-black/5 ${
+          progress[word.english] === "learned" && "text-emerald-800"
+        }
+          ${progress[word.english] === "learning" && "text-gray-400"}
+        `}
         aria-label="Mark as learned"
       >
-        <Check size={18} />
+        <Check
+          size={18}
+          weight={progress[word.english] === "learned" ? "bold" : "regular"}
+        />
       </button>
       <button
         onClick={(e) => {
           e.stopPropagation();
           handleProgress("learning");
         }}
-        className="p-1.5 rounded-md transition hover:bg-black/5"
+        className={`p-1.5 rounded-md transition hover:bg-black/5 ${
+          progress[word.english] === "learning" && "text-amber-800"
+        }
+        ${progress[word.english] === "learned" && "text-gray-400"}
+        `}
         aria-label="Mark as still learning"
       >
-        <CircleWavyQuestion size={18} />
+        <CircleWavyQuestion
+          size={18}
+          weight={progress[word.english] === "learning" ? "bold" : "regular"}
+        />
       </button>
-      {progress[word.english] !== "new" && (
+      {(progress[word.english] === "learning" ||
+        progress[word.english] === "learned") && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleProgress("new");
           }}
-          className="p-1.5 rounded-md transition hover:bg-black/5"
+          className="p-1.5 rounded-md transition hover:bg-black/5 text-gray-400"
           aria-label="Clear progress"
         >
           <X size={18} />
@@ -78,52 +93,87 @@ const ProgressButtons: React.FC<{
   );
 };
 
-const WordCard: React.FC<{
+const ListCard: React.FC<{
   word: WordType;
   progress: Record<string, ProgressType>;
   onProgressChange: (value: Record<string, ProgressType>) => void;
-  isFlashcardMode?: boolean;
-  isFlipped?: boolean;
-  onFlip?: () => void;
-}> = ({
-  word,
-  progress,
-  onProgressChange,
-  isFlashcardMode = false,
-  isFlipped = false,
-  onFlip,
-}) => {
-  const showArabic = !isFlashcardMode || (isFlashcardMode && isFlipped);
+}> = ({ word, progress, onProgressChange }) => (
+  <div
+    className={`p-6 rounded-lg shadow border-[0.5px] border-gray-200 ${getProgressBackground(
+      progress[word.english]
+    )}`}
+  >
+    <div className="flex justify-between items-start">
+      <div className="text-xl font-medium">{word.english}</div>
+      <TypeBadge type={word.type} />
+    </div>
 
-  return (
+    <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
+    <div className="text-sm text-gray-400">{word.transliteration}</div>
+
+    <ProgressButtons
+      word={word}
+      progress={progress}
+      onProgressChange={onProgressChange}
+    />
+  </div>
+);
+
+const FlashCard: React.FC<{
+  word: WordType;
+  progress: Record<string, ProgressType>;
+  onProgressChange: (value: Record<string, ProgressType>) => void;
+  isFlipped: boolean;
+  onFlip: () => void;
+}> = ({ word, progress, onProgressChange, isFlipped, onFlip }) => (
+  <div className=" h-40" style={{ perspective: "1000px" }}>
     <div
+      className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
+      style={{ transform: isFlipped ? "rotateY(180deg)" : "" }}
       onClick={onFlip}
-      className={`${
-        isFlashcardMode ? "cursor-pointer" : ""
-      } p-6 rounded-lg shadow border-[0.5px] border-gray-200 transition-all ${getProgressBackground(
-        progress[word.english]
-      )}`}
     >
-      <div className="flex justify-between items-start">
-        <div className="text-xl font-medium">{word.english}</div>
-        <TypeBadge type={word.type} />
+      {/* Front of card */}
+      <div
+        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow border-[0.5px] border-gray-200 group
+          ${getProgressBackground(progress[word.english])} backface-hidden`}
+      >
+        <div className="flex justify-between items-start">
+          <div className="text-xl font-medium">{word.english}</div>
+          <TypeBadge type={word.type} />
+        </div>
+        <div className="text-sm text-gray-400 mt-4 group-hover:opacity-100 opacity-0 transition">
+          Click to view
+        </div>
+
+        <ProgressButtons
+          word={word}
+          progress={progress}
+          onProgressChange={onProgressChange}
+        />
       </div>
 
-      {showArabic && (
-        <>
-          <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
-          <div className="text-sm text-gray-400">{word.transliteration}</div>
-        </>
-      )}
+      {/* Back of card */}
+      <div
+        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow border-[0.5px] border-gray-200 
+          ${getProgressBackground(
+            progress[word.english]
+          )} backface-hidden [transform:rotateY(180deg)]`}
+      >
+        <div className="flex justify-between items-start">
+          <div className="text-3xl font-arabic">{word.arabic}</div>
+          <TypeBadge type={word.type} />
+        </div>
+        <div className="text-sm text-gray-400 mt-4">{word.transliteration}</div>
 
-      <ProgressButtons
-        word={word}
-        progress={progress}
-        onProgressChange={onProgressChange}
-      />
+        <ProgressButtons
+          word={word}
+          progress={progress}
+          onProgressChange={onProgressChange}
+        />
+      </div>
     </div>
-  );
-};
+  </div>
+);
 
 export function WordGrid({
   words,
@@ -148,17 +198,23 @@ export function WordGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {words.map((word) => (
-        <WordCard
-          key={word.english}
-          word={word}
-          progress={progress}
-          onProgressChange={onProgressChange}
-          isFlashcardMode={view === "flashcard"}
-          isFlipped={flipped[word.english]}
-          onFlip={
-            view === "flashcard" ? () => handleFlip(word.english) : undefined
-          }
-        />
+        <div key={word.english}>
+          {view === "flashcard" ? (
+            <FlashCard
+              word={word}
+              progress={progress}
+              onProgressChange={onProgressChange}
+              isFlipped={flipped[word.english]}
+              onFlip={() => handleFlip(word.english)}
+            />
+          ) : (
+            <ListCard
+              word={word}
+              progress={progress}
+              onProgressChange={onProgressChange}
+            />
+          )}
+        </div>
       ))}
     </div>
   );
