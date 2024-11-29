@@ -1,6 +1,6 @@
 // app/components/SortDropdown.tsx
-import { useState, useRef } from "react";
 import { CaretDown } from "@phosphor-icons/react";
+import { useState } from "react";
 
 type SortOption = {
   label: string;
