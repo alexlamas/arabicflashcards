@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 interface CategoryFilterProps {
   categories: string[];
@@ -25,28 +24,26 @@ export function CategoryFilter({
         <CardTitle className="text-base font-semibold">Categories</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea>
-          <div className="space-y-1 p-4 pt-0">
-            <CategoryButton
-              isSelected={!selected}
-              onClick={() => onChange(null)}
-              count={totalCount}
-            >
-              All Categories
-            </CategoryButton>
+        <div className="space-y-1 p-4 pt-0">
+          <CategoryButton
+            isSelected={!selected}
+            onClick={() => onChange(null)}
+            count={totalCount}
+          >
+            All Categories
+          </CategoryButton>
 
-            {categories.map((category) => (
-              <CategoryButton
-                key={category}
-                isSelected={selected === category}
-                onClick={() => onChange(category)}
-                count={counts[category] || 0}
-              >
-                {category}
-              </CategoryButton>
-            ))}
-          </div>
-        </ScrollArea>
+          {categories.map((category) => (
+            <CategoryButton
+              key={category}
+              isSelected={selected === category}
+              onClick={() => onChange(category)}
+              count={counts[category] || 0}
+            >
+              {category}
+            </CategoryButton>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

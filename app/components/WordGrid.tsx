@@ -20,16 +20,16 @@ type ProgressType = "learned" | "learning" | "new";
 const getProgressBackground = (progress: ProgressType | undefined) => {
   switch (progress) {
     case "learned":
-      return "bg-emerald-50 border-emerald-400 shadow-sm transition";
+      return "bg-emerald-50 border-emerald-500 shadow-sm transition";
     case "learning":
-      return "bg-amber-50 border-amber-400 shadow-sm transition";
+      return "bg-amber-50 border-amber-500 shadow-sm transition";
     default:
       return "bg-white";
   }
 };
 
 const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
-  <div className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-600">
+  <div className="text-xs font-medium px-2 py-0.5 rounded-full border-[0.5px] border-black/10 text-gray-600 mix-blend-luminosity">
     {type}
   </div>
 );
@@ -56,7 +56,7 @@ const ProgressButtons: React.FC<{
   };
 
   return (
-    <div className="mt-4 flex gap-2 justify-end">
+    <div className="flex gap-2 justify-end">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -124,7 +124,7 @@ const ListCard: React.FC<{
   onProgressChange: (value: Record<string, ProgressType>) => void;
 }> = ({ word, progress, onProgressChange }) => (
   <div
-    className={`p-6 rounded-lg shadow border-[0.5px] border-gray-200 ${getProgressBackground(
+    className={`p-6 rounded-lg border-[0.5px] border-gray-200 ${getProgressBackground(
       progress[word.english]
     )}`}
   >
@@ -151,7 +151,7 @@ const FlashCard: React.FC<{
   isFlipped: boolean;
   onFlip: () => void;
 }> = ({ word, progress, onProgressChange, isFlipped, onFlip }) => (
-  <div className="h-40" style={{ perspective: "1000px" }}>
+  <div className="h-36" style={{ perspective: "1000px" }}>
     <div
       className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
       style={{ transform: isFlipped ? "rotateY(180deg)" : "" }}
@@ -159,27 +159,24 @@ const FlashCard: React.FC<{
     >
       {/* Front of card */}
       <div
-        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow border-[0.5px] border-gray-200 group
-          ${getProgressBackground(progress[word.english])} backface-hidden`}
+        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-sm hover:shadow-md transition border-[0.5px] border-gray-200 group
+    ${getProgressBackground(progress[word.english])} backface-hidden`}
       >
-        <div className="flex justify-between items-start">
-          <div className="text-xl font-medium">{word.english}</div>
-          <TypeBadge type={word.type} />
+        {/* Added flex flex-col h-full justify-between to create vertical spacing */}
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex justify-between items-start">
+            <div className="text-xl font-medium">{word.english}</div>
+            <TypeBadge type={word.type} />
+          </div>
+          <div className="text-sm text-gray-400 group-hover:opacity-100 opacity-0 transition mix-blend-luminosity">
+            Click to view
+          </div>
         </div>
-        <div className="text-sm text-gray-400 mt-4 group-hover:opacity-100 opacity-0 transition">
-          Click to view
-        </div>
-
-        <ProgressButtons
-          word={word}
-          progress={progress}
-          onProgressChange={onProgressChange}
-        />
       </div>
 
       {/* Back of card */}
       <div
-        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow border-[0.5px] border-gray-200 
+        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-xl border-[0.5px] border-gray-200 
           ${getProgressBackground(
             progress[word.english]
           )} backface-hidden [transform:rotateY(180deg)]`}
@@ -188,7 +185,9 @@ const FlashCard: React.FC<{
           <div className="text-3xl font-arabic">{word.arabic}</div>
           <TypeBadge type={word.type} />
         </div>
-        <div className="text-sm text-gray-400 mt-4">{word.transliteration}</div>
+        <div className="text-sm text-gray-400 mt-4 mix-blend-luminosity">
+          {word.transliteration}
+        </div>
 
         <ProgressButtons
           word={word}

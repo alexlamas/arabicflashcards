@@ -16,7 +16,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         placeholder="Search words..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-9 w-full"
+        className="pl-9 w-full rounded-full"
       />
     </div>
   );
