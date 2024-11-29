@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ArrowClockwise, X } from "@phosphor-icons/react";
+import { Check, X, CircleWavyQuestion } from "@phosphor-icons/react";
 
 // app/components/WordGrid.tsx
 export function WordGrid({
@@ -110,7 +110,7 @@ export function WordGrid({
                 className="p-1.5 rounded-md transition-colors hover:bg-black/5"
                 aria-label="Mark as still learning"
               >
-                <ArrowClockwise size={18} />
+                <CircleWavyQuestion size={18} />
               </button>
               {progress[word.english] && (
                 <button
@@ -133,11 +133,11 @@ export function WordGrid({
       {words.map((word) => (
         <div
           key={word.english}
-          className={`p-4 rounded-lg shadow-md transition-colors ${
+          className={`p-4 rounded-lg shadow-md transition ${
             progress[word.english] === "learned"
-              ? "bg-green-50 shadow"
+              ? "bg-green-50 border border-green-200 shadow"
               : progress[word.english] === "learning"
-              ? "bg-yellow-50"
+              ? "bg-yellow-50 border border-yellow-200 shadow"
               : "bg-white"
           }`}
         >
@@ -163,7 +163,7 @@ export function WordGrid({
               className="p-1.5 rounded-md transition-colors hover:bg-black/5"
               aria-label="Mark as still learning"
             >
-              <ArrowClockwise size={18} />
+              <CircleWavyQuestion size={18} />
             </button>
             {progress[word.english] != "new" && (
               <button

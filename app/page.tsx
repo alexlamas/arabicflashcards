@@ -1,28 +1,28 @@
 // app/page.tsx
-'use client';
+"use client";
 
-import { useState, useMemo, useEffect } from 'react';
-import wordsData from './data/words.json';
-import { SearchBar } from './components/SearchBar';
-import { CategoryFilter } from './components/CategoryFilter';
-import { WordGrid } from './components/WordGrid';
-import { Stats } from './components/Stats';
-import { ViewToggle } from './components/ViewToggle';
-import { AuthWrapper } from './components/AuthWrapper';
-import { supabase } from './supabase';
-import type { WordProgress } from './supabase';
-import { useRouter } from 'next/navigation'
+import { useState, useMemo, useEffect } from "react";
+import wordsData from "./data/words.json";
+import { SearchBar } from "./components/SearchBar";
+import { CategoryFilter } from "./components/CategoryFilter";
+import { WordGrid } from "./components/WordGrid";
+import { Stats } from "./components/Stats";
+import { ViewToggle } from "./components/ViewToggle";
+import { AuthWrapper } from "./components/AuthWrapper";
+import { supabase } from "./supabase";
+import type { WordProgress } from "./supabase";
+import { useRouter } from "next/navigation";
+import ArabicKeyboard from "./components/ArabicKeyboard";
 
-
-type ProgressState = 'learned' | 'learning' | 'new';
+type ProgressState = "learned" | "learning" | "new";
 type ProgressMap = Record<string, ProgressState>;
 
-const words = wordsData.words; 
+const words = wordsData.words;
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [view, setView] = useState<'list' | 'flashcard'>('list');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [view, setView] = useState<"list" | "flashcard">("list");
   const [progress, setProgress] = useState<ProgressMap>({});
   const [loading, setLoading] = useState(true);
 
@@ -30,52 +30,54 @@ export default function Home() {
   useEffect(() => {
     async function loadProgress() {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
         if (userError) {
-          console.error('Auth error:', userError.message);
+          console.error("Auth error:", userError.message);
           setLoading(false);
           return;
         }
-  
+
         if (!user) {
-          console.log('No authenticated user');
+          console.log("No authenticated user");
           setLoading(false);
           return;
         }
-  
+
         const { data, error: dbError } = await supabase
-          .from('word_progress')
-          .select('word_english, status');
-  
+          .from("word_progress")
+          .select("word_english, status");
+
         if (dbError) {
-          console.error('Database error:', dbError.message);
+          console.error("Database error:", dbError.message);
           setLoading(false);
           return;
         }
-  
+
         if (!data) {
-          console.log('No data returned');
+          console.log("No data returned");
           setLoading(false);
           return;
         }
-  
+
         const progressMap: ProgressMap = {};
         data.forEach((item: WordProgress) => {
           progressMap[item.word_english] = item.status as ProgressState;
         });
-        
+
         setProgress(progressMap);
       } catch (error) {
-        console.error('Unexpected error:', error);
+        console.error("Unexpected error:", error);
       } finally {
         setLoading(false);
       }
     }
-  
+
     loadProgress();
   }, []);
-  
 
   // Handle progress changes
   const handleProgressChange = async (newProgress: ProgressMap) => {
@@ -84,22 +86,20 @@ export default function Home() {
 
     // Find the changed word
     const changedWord = Object.keys(newProgress).find(
-      word => newProgress[word] !== progress[word]
+      (word) => newProgress[word] !== progress[word]
     );
 
     if (!changedWord) return;
 
     // Update in Supabase
-    const { error } = await supabase
-      .from('word_progress')
-      .upsert({
-        user_id: user.id,
-        word_english: changedWord,
-        status: newProgress[changedWord],
-      });
+    const { error } = await supabase.from("word_progress").upsert({
+      user_id: user.id,
+      word_english: changedWord,
+      status: newProgress[changedWord],
+    });
 
     if (error) {
-      console.error('Error saving progress:', error);
+      console.error("Error saving progress:", error);
       return;
     }
 
@@ -107,15 +107,17 @@ export default function Home() {
   };
 
   // Rest of your existing code...
-  const categories = useMemo(() => 
-    [...new Set(words.map(word => word.category))], 
+  const categories = useMemo(
+    () => [...new Set(words.map((word) => word.category))],
     []
   );
 
   const filteredWords = useMemo(() => {
-    return words.filter(word => {
-      const matchesCategory = !selectedCategory || word.category === selectedCategory;
-      const matchesSearch = !searchTerm || 
+    return words.filter((word) => {
+      const matchesCategory =
+        !selectedCategory || word.category === selectedCategory;
+      const matchesSearch =
+        !searchTerm ||
         word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
         word.arabic.includes(searchTerm) ||
         word.transliteration.toLowerCase().includes(searchTerm.toLowerCase());
@@ -123,22 +125,26 @@ export default function Home() {
     });
   }, [selectedCategory, searchTerm]);
 
-  const stats = useMemo(() => ({
-    total: words.length,
-    filtered: filteredWords.length,
-    learned: Object.values(progress).filter(p => p === 'learned').length,
-    learning: Object.values(progress).filter(p => p === 'learning').length,
-    new: words.length - Object.values(progress).length,
-    byCategory: Object.fromEntries(
-      categories.map(cat => [
-        cat, 
-        words.filter(w => w.category === cat).length
-      ])
-    )
-  }), [categories, filteredWords.length, progress]);
+  const stats = useMemo(
+    () => ({
+      total: words.length,
+      filtered: filteredWords.length,
+      learned: Object.values(progress).filter((p) => p === "learned").length,
+      learning: Object.values(progress).filter((p) => p === "learning").length,
+      new: words.length - Object.values(progress).length,
+      byCategory: Object.fromEntries(
+        categories.map((cat) => [
+          cat,
+          words.filter((w) => w.category === cat).length,
+        ])
+      ),
+    }),
+    [categories, filteredWords.length, progress]
+  );
 
   return (
     <AuthWrapper>
+      <ArabicKeyboard />
       <main className="p-8">
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -146,8 +152,8 @@ export default function Home() {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Arabic Learning Tool</h1>
-            
+            <h1 className="text-3xl font-bold mb-8">Lebanese Arabic</h1>
+
             <div className="flex justify-between items-center mb-6">
               <SearchBar value={searchTerm} onChange={setSearchTerm} />
               <ViewToggle current={view} onChange={setView} />
@@ -156,7 +162,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-1">
                 <Stats stats={stats} />
-                <CategoryFilter 
+                <CategoryFilter
                   categories={categories}
                   selected={selectedCategory}
                   onChange={setSelectedCategory}
@@ -165,7 +171,7 @@ export default function Home() {
               </div>
 
               <div className="lg:col-span-3">
-                <WordGrid 
+                <WordGrid
                   words={filteredWords}
                   view={view}
                   progress={progress}

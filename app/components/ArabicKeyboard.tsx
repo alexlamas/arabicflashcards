@@ -1,0 +1,90 @@
+import React, { useState } from "react";
+
+// Define types for our data structures
+interface LetterItem {
+  letter: string;
+  sound: string;
+}
+
+type KeyboardRow = LetterItem[];
+type KeyboardLayout = KeyboardRow[];
+
+// Type the keyboard layout data
+const keyboardLayout: KeyboardLayout = [
+  // Row 1 - all Lebanese pronunciations
+  [
+    { letter: "ض", sound: "d" },
+    { letter: "ص", sound: "s" },
+    { letter: "ث", sound: "s" }, // Lebanese pronunciation
+    { letter: "ق", sound: "2" }, // Lebanese pronunciation
+    { letter: "ف", sound: "f" },
+    { letter: "غ", sound: "gh" },
+    { letter: "ع", sound: "3" },
+    { letter: "ه", sound: "h" },
+    { letter: "خ", sound: "5" },
+    { letter: "ح", sound: "7" },
+    { letter: "ج", sound: "j" },
+    { letter: "د", sound: "d" },
+  ],
+  // Row 2
+  [
+    { letter: "ش", sound: "sh" },
+    { letter: "س", sound: "s" },
+    { letter: "ي", sound: "y/i" },
+    { letter: "ب", sound: "b" },
+    { letter: "ل", sound: "l" },
+    { letter: "ا", sound: "a/e" },
+    { letter: "ت", sound: "t" },
+    { letter: "ن", sound: "n" },
+    { letter: "م", sound: "m" },
+    { letter: "ك", sound: "k" },
+    { letter: "ط", sound: "t" },
+  ],
+  // Row 3
+  [
+    { letter: "ئ", sound: "2" },
+    { letter: "ء", sound: "2" },
+    { letter: "ؤ", sound: "2" },
+    { letter: "ر", sound: "r" },
+    { letter: "لا", sound: "la" },
+    { letter: "ى", sound: "a" },
+    { letter: "ة", sound: "a/e" },
+    { letter: "و", sound: "w/u" },
+    { letter: "ز", sound: "z" },
+    { letter: "ظ", sound: "z" }, // Lebanese pronunciation
+  ],
+];
+
+const ArabicKeyboard: React.FC = () => {
+  const [hoveredLetter, setHoveredLetter] = useState<LetterItem | null>(null);
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="space-y-2" dir="ltr">
+        {keyboardLayout.map((row, rowIdx) => (
+          <div key={rowIdx} className="flex justify-center gap-1">
+            {row.map((item) => (
+              <button
+                key={item.letter}
+                className="w-12 h-12 text-2xl font-arabic border rounded-lg bg-white 
+                    hover:bg-blue-50 transition-all focus:outline-none"
+                onMouseEnter={() => setHoveredLetter(item)}
+                onMouseLeave={() => setHoveredLetter(null)}
+              >
+                {hoveredLetter === item ? (
+                  <span className="text-lg font-mono text-blue-600">
+                    {item.sound}
+                  </span>
+                ) : (
+                  <span>{item.letter}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default ArabicKeyboard;
