@@ -107,7 +107,7 @@ export default function Home() {
   };
 
   const categories = useMemo(
-    () => [...new Set(words.map((word) => word.category))],
+    () => [...new Set(words.map((word) => word.category))].sort(),
     []
   );
 
@@ -154,14 +154,15 @@ export default function Home() {
       learned: Object.values(progress).filter((p) => p === "learned").length,
       learning: Object.values(progress).filter((p) => p === "learning").length,
       new: words.length - Object.values(progress).length,
-      byCategory: Object.fromEntries(
-        categories.map((cat) => [
-          cat,
-          words.filter((w) => w.category === cat).length,
-        ])
+      byCategory: categories.reduce(
+        (acc, cat) => ({
+          ...acc,
+          [cat]: words.filter((w) => w.category === cat).length,
+        }),
+        {} as Record<string, number>
       ),
     }),
-    [categories, filteredWords.length, progress]
+    [categories, filteredWords.length, progress, words]
   );
 
   return (
@@ -173,8 +174,6 @@ export default function Home() {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Arabic Learning Tool</h1>
-
             <div className="flex justify-between items-center mb-6">
               <SearchBar value={searchTerm} onChange={setSearchTerm} />
               <div className="inline-flex gap-2 items-center">

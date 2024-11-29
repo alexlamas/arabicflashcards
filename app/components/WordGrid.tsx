@@ -14,9 +14,9 @@ type ProgressType = "learned" | "learning" | "new";
 const getProgressBackground = (progress: ProgressType | undefined) => {
   switch (progress) {
     case "learned":
-      return "bg-green-50 border border-green-200 shadow";
+      return "bg-green-50 !border border-green-200 shadow-sm transition";
     case "learning":
-      return "bg-yellow-50 border border-yellow-200 shadow";
+      return "bg-yellow-50 !border border-yellow-200 shadow-sm transition";
     default:
       return "bg-white";
   }
@@ -100,7 +100,7 @@ const WordCard: React.FC<{
       onClick={onFlip}
       className={`${
         isFlashcardMode ? "cursor-pointer" : ""
-      } p-6 rounded-lg shadow-md transition-all ${getProgressBackground(
+      } p-6 rounded-lg shadow border-[0.5px] border-gray-200 transition-all ${getProgressBackground(
         progress[word.english]
       )}`}
     >
