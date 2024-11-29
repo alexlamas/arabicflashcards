@@ -1,3 +1,4 @@
+import { Keyboard } from "@phosphor-icons/react";
 import React, { useState } from "react";
 
 // Define types for our data structures
@@ -56,33 +57,57 @@ const keyboardLayout: KeyboardLayout = [
 ];
 
 const ArabicKeyboard: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [hoveredLetter, setHoveredLetter] = useState<LetterItem | null>(null);
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="space-y-2" dir="ltr">
-        {keyboardLayout.map((row, rowIdx) => (
-          <div key={rowIdx} className="flex justify-center gap-1">
-            {row.map((item) => (
+    <div>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="px-3 py-3 bg-gray-100 text-white rounded-lg hover:bg-gray-200 transition"
+      >
+        <Keyboard size={16} className="text-gray-600" />
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Arabic Keyboard</h2>
               <button
-                key={item.letter}
-                className="w-12 h-12 text-2xl font-arabic border rounded-lg bg-white 
-                    hover:bg-blue-50 transition-all focus:outline-none"
-                onMouseEnter={() => setHoveredLetter(item)}
-                onMouseLeave={() => setHoveredLetter(null)}
+                onClick={() => setIsOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
               >
-                {hoveredLetter === item ? (
-                  <span className="text-lg font-mono text-blue-600">
-                    {item.sound}
-                  </span>
-                ) : (
-                  <span>{item.letter}</span>
-                )}
+                ✕
               </button>
-            ))}
+            </div>
+
+            <div className="space-y-2" dir="ltr">
+              {keyboardLayout.map((row, rowIdx) => (
+                <div key={rowIdx} className="flex justify-center gap-1">
+                  {row.map((item) => (
+                    <button
+                      key={item.letter}
+                      className="w-12 h-12 text-2xl font-arabic border rounded-lg bg-white 
+                          hover:bg-blue-50 transition-all focus:outline-none"
+                      onMouseEnter={() => setHoveredLetter(item)}
+                      onMouseLeave={() => setHoveredLetter(null)}
+                    >
+                      {hoveredLetter === item ? (
+                        <span className="text-lg font-mono text-blue-600">
+                          {item.sound}
+                        </span>
+                      ) : (
+                        <span>{item.letter}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

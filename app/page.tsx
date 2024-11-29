@@ -144,7 +144,6 @@ export default function Home() {
 
   return (
     <AuthWrapper>
-      <ArabicKeyboard />
       <main className="p-8">
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -156,7 +155,10 @@ export default function Home() {
 
             <div className="flex justify-between items-center mb-6">
               <SearchBar value={searchTerm} onChange={setSearchTerm} />
-              <ViewToggle current={view} onChange={setView} />
+              <div className="inline-flex gap-2 items-center">
+                <ArabicKeyboard />
+                <ViewToggle current={view} onChange={setView} />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
