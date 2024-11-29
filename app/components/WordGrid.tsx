@@ -166,7 +166,6 @@ const FlashCard: React.FC<{
         <div className="flex flex-col h-full justify-between">
           <div className="flex justify-between items-start">
             <div className="text-xl font-medium">{word.english}</div>
-            <TypeBadge type={word.type} />
           </div>
           <div className="text-sm text-gray-400 group-hover:opacity-100 opacity-0 transition mix-blend-luminosity">
             Click to view
