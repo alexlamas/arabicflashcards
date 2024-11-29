@@ -1,18 +1,25 @@
 import { supabase } from '../supabase';
-import type { WordProgress, ProgressState } from '../types';
+import type { ProgressState, WordProgress } from '../types/word';
 
-export class SupabaseService {
-  static async updateWordProgress(
-    wordEnglish: string, 
+export class WordService {
+  static async getProgress(): Promise<WordProgress[]> {
+    const { data, error } = await supabase
+      .from('word_progress')
+      .select('word_english, status');
+
+    if (error) throw error;
+    return data as WordProgress[];
+  }
+
+  static async updateProgress(
+    userId: string,
+    wordEnglish: string,
     status: ProgressState
   ): Promise<void> {
-    const { user } = (await supabase.auth.getUser()).data;
-    if (!user) throw new Error('No authenticated user');
-
     const { error } = await supabase
       .from('word_progress')
       .upsert({
-        user_id: user.id,
+        user_id: userId,
         word_english: wordEnglish,
         status
       });
@@ -20,12 +27,22 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  static async getWordProgress(): Promise<WordProgress[]> {
-    const { data, error } = await supabase
-      .from('word_progress')
-      .select('word_english, status');
-
+  static async getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
     if (error) throw error;
-    return data as WordProgress[];
+    return user;
+  }
+}
+
+export class AuthService {
+  static async signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }
+
+  static onAuthStateChange(callback: (session: any) => void) {
+    return supabase.auth.onAuthStateChange((_event, session) => {
+      callback(session);
+    });
   }
 }
