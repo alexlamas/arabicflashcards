@@ -61,16 +61,42 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      setIsLoading(true);
+
+      // Clear session state first
+      setSession(null);
+
+      // Clear local storage
+      window.localStorage.removeItem("sb-token");
+      window.localStorage.clear(); // Clear all Supabase-related items
+
+      // Attempt sign out
+      await supabase.auth.signOut();
+
+      // Force page refresh in development to clear all state
+      if (process.env.NODE_ENV === "development") {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Show nothing while loading
+  // Show loading state
   if (isLoading) {
-    return null;
+    return <div className="h-screen flex items-center justify-center"></div>;
   }
 
   const authButton = session ? (
-    <Button variant="outline" size="sm" onClick={handleLogout}>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleLogout}
+      disabled={isLoading}
+    >
       Log out
     </Button>
   ) : (
@@ -100,7 +126,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
   return (
     <AuthContext.Provider value={{ session, isLoading, refreshSession }}>
-      <div>
+      <div className="animate-in fade-in duration-500">
         <header className="p-4 bg-white shadow-sm">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-xl font-semibold">Lebanese Arabic</h1>
