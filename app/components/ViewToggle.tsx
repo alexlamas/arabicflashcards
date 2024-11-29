@@ -14,25 +14,22 @@ export function ViewToggle({
     <>
       <Tabs defaultValue="list">
         <TabsList className="grid w-full grid-cols-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <TabsTrigger onClick={() => onChange("list")} value="list">
+          <TabsTrigger onClick={() => onChange("list")} value="list">
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <SquaresFour size={20} />
-              </TabsTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">List view</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger>
-              <TabsTrigger
-                onClick={() => onChange("flashcard")}
-                value="flashcard"
-              >
+              </TooltipTrigger>
+              <TooltipContent side="bottom">List view</TooltipContent>
+            </Tooltip>
+          </TabsTrigger>
+          <TabsTrigger onClick={() => onChange("flashcard")} value="flashcard">
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Cards size={20} />
-              </TabsTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Flashcards</TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Flashcards</TooltipContent>
+            </Tooltip>
+          </TabsTrigger>
         </TabsList>
       </Tabs>
     </>
