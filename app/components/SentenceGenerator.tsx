@@ -63,9 +63,9 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
@@ -74,10 +74,10 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
             >
               <MagicWand className="w-4 h-4" />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Generate a sentence</TooltipContent>
-        </Tooltip>
-      </DialogTrigger>
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Generate a sentence</TooltipContent>
+      </Tooltip>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
