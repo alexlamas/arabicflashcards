@@ -24,9 +24,9 @@ type ProgressType = "learned" | "learning" | "new";
 const getProgressBackground = (progress: ProgressType | undefined) => {
   switch (progress) {
     case "learned":
-      return "bg-green-50 border-green-200 shadow-sm transition";
+      return "bg-emerald-50 border-emerald-400 shadow-sm transition";
     case "learning":
-      return "bg-yellow-50 border-yellow-200 shadow-sm transition";
+      return "bg-amber-50 border-amber-400 shadow-sm transition";
     default:
       return "bg-white";
   }
@@ -44,69 +44,80 @@ const ProgressButtons: React.FC<{
   onProgressChange: (value: Record<string, ProgressType>) => void;
 }> = ({ word, progress, onProgressChange }) => {
   const handleProgress = (status: ProgressType) => {
-    onProgressChange({
-      ...progress,
-      [word.english]: status,
-    });
+    // If the current status is already selected, set it to 'new'
+    if (progress[word.english] === status) {
+      onProgressChange({
+        ...progress,
+        [word.english]: "new",
+      });
+    } else {
+      // Otherwise, set the new status
+      onProgressChange({
+        ...progress,
+        [word.english]: status,
+      });
+    }
   };
 
   return (
     <div className="mt-4 flex gap-2 justify-end">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleProgress("learned");
-        }}
-        className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-          progress[word.english] === "learned" &&
-          "text-emerald-800 no-pointer-events"
-        }
-          ${progress[word.english] === "learning" && "hidden"}
-        `}
-        aria-label="Mark as learned"
-      >
-        <Check
-          size={18}
-          weight={progress[word.english] === "learned" ? "bold" : "regular"}
-        />
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleProgress("learning");
-        }}
-        className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-          progress[word.english] === "learning" && "text-amber-600"
-        }
-        ${progress[word.english] === "learned" && "hidden"}
-        `}
-        aria-label="Mark as still learning"
-      >
-        <SmileyNervous
-          size={18}
-          weight={progress[word.english] === "learning" ? "fill" : "regular"}
-        />
-      </button>
-      {(progress[word.english] === "learning" ||
-        progress[word.english] === "learned") && (
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleProgress("new");
-                }}
-                className="p-1.5 rounded-md transition hover:bg-black/5"
-                aria-label="Clear progress"
-              >
-                <ArrowCounterClockwise size={18} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Reset progress</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleProgress("learned");
+              }}
+              className={`p-1.5 rounded-md transition hover:bg-black/5 ${
+                progress[word.english] === "learned" && "text-emerald-800"
+              }
+                ${progress[word.english] === "learning" && ""}
+              `}
+              aria-label="Mark as learned"
+            >
+              <Check
+                size={18}
+                weight={
+                  progress[word.english] === "learned" ? "bold" : "regular"
+                }
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {progress[word.english] === "learned" ? "Reset" : "Mark as learned"}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleProgress("learning");
+              }}
+              className={`p-1.5 rounded-md transition hover:bg-black/5 ${
+                progress[word.english] === "learning" && "text-amber-600"
+              }
+              ${progress[word.english] === "learned" && ""}
+              `}
+              aria-label="Mark as still learning"
+            >
+              <SmileyNervous
+                size={18}
+                weight={
+                  progress[word.english] === "learning" ? "fill" : "regular"
+                }
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {progress[word.english] === "learning"
+              ? "Reset"
+              : "Mark as learning"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
@@ -144,7 +155,7 @@ const FlashCard: React.FC<{
   isFlipped: boolean;
   onFlip: () => void;
 }> = ({ word, progress, onProgressChange, isFlipped, onFlip }) => (
-  <div className=" h-40" style={{ perspective: "1000px" }}>
+  <div className="h-40" style={{ perspective: "1000px" }}>
     <div
       className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
       style={{ transform: isFlipped ? "rotateY(180deg)" : "" }}

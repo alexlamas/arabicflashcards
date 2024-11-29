@@ -1,4 +1,9 @@
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Keyboard } from "@phosphor-icons/react";
 import React, { useState } from "react";
 
@@ -63,9 +68,16 @@ const ArabicKeyboard: React.FC = () => {
 
   return (
     <div>
-      <Button variant={"outline"} size="sm" onClick={() => setIsOpen(true)}>
-        <Keyboard size={16} />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant={"outline"} size="sm" onClick={() => setIsOpen(true)}>
+            <Keyboard size={16} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p>Open Arabic keyboard</p>
+        </TooltipContent>
+      </Tooltip>
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

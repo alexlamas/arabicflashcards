@@ -15,6 +15,7 @@ import { useFilteredWords } from "./hooks/useFilteredWords";
 import { useWordStats } from "./hooks/useWordStats";
 import type { ProgressMap, SortOption, ViewMode } from "./types/word";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 const words = wordsData.words;
 
@@ -130,8 +131,10 @@ function HomeContent() {
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
           <div className="inline-flex gap-2 items-center">
             <SortDropdown value={sortBy} onChange={setSortBy} />
-            <ArabicKeyboard />
-            <ViewToggle current={view} onChange={setView} />
+            <TooltipProvider>
+              <ArabicKeyboard />
+              <ViewToggle current={view} onChange={setView} />
+            </TooltipProvider>
           </div>
         </div>
 
