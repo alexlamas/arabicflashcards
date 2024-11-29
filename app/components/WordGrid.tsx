@@ -6,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import SentenceGenerator from "./SentenceGenerator";
 
 interface WordType {
   english: string;
@@ -112,6 +113,14 @@ const ProgressButtons: React.FC<{
               ? "Reset"
               : "Mark as learning"}
           </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <SentenceGenerator
+            word={{
+              english: word.english,
+              arabic: word.arabic,
+            }}
+          />
         </Tooltip>
       </TooltipProvider>
     </div>
