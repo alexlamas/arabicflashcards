@@ -14,6 +14,7 @@ import { WordService } from "./services/supabaseService";
 import { useFilteredWords } from "./hooks/useFilteredWords";
 import { useWordStats } from "./hooks/useWordStats";
 import type { ProgressMap, SortOption, ViewMode } from "./types/word";
+import { cn } from "@/lib/utils";
 
 const words = wordsData.words;
 
@@ -30,11 +31,9 @@ export default function Home() {
     []
   );
 
-  // Load progress from Supabase
   useEffect(() => {
     async function loadProgress() {
       try {
-        setLoading(true);
         const wordProgress = await WordService.getProgress();
         const progressMap: ProgressMap = {};
         wordProgress.forEach((item) => {
@@ -66,7 +65,6 @@ export default function Home() {
     categories,
   });
 
-  // Handle progress changes
   const handleProgressChange = async (newProgress: ProgressMap) => {
     try {
       const user = await WordService.getCurrentUser();
@@ -93,43 +91,42 @@ export default function Home() {
   return (
     <AuthWrapper>
       <main className="p-8">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg">Loading your progress...</div>
-          </div>
-        ) : (
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <SearchBar value={searchTerm} onChange={setSearchTerm} />
-              <div className="inline-flex gap-2 items-center">
-                <SortDropdown value={sortBy} onChange={setSortBy} />
-                <ArabicKeyboard />
-                <ViewToggle current={view} onChange={setView} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-1">
-                <Stats stats={stats} />
-                <CategoryFilter
-                  categories={categories}
-                  selected={selectedCategory}
-                  onChange={setSelectedCategory}
-                  counts={stats.byCategory}
-                />
-              </div>
-
-              <div className="lg:col-span-3">
-                <WordGrid
-                  words={filteredWords}
-                  view={view}
-                  progress={progress}
-                  onProgressChange={handleProgressChange}
-                />
-              </div>
+        <div
+          className={cn(
+            "max-w-7xl mx-auto transition-opacity duration-500",
+            loading ? "opacity-0" : "opacity-100"
+          )}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <SearchBar value={searchTerm} onChange={setSearchTerm} />
+            <div className="inline-flex gap-2 items-center">
+              <SortDropdown value={sortBy} onChange={setSortBy} />
+              <ArabicKeyboard />
+              <ViewToggle current={view} onChange={setView} />
             </div>
           </div>
-        )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1">
+              <Stats stats={stats} />
+              <CategoryFilter
+                categories={categories}
+                selected={selectedCategory}
+                onChange={setSelectedCategory}
+                counts={stats.byCategory}
+              />
+            </div>
+
+            <div className="lg:col-span-3">
+              <WordGrid
+                words={filteredWords}
+                view={view}
+                progress={progress}
+                onProgressChange={handleProgressChange}
+              />
+            </div>
+          </div>
+        </div>
       </main>
     </AuthWrapper>
   );

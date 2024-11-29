@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
 import type { ProgressState, WordProgress } from '../types/word';
+import type { Session } from '@supabase/supabase-js';
 
 export class WordService {
   static async getProgress(): Promise<WordProgress[]> {
@@ -40,7 +41,7 @@ export class AuthService {
     if (error) throw error;
   }
 
-  static onAuthStateChange(callback: (session: any) => void) {
+  static onAuthStateChange(callback: (session: Session | null) => void) {
     return supabase.auth.onAuthStateChange((_event, session) => {
       callback(session);
     });

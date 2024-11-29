@@ -1,4 +1,3 @@
-// app/components/AuthWrapper.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,14 +7,22 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 
-export function AuthWrapper({ children }: { children: React.ReactNode }) {
+interface AuthWrapperProps {
+  children: React.ReactNode;
+}
+
+export function AuthWrapper({ children }: AuthWrapperProps) {
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Immediately get the session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setIsLoading(false);
     });
 
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -29,14 +36,23 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  // Show nothing while loading
+  if (isLoading) {
+    return null;
+  }
+
   if (!session) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md border ">
+          <h2 className="text-2xl font-semibold text-center mb-6">
+            Log in to Arabic learning
+          </h2>
           <Auth
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
             providers={[]}
+            theme="light"
           />
         </div>
       </div>
