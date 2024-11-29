@@ -11,7 +11,6 @@ import { ViewToggle } from "./components/ViewToggle";
 import { AuthWrapper } from "./components/AuthWrapper";
 import { supabase } from "./supabase";
 import type { WordProgress } from "./supabase";
-import { useRouter } from "next/navigation";
 import ArabicKeyboard from "./components/ArabicKeyboard";
 
 type ProgressState = "learned" | "learning" | "new";
