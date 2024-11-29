@@ -32,7 +32,7 @@ export function SortDropdown({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="h-8">
           Sort {currentOption?.label}
-          <ChevronDown />
+          <ChevronDown className="-mr-1" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">
