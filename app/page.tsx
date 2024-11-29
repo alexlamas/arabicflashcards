@@ -12,6 +12,7 @@ import { AuthWrapper } from "./components/AuthWrapper";
 import { supabase } from "./supabase";
 import type { WordProgress } from "./supabase";
 import ArabicKeyboard from "./components/ArabicKeyboard";
+import { SortDropdown } from "./components/SortDropdown";
 
 type ProgressState = "learned" | "learning" | "new";
 type ProgressMap = Record<string, ProgressState>;
@@ -105,24 +106,46 @@ export default function Home() {
     setProgress(newProgress);
   };
 
-  // Rest of your existing code...
   const categories = useMemo(
     () => [...new Set(words.map((word) => word.category))],
     []
   );
 
-  const filteredWords = useMemo(() => {
-    return words.filter((word) => {
-      const matchesCategory =
-        !selectedCategory || word.category === selectedCategory;
-      const matchesSearch =
-        !searchTerm ||
-        word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        word.arabic.includes(searchTerm) ||
-        word.transliteration.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
+  const sortWords = (words: typeof wordsData.words) => {
+    return [...words].sort((a, b) => {
+      switch (sortBy) {
+        case "alphabetical":
+          return a.english.localeCompare(b.english);
+        case "progress":
+          const progressOrder = { learned: 0, learning: 1, new: 2 };
+          const aProgress = progress[a.english] || "new";
+          const bProgress = progress[b.english] || "new";
+          return progressOrder[aProgress] - progressOrder[bProgress];
+        case "type":
+          return a.type.localeCompare(b.type);
+        default:
+          return 0;
+      }
     });
-  }, [selectedCategory, searchTerm]);
+  };
+  const [sortBy, setSortBy] = useState<"alphabetical" | "progress" | "type">(
+    "alphabetical"
+  );
+
+  const filteredWords = useMemo(() => {
+    return sortWords(
+      words.filter((word) => {
+        const matchesCategory =
+          !selectedCategory || word.category === selectedCategory;
+        const matchesSearch =
+          !searchTerm ||
+          word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          word.arabic.includes(searchTerm) ||
+          word.transliteration.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+    );
+  }, [selectedCategory, searchTerm, words, sortBy, progress]);
 
   const stats = useMemo(
     () => ({
@@ -150,11 +173,12 @@ export default function Home() {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Lebanese Arabic</h1>
+            <h1 className="text-3xl font-bold mb-8">Arabic Learning Tool</h1>
 
             <div className="flex justify-between items-center mb-6">
               <SearchBar value={searchTerm} onChange={setSearchTerm} />
               <div className="inline-flex gap-2 items-center">
+                <SortDropdown value={sortBy} onChange={setSortBy} />
                 <ArabicKeyboard />
                 <ViewToggle current={view} onChange={setView} />
               </div>
