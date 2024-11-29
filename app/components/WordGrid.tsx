@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Check,
-  X,
   SmileyNervous,
   ArrowCounterClockwise,
 } from "@phosphor-icons/react";
