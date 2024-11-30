@@ -43,7 +43,7 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          word: word.english,
+          word: word.arabic,
         }),
       });
 
@@ -81,7 +81,7 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            Example Sentence with &quot;{word.english}&quot;
+            Example sentence with &quot;{word.arabic}&quot;
           </DialogTitle>
         </DialogHeader>
 
