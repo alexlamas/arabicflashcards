@@ -5,7 +5,6 @@ import { WordService } from "./services/wordService";
 import { ProgressService } from "./services/progressService";
 import { SearchBar } from "./components/SearchBar";
 import { CategoryFilter } from "./components/CategoryFilter";
-import { WordGrid } from "./components/WordGrid";
 import { Stats } from "./components/Stats";
 import { ViewToggle } from "./components/ViewToggle";
 import { AuthWrapper, useAuth } from "./components/AuthWrapper";
@@ -16,6 +15,7 @@ import { useFilteredWords } from "./hooks/useFilteredWords";
 import { useWordStats } from "./hooks/useWordStats";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import WordList from "./components/WordList";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -160,15 +160,13 @@ function HomeContent() {
               counts={stats.byCategory}
             />
           </div>
+          <WordList
+            words={filteredWords}
+            progress={progress}
+            onProgressChange={handleProgressChange}
+          ></WordList>
 
-          <div className="lg:col-span-3">
-            <WordGrid
-              words={filteredWords}
-              view={view}
-              progress={progress}
-              onProgressChange={handleProgressChange}
-            />
-          </div>
+          <div className="lg:col-span-3"></div>
         </div>
       </div>
     </main>

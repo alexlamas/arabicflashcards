@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import SentenceGenerator from "./SentenceGenerator";
+import WordList from "./WordList";
 
 interface WordType {
   english: string;
@@ -213,7 +214,7 @@ export function WordGrid({
   onProgressChange,
 }: {
   words: WordType[];
-  view: "list" | "flashcard";
+  view: "list" | "card" | "flashcard";
   progress: Record<string, ProgressType>;
   onProgressChange: (value: Record<string, ProgressType>) => void;
 }) {
@@ -225,6 +226,16 @@ export function WordGrid({
       [english]: !prev[english],
     }));
   };
+
+  if (view === "list") {
+    return (
+      <WordList
+        words={words}
+        progress={progress}
+        onProgressChange={onProgressChange}
+      />
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

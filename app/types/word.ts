@@ -39,4 +39,4 @@ export interface WordStats {
 }
 
 export type SortOption = "alphabetical" | "progress" | "type";
-export type ViewMode = "list" | "flashcard";
+export type ViewMode = "list" | "card" | "flashcard";
