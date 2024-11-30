@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import wordsData from "./data/words.json";
+import { useState, useEffect } from "react";
+import { WordService } from "./services/wordService";
+import { AuthService } from "./services/authService";
+import { ProgressService } from "./services/progressService";
 import { SearchBar } from "./components/SearchBar";
 import { CategoryFilter } from "./components/CategoryFilter";
 import { WordGrid } from "./components/WordGrid";
@@ -10,14 +12,11 @@ import { ViewToggle } from "./components/ViewToggle";
 import { AuthWrapper, useAuth } from "./components/AuthWrapper";
 import ArabicKeyboard from "./components/ArabicKeyboard";
 import { SortDropdown } from "./components/SortDropdown";
-import { WordService } from "./services/supabaseService";
+import type { Word, ProgressMap, SortOption, ViewMode } from "./types/word";
 import { useFilteredWords } from "./hooks/useFilteredWords";
 import { useWordStats } from "./hooks/useWordStats";
-import type { ProgressMap, SortOption, ViewMode } from "./types/word";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-
-const words = wordsData.words;
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -27,11 +26,25 @@ function HomeContent() {
   const [progress, setProgress] = useState<ProgressMap>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
+  const [words, setWords] = useState<Word[]>([]);
 
-  const categories = useMemo(
-    () => [...new Set(words.map((word) => word.category))].sort(),
-    []
-  );
+  const categories = [...new Set(words.map((word) => word.category))].sort();
+
+  // Load words from Supabase
+  useEffect(() => {
+    async function loadWords() {
+      try {
+        const words = await WordService.getAllWords();
+        setWords(words);
+      } catch (error) {
+        console.error("Error loading words:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadWords();
+  }, []);
 
   // Load progress whenever the session changes
   useEffect(() => {
@@ -47,7 +60,7 @@ function HomeContent() {
           return;
         }
 
-        const wordProgress = await WordService.getProgress();
+        const wordProgress = await ProgressService.getProgress(); // Changed from WordService to ProgressService
         if (mounted) {
           const progressMap: ProgressMap = {};
           wordProgress.forEach((item) => {
@@ -103,7 +116,7 @@ function HomeContent() {
 
       if (!changedWord) return;
 
-      await WordService.updateProgress(
+      await ProgressService.updateProgress(
         session.user.id,
         changedWord,
         newProgress[changedWord]

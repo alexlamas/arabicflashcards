@@ -1,8 +1,8 @@
+// app/services/progressService.ts
 import { supabase } from '../supabase';
 import type { ProgressState, WordProgress } from '../types/word';
-import type { Session } from '@supabase/supabase-js';
 
-export class WordService {
+export class ProgressService {
   static async getProgress(): Promise<WordProgress[]> {
     const { data, error } = await supabase
       .from('word_progress')
@@ -26,24 +26,5 @@ export class WordService {
       });
 
     if (error) throw error;
-  }
-
-  static async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    return user;
-  }
-}
-
-export class AuthService {
-  static async signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  }
-
-  static onAuthStateChange(callback: (session: Session | null) => void) {
-    return supabase.auth.onAuthStateChange((_event, session) => {
-      callback(session);
-    });
   }
 }
