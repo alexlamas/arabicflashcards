@@ -116,7 +116,7 @@ const TagManager = ({
                 onClick={handleTagCreate}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Create "{inputValue}"
+                <span>Create &ldquo;{inputValue}&rdquo;</span>
               </Button>
             </CommandEmpty>
             <CommandGroup>

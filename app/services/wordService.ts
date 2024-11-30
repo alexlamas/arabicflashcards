@@ -1,7 +1,10 @@
 // app/services/wordService.ts
 import { supabase } from '../supabase';
 import type { Word } from '../types/word';
-
+import { Tag } from './tagService';
+interface TagRelation {
+  tag: Tag;
+}
 export class WordService {
   static async getAllWords(): Promise<Word[]> {
     const { data, error } = await supabase
@@ -17,9 +20,11 @@ export class WordService {
     if (error) throw error;
     return data.map(word => ({
       ...word,
-      tags: word.tags?.map((t: any) => t.tag) || []
+      tags: word.tags?.map((tagRelation: TagRelation) => tagRelation.tag) || []
     }));
   }
+
+  
 
   static async getWordByEnglish(english: string): Promise<Word | null> {
     const { data, error } = await supabase
