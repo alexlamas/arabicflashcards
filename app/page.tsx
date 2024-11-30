@@ -16,6 +16,7 @@ import { useWordStats } from "./hooks/useWordStats";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import WordList from "./components/WordList";
+import WordGrid from "./components/WordGrid";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -160,13 +161,15 @@ function HomeContent() {
               counts={stats.byCategory}
             />
           </div>
-          <WordList
-            words={filteredWords}
-            progress={progress}
-            onProgressChange={handleProgressChange}
-          ></WordList>
 
-          <div className="lg:col-span-3"></div>
+          <div className="lg:col-span-3">
+            <WordGrid
+              words={filteredWords}
+              view={view}
+              progress={progress}
+              onProgressChange={handleProgressChange}
+            ></WordGrid>
+          </div>
         </div>
       </div>
     </main>
