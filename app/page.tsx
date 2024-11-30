@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { WordService } from "./services/wordService";
-import { AuthService } from "./services/authService";
 import { ProgressService } from "./services/progressService";
 import { SearchBar } from "./components/SearchBar";
 import { CategoryFilter } from "./components/CategoryFilter";
