@@ -69,10 +69,10 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="hover:bg-black/5 w-9 p-1"
+              className="hover:bg-black/5 w-9 p-1 border-[0.5px] border-violet-600/20 bg-gradient-to-t from-violet-500/10 to-violet-400/5 ml-1 group shadow-sm"
               onClick={(e) => e.stopPropagation()}
             >
-              <MagicWand className="w-4 h-4" />
+              <MagicWand className="w-4 h-4 text-violet-600" />
             </Button>
           </DialogTrigger>
         </TooltipTrigger>
