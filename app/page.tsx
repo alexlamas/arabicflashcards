@@ -16,6 +16,8 @@ import { useWordStats } from "./hooks/useWordStats";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import WordGrid from "./components/WordGrid";
+import { Tag, TagService } from "./services/tagService";
+import TagSelector from "./components/TagSelector";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -26,8 +28,66 @@ function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
   const [words, setWords] = useState<Word[]>([]);
-
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const categories = [...new Set(words.map((word) => word.category))].sort();
+
+  const handleTagToggle = async (wordId: string, tagId: string) => {
+    if (!session?.user) return;
+
+    try {
+      // Check if the word already has this tag
+      const hasTag = words
+        .find((w) => w.id === wordId)
+        ?.tags?.some((t: Tag) => t.id === tagId);
+
+      if (hasTag) {
+        await TagService.removeTagFromWord(session.user.id, wordId, tagId);
+      } else {
+        await TagService.addTagToWord(session.user.id, wordId, tagId);
+      }
+
+      // Refresh words to get updated tags
+      const updatedWords = await WordService.getAllWords();
+      setWords(updatedWords);
+    } catch (error) {
+      console.error("Error toggling tag:", error);
+    }
+  };
+
+  const handleTagDelete = async (tagId: string) => {
+    if (!session?.user) return;
+
+    try {
+      await TagService.deleteTag(session.user.id, tagId);
+
+      // Remove the deleted tag from selected tags
+      setSelectedTags((prev) => prev.filter((t) => t.id !== tagId));
+
+      // Refresh tags
+      const updatedTags = await TagService.getTags(session.user.id);
+      setTags(updatedTags);
+
+      // Refresh words to update their tags
+      const updatedWords = await WordService.getAllWords();
+      setWords(updatedWords);
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+    }
+  };
+
+  const handleTagCreate = async (name: string) => {
+    if (!session?.user) return;
+
+    try {
+      await TagService.createTag(session.user.id, name);
+      // Refresh tags
+      const updatedTags = await TagService.getTags(session.user.id);
+      setTags(updatedTags);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+    }
+  };
 
   // Load words from Supabase
   useEffect(() => {
@@ -44,6 +104,19 @@ function HomeContent() {
 
     loadWords();
   }, []);
+
+  useEffect(() => {
+    async function loadTags() {
+      if (!session?.user) return;
+      try {
+        const tags = await TagService.getTags(session.user.id);
+        setTags(tags);
+      } catch (error) {
+        console.error("Error loading tags:", error);
+      }
+    }
+    loadTags();
+  }, [session]);
 
   // Load progress whenever the session changes
   useEffect(() => {
@@ -90,6 +163,7 @@ function HomeContent() {
     words,
     searchTerm,
     selectedCategory,
+    selectedTags,
     progress,
     sortBy,
   });
@@ -142,7 +216,33 @@ function HomeContent() {
         <div className="flex justify-between items-center mb-6">
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
           <div className="inline-flex gap-2 items-center">
-            <SortDropdown value={sortBy} onChange={setSortBy} />
+            <div className="inline-flex gap-2 items-center">
+              <TagSelector
+                selectedTags={selectedTags}
+                availableTags={tags}
+                onTagDelete={handleTagDelete}
+                onTagSelect={(tag) => {
+                  setSelectedTags((prev) =>
+                    prev.some((t) => t.id === tag.id)
+                      ? prev.filter((t) => t.id !== tag.id)
+                      : [...prev, tag]
+                  );
+                }}
+                onTagCreate={async (name) => {
+                  if (!session?.user) return;
+                  try {
+                    const newTag = await TagService.createTag(
+                      session.user.id,
+                      name
+                    );
+                    setTags((prev) => [...prev, newTag]);
+                  } catch (error) {
+                    console.error("Error creating tag:", error);
+                  }
+                }}
+              />
+              <SortDropdown value={sortBy} onChange={setSortBy} />
+            </div>
             <TooltipProvider>
               <ArabicKeyboard />
               <ViewToggle current={view} onChange={setView} />
@@ -167,7 +267,10 @@ function HomeContent() {
               view={view}
               progress={progress}
               onProgressChange={handleProgressChange}
-            ></WordGrid>
+              availableTags={tags}
+              onTagCreate={handleTagCreate}
+              onTagToggle={handleTagToggle}
+            />
           </div>
         </div>
       </div>

@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import type { Word, ProgressMap, SortOption } from '../types/word';
+import { Tag } from '../services/tagService';
 
 interface UseFilteredWordsProps {
   words: Word[];
   searchTerm: string;
   selectedCategory: string | null;
+  selectedTags: Tag[];  
   progress: ProgressMap;
   sortBy: SortOption;
 }
@@ -13,19 +15,21 @@ export function useFilteredWords({
   words,
   searchTerm,
   selectedCategory,
+  selectedTags,
   progress,
   sortBy,
 }: UseFilteredWordsProps) {
   return useMemo(() => {
     const filteredWords = words.filter((word) => {
-      const matchesCategory =
-        !selectedCategory || word.category === selectedCategory;
-      const matchesSearch =
-        !searchTerm ||
+      const matchesCategory = !selectedCategory || word.category === selectedCategory;
+      const matchesSearch = !searchTerm ||
         word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
         word.arabic.includes(searchTerm) ||
         word.transliteration.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
+        const matchesTags = selectedTags.length === 0 || 
+        selectedTags.every(tag => word.tags?.some(wordTag => wordTag.id === tag.id));
+      
+      return matchesCategory && matchesSearch && matchesTags;
     });
 
     return [...filteredWords].sort((a, b) => {
@@ -44,5 +48,5 @@ export function useFilteredWords({
           return 0;
       }
     });
-  }, [words, searchTerm, selectedCategory, progress, sortBy]);
+  }, [words, searchTerm, selectedCategory,selectedTags, progress, sortBy]);
 }

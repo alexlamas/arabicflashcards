@@ -1,5 +1,7 @@
 // app/types/word.ts
 
+import { Tag } from "../services/tagService";
+
 export type WordType = 'noun' | 'verb' | 'adjective' | 'phrase';
 
 export type WordCategory = 
@@ -17,6 +19,7 @@ export interface Word {
   transliteration: string;
   category: WordCategory;
   type: WordType;
+  tags?: Tag[];
   created_at?: string;
   updated_at?: string;
 }
