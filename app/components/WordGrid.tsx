@@ -1,14 +1,7 @@
 import React, { useState } from "react";
-import { Check, SmileyNervous } from "@phosphor-icons/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import SentenceGenerator from "./SentenceGenerator";
 import WordList from "./WordList";
 import { ViewMode } from "../types/word";
+import ProgressButtons from "./ProgressButtons";
 
 interface WordType {
   english: string;
@@ -36,97 +29,6 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
     {type}
   </div>
 );
-
-const ProgressButtons: React.FC<{
-  word: WordType;
-  progress: Record<string, ProgressType>;
-  onProgressChange: (value: Record<string, ProgressType>) => void;
-}> = ({ word, progress, onProgressChange }) => {
-  const handleProgress = (status: ProgressType) => {
-    // If the current status is already selected, set it to 'new'
-    if (progress[word.english] === status) {
-      onProgressChange({
-        ...progress,
-        [word.english]: "new",
-      });
-    } else {
-      // Otherwise, set the new status
-      onProgressChange({
-        ...progress,
-        [word.english]: status,
-      });
-    }
-  };
-
-  return (
-    <div className="flex gap-1 justify-end">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleProgress("learned");
-              }}
-              className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-                progress[word.english] === "learned" && "text-emerald-800"
-              }
-                ${progress[word.english] === "learning" && ""}
-              `}
-              aria-label="Mark as learned"
-            >
-              <Check
-                size={18}
-                weight={
-                  progress[word.english] === "learned" ? "bold" : "regular"
-                }
-              />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {progress[word.english] === "learned" ? "Reset" : "Mark as learned"}
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleProgress("learning");
-              }}
-              className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-                progress[word.english] === "learning" && "text-amber-600"
-              }
-              ${progress[word.english] === "learned" && ""}
-              `}
-              aria-label="Mark as still learning"
-            >
-              <SmileyNervous
-                size={18}
-                weight={
-                  progress[word.english] === "learning" ? "fill" : "regular"
-                }
-              />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {progress[word.english] === "learning"
-              ? "Reset"
-              : "Mark as learning"}
-          </TooltipContent>
-        </Tooltip>
-
-        <SentenceGenerator
-          word={{
-            english: word.english,
-            arabic: word.arabic,
-          }}
-        />
-      </TooltipProvider>
-    </div>
-  );
-};
 
 const ListCard: React.FC<{
   word: WordType;

@@ -7,15 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Check, SmileyNervous } from "@phosphor-icons/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import SentenceGenerator from "./SentenceGenerator";
-import { Badge } from "@/components/ui/badge";
+import ProgressButtons from "./ProgressButtons";
 
 interface WordType {
   english: string;
@@ -27,84 +19,11 @@ interface WordType {
 
 type ProgressType = "learned" | "learning" | "new";
 
-const ProgressButtons: React.FC<{
-  word: WordType;
+interface WordListProps {
+  words: WordType[];
   progress: Record<string, ProgressType>;
   onProgressChange: (value: Record<string, ProgressType>) => void;
-}> = ({ word, progress, onProgressChange }) => {
-  const handleProgress = (status: ProgressType) => {
-    if (progress[word.english] === status) {
-      onProgressChange({
-        ...progress,
-        [word.english]: "new",
-      });
-    } else {
-      onProgressChange({
-        ...progress,
-        [word.english]: status,
-      });
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-1">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => handleProgress("learned")}
-              className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-                progress[word.english] === "learned" && "text-emerald-800"
-              }`}
-              aria-label="Mark as learned"
-            >
-              <Check
-                size={18}
-                weight={
-                  progress[word.english] === "learned" ? "bold" : "regular"
-                }
-              />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {progress[word.english] === "learned" ? "Reset" : "Mark as learned"}
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => handleProgress("learning")}
-              className={`p-1.5 rounded-md transition hover:bg-black/5 ${
-                progress[word.english] === "learning" && "text-amber-600"
-              }`}
-              aria-label="Mark as still learning"
-            >
-              <SmileyNervous
-                size={18}
-                weight={
-                  progress[word.english] === "learning" ? "fill" : "regular"
-                }
-              />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {progress[word.english] === "learning"
-              ? "Reset"
-              : "Mark as learning"}
-          </TooltipContent>
-        </Tooltip>
-
-        <SentenceGenerator
-          word={{
-            english: word.english,
-            arabic: word.arabic,
-          }}
-        />
-      </TooltipProvider>
-    </div>
-  );
-};
+}
 
 const getProgressBackground = (progress: ProgressType | undefined) => {
   switch (progress) {
@@ -117,15 +36,15 @@ const getProgressBackground = (progress: ProgressType | undefined) => {
   }
 };
 
-export function WordList({
-  words,
-  progress,
-  onProgressChange,
-}: {
-  words: WordType[];
-  progress: Record<string, ProgressType>;
-  onProgressChange: (value: Record<string, ProgressType>) => void;
-}) {
+const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
+  if (!words.length) {
+    return (
+      <div className="rounded-md border p-4 text-center text-muted-foreground">
+        No words found.
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -151,11 +70,7 @@ export function WordList({
               <TableCell className="text-muted-foreground">
                 {word.transliteration}
               </TableCell>
-              <TableCell>
-                <Badge variant="secondary" className="font-normal">
-                  {word.type}
-                </Badge>
-              </TableCell>
+              <TableCell>{word.type}</TableCell>
               <TableCell className="text-right">
                 <ProgressButtons
                   word={word}
@@ -169,6 +84,6 @@ export function WordList({
       </Table>
     </div>
   );
-}
+};
 
 export default WordList;

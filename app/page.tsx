@@ -15,7 +15,6 @@ import { useFilteredWords } from "./hooks/useFilteredWords";
 import { useWordStats } from "./hooks/useWordStats";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import WordList from "./components/WordList";
 import WordGrid from "./components/WordGrid";
 
 function HomeContent() {

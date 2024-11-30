@@ -69,14 +69,14 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="hover:bg-black/5 h-8 w-8"
+              className="hover:bg-black/5 w-9 p-1"
               onClick={(e) => e.stopPropagation()}
             >
               <MagicWand className="w-4 h-4" />
             </Button>
           </DialogTrigger>
         </TooltipTrigger>
-        <TooltipContent side="bottom">Generate a sentence</TooltipContent>
+        <TooltipContent>Generate a sentence</TooltipContent>
       </Tooltip>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
