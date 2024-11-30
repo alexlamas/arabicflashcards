@@ -11,6 +11,7 @@ export type WordCategory =
   | 'Modern Issues';
 
 export interface Word {
+  tags: any;
   id: string;
   english: string;
   arabic: string;

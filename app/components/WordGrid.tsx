@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import WordList from "./WordList";
-import { ViewMode } from "../types/word";
+import { ProgressMap, ViewMode, Word } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
+import { Tag } from "../services/tagService";
 
 interface WordType {
   english: string;
@@ -115,11 +116,17 @@ export function WordGrid({
   view,
   progress,
   onProgressChange,
+  availableTags,
+  onTagCreate,
+  onTagToggle,
 }: {
-  words: WordType[];
+  words: Word[];
   view: ViewMode;
-  progress: Record<string, ProgressType>;
-  onProgressChange: (value: Record<string, ProgressType>) => void;
+  progress: ProgressMap;
+  onProgressChange: (value: ProgressMap) => void;
+  availableTags: Tag[];
+  onTagCreate: (name: string) => Promise<void>;
+  onTagToggle: (wordId: string, tagId: string) => Promise<void>;
 }) {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 
@@ -136,6 +143,9 @@ export function WordGrid({
         words={words}
         progress={progress}
         onProgressChange={onProgressChange}
+        availableTags={availableTags}
+        onTagCreate={onTagCreate}
+        onTagToggle={onTagToggle}
       />
     );
   }
