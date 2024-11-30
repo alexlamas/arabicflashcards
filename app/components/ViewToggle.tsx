@@ -1,25 +1,30 @@
-// app/components/ViewToggle.tsx
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeClosed } from "@phosphor-icons/react";
+import { Eye, EyeClosed, List } from "@phosphor-icons/react";
 
-export function ViewToggle({
-  onChange,
-}: {
-  current: "list" | "flashcard";
-  onChange: (view: "list" | "flashcard") => void;
-}) {
+type ViewMode = "list" | "card" | "flashcard";
+
+interface ViewToggleProps {
+  current: ViewMode;
+  onChange: (view: ViewMode) => void;
+}
+
+export function ViewToggle({ current, onChange }: ViewToggleProps) {
+  const handleValueChange = (value: string) => {
+    onChange(value as ViewMode);
+  };
   return (
-    <>
-      <Tabs defaultValue="list">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger onClick={() => onChange("list")} value="list">
-            <Eye size={20} />
-          </TabsTrigger>
-          <TabsTrigger onClick={() => onChange("flashcard")} value="flashcard">
-            <EyeClosed size={20} />
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-    </>
+    <Tabs value={current} onValueChange={handleValueChange}>
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="list">
+          <List size={20} />
+        </TabsTrigger>
+        <TabsTrigger value="card">
+          <Eye size={20} />
+        </TabsTrigger>
+        <TabsTrigger value="flashcard">
+          <EyeClosed size={20} />
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }
