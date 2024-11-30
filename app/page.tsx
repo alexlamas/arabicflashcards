@@ -55,6 +55,27 @@ function HomeContent() {
     }
   };
 
+  const handleTagDelete = async (tagId: string) => {
+    if (!session?.user) return;
+
+    try {
+      await TagService.deleteTag(session.user.id, tagId);
+
+      // Remove the deleted tag from selected tags
+      setSelectedTags((prev) => prev.filter((t) => t.id !== tagId));
+
+      // Refresh tags
+      const updatedTags = await TagService.getTags(session.user.id);
+      setTags(updatedTags);
+
+      // Refresh words to update their tags
+      const updatedWords = await WordService.getAllWords();
+      setWords(updatedWords);
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+    }
+  };
+
   const handleTagCreate = async (name: string) => {
     if (!session?.user) return;
 
@@ -199,6 +220,7 @@ function HomeContent() {
               <TagSelector
                 selectedTags={selectedTags}
                 availableTags={tags}
+                onTagDelete={handleTagDelete}
                 onTagSelect={(tag) => {
                   setSelectedTags((prev) =>
                     prev.some((t) => t.id === tag.id)

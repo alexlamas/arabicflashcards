@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Trash } from "@phosphor-icons/react";
 
 interface Tag {
   id: string;
@@ -28,6 +29,7 @@ interface TagSelectorProps {
   onTagSelect: (tag: Tag) => void;
   onTagCreate: (tagName: string) => void;
   className?: string;
+  onTagDelete: (tagId: string) => Promise<void>;
 }
 
 export default function TagSelector({
@@ -36,6 +38,7 @@ export default function TagSelector({
   onTagSelect,
   onTagCreate,
   className,
+  onTagDelete,
 }: TagSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
@@ -88,7 +91,14 @@ export default function TagSelector({
                 onClick={handleTagCreate}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Create "{inputValue}"
+                {inputValue.trim() !== "" && (
+                  <>
+                    Create{" "}
+                    <span className="bg-black/5 px-2 py-1 rounded-md">
+                      {inputValue}
+                    </span>
+                  </>
+                )}
               </Button>
             </CommandEmpty>
             <CommandGroup>
@@ -97,21 +107,37 @@ export default function TagSelector({
                 return (
                   <CommandItem
                     key={tag.id}
+                    className="flex justify-between items-center group"
                     onSelect={() => {
                       onTagSelect(tag);
                     }}
                   >
-                    <div
-                      className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "opacity-50 [&_svg]:invisible"
-                      )}
-                    >
-                      <Check className={cn("h-4 w-4")} />
+                    <div className="inline-flex gap-1">
+                      <div
+                        className={cn(
+                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "opacity-50 [&_svg]:invisible"
+                        )}
+                      >
+                        <Check className={cn("h-4 w-4")} />
+                      </div>
+                      {tag.name}
                     </div>
-                    {tag.name}
+                    <div className="justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTagDelete(tag.id);
+                        }}
+                      >
+                        <Trash className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </CommandItem>
                 );
               })}

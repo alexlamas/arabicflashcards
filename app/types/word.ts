@@ -1,5 +1,7 @@
 // app/types/word.ts
 
+import { Tag } from "../services/tagService";
+
 export type WordType = 'noun' | 'verb' | 'adjective' | 'phrase';
 
 export type WordCategory = 
@@ -11,13 +13,13 @@ export type WordCategory =
   | 'Modern Issues';
 
 export interface Word {
-  tags: any;
   id: string;
   english: string;
   arabic: string;
   transliteration: string;
   category: WordCategory;
   type: WordType;
+  tags?: Tag[];
   created_at?: string;
   updated_at?: string;
 }

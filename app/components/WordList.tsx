@@ -196,7 +196,11 @@ const WordList = ({
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {word.tags?.map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="text-xs">
+                    <Badge
+                      key={tag.id}
+                      variant="outline"
+                      className="text-xs bg-slate-200/30 px-1.5"
+                    >
                       {tag.name}
                     </Badge>
                   ))}

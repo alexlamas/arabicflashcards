@@ -26,8 +26,8 @@ export function useFilteredWords({
         word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
         word.arabic.includes(searchTerm) ||
         word.transliteration.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesTags = selectedTags.length === 0 || 
-        selectedTags.every(tag => word.tags?.includes(tag.id));
+        const matchesTags = selectedTags.length === 0 || 
+        selectedTags.every(tag => word.tags?.some(wordTag => wordTag.id === tag.id));
       
       return matchesCategory && matchesSearch && matchesTags;
     });

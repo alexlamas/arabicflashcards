@@ -17,6 +17,24 @@ export class TagService {
     return data;
   }
 
+  static async deleteTag(userId: string, tagId: string): Promise<void> {
+    // First delete all word_tag relationships
+    const { error: relationError } = await supabase
+      .from('word_tags')
+      .delete()
+      .match({ tag_id: tagId, user_id: userId });
+
+    if (relationError) throw relationError;
+
+    // Then delete the tag itself
+    const { error } = await supabase
+      .from('tags')
+      .delete()
+      .match({ id: tagId, user_id: userId });
+
+    if (error) throw error;
+  }
+
   static async createTag(userId: string, name: string): Promise<Tag> {
     const { data, error } = await supabase
       .from('tags')
