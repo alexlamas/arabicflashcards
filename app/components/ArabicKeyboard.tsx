@@ -1,13 +1,19 @@
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Keyboard } from "@phosphor-icons/react";
-import React, { useState } from "react";
 
-// Define types for our data structures
 interface LetterItem {
   letter: string;
   sound: string;
@@ -16,14 +22,12 @@ interface LetterItem {
 type KeyboardRow = LetterItem[];
 type KeyboardLayout = KeyboardRow[];
 
-// Type the keyboard layout data
 const keyboardLayout: KeyboardLayout = [
-  // Row 1 - all Lebanese pronunciations
   [
     { letter: "ض", sound: "d" },
     { letter: "ص", sound: "s" },
-    { letter: "ث", sound: "s" }, // Lebanese pronunciation
-    { letter: "ق", sound: "2" }, // Lebanese pronunciation
+    { letter: "ث", sound: "s" },
+    { letter: "ق", sound: "2" },
     { letter: "ف", sound: "f" },
     { letter: "غ", sound: "gh" },
     { letter: "ع", sound: "3" },
@@ -33,7 +37,6 @@ const keyboardLayout: KeyboardLayout = [
     { letter: "ج", sound: "j" },
     { letter: "د", sound: "d" },
   ],
-  // Row 2
   [
     { letter: "ش", sound: "sh" },
     { letter: "س", sound: "s" },
@@ -47,7 +50,6 @@ const keyboardLayout: KeyboardLayout = [
     { letter: "ك", sound: "k" },
     { letter: "ط", sound: "t" },
   ],
-  // Row 3
   [
     { letter: "ئ", sound: "2" },
     { letter: "ء", sound: "2" },
@@ -58,66 +60,53 @@ const keyboardLayout: KeyboardLayout = [
     { letter: "ة", sound: "a/e" },
     { letter: "و", sound: "w/u" },
     { letter: "ز", sound: "z" },
-    { letter: "ظ", sound: "z" }, // Lebanese pronunciation
+    { letter: "ظ", sound: "z" },
   ],
 ];
 
-const ArabicKeyboard: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export default function ArabicKeyboard() {
   const [hoveredLetter, setHoveredLetter] = useState<LetterItem | null>(null);
 
   return (
-    <div>
+    <Dialog>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant={"outline"} size="sm" onClick={() => setIsOpen(true)}>
-            <Keyboard size={16} />
-          </Button>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Keyboard size={16} />
+            </Button>
+          </DialogTrigger>
         </TooltipTrigger>
         <TooltipContent side="bottom">
           <p>Open Arabic keyboard</p>
         </TooltipContent>
       </Tooltip>
 
-      {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-full ">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Arabic Keyboard</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-              >
-                Close
-              </Button>
-            </div>
-
-            <div className="space-y-2" dir="ltr">
-              {keyboardLayout.map((row, rowIdx) => (
-                <div key={rowIdx} className="flex justify-center gap-1">
-                  {row.map((item) => (
-                    <Button
-                      key={item.letter}
-                      onMouseEnter={() => setHoveredLetter(item)}
-                      onMouseLeave={() => setHoveredLetter(null)}
-                      className="w-20 h-20 text-3xl"
-                    >
-                      {hoveredLetter === item ? (
-                        <span className="text-2xl font-mono">{item.sound}</span>
-                      ) : (
-                        <span>{item.letter}</span>
-                      )}
-                    </Button>
-                  ))}
-                </div>
+      <DialogContent className="max-w-100 bg-transparent border-none shadow-none">
+        <DialogHeader>
+          <DialogTitle className="hidden">Arabic Keyboard</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2" dir="ltr">
+          {keyboardLayout.map((row, rowIdx) => (
+            <div key={rowIdx} className="flex justify-center gap-1">
+              {row.map((item) => (
+                <Button
+                  key={item.letter}
+                  onMouseEnter={() => setHoveredLetter(item)}
+                  onMouseLeave={() => setHoveredLetter(null)}
+                  className="w-16 h-16 text-2xl bg-white text-black hover:bg-slate-200"
+                >
+                  {hoveredLetter === item ? (
+                    <span className="text-lg font-mono">{item.sound}</span>
+                  ) : (
+                    <span>{item.letter}</span>
+                  )}
+                </Button>
               ))}
             </div>
-          </div>
+          ))}
         </div>
-      )}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default ArabicKeyboard;
+}
