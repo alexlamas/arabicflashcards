@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Keyboard } from "@phosphor-icons/react";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 interface LetterItem {
   letter: string;
@@ -69,18 +70,20 @@ export default function ArabicKeyboard() {
 
   return (
     <Dialog>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Keyboard size={16} />
-            </Button>
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <p>Open Arabic keyboard</p>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Keyboard size={16} />
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p>Open Arabic keyboard</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <DialogContent className="max-w-100 bg-transparent border-none shadow-none">
         <DialogHeader>

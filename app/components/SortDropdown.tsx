@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
+import { SortAscending } from "@phosphor-icons/react";
 
 type SortOption = {
   label: string;
@@ -25,14 +26,11 @@ export function SortDropdown({
   value: SortOption["value"];
   onChange: (value: SortOption["value"]) => void;
 }) {
-  const currentOption = sortOptions.find((option) => option.value === value);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="h-8">
-          Sort {currentOption?.label}
-          <ChevronDown className="-mr-1" />
+          <SortAscending />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">

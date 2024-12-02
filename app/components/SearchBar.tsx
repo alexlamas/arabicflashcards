@@ -1,6 +1,6 @@
 // app/components/SearchBar.tsx
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 
 interface SearchBarProps {
   value: string;
@@ -9,14 +9,14 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange }: SearchBarProps) {
   return (
-    <div className="relative max-w-md w-full">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="relative md:max-w-48 ">
+      <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type="search"
-        placeholder="Search words..."
+        placeholder="Search..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-9 w-full rounded-full"
+        className="pl-9 rounded-full"
       />
     </div>
   );

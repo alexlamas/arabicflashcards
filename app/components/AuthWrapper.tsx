@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import ArabicKeyboard from "./ArabicKeyboard";
 
 type AuthContextType = {
   session: Session | null;
@@ -85,11 +86,6 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     }
   };
 
-  // Show loading state
-  if (isLoading) {
-    return <div className="h-screen flex items-center justify-center"></div>;
-  }
-
   const authButton = session ? (
     <Button
       variant="outline"
@@ -130,7 +126,10 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         <header className="p-4 bg-white shadow-sm">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-xl font-semibold">Lebanese Arabic</h1>
-            {authButton}
+            <div className="inline-flex gap-2">
+              <ArabicKeyboard />
+              {authButton}
+            </div>
           </div>
         </header>
         {children}

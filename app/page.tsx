@@ -7,7 +7,6 @@ import { SearchBar } from "./components/SearchBar";
 import { Stats } from "./components/Stats";
 import { ViewToggle } from "./components/ViewToggle";
 import { AuthWrapper, useAuth } from "./components/AuthWrapper";
-import ArabicKeyboard from "./components/ArabicKeyboard";
 import { SortDropdown } from "./components/SortDropdown";
 import type { Word, ProgressMap, SortOption, ViewMode } from "./types/word";
 import { useFilteredWords } from "./hooks/useFilteredWords";
@@ -133,14 +132,13 @@ function HomeContent() {
           loading ? "opacity-0" : "opacity-100"
         )}
       >
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 flex-wrap">
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
           <div className="inline-flex gap-2 items-center">
             <div className="inline-flex gap-2 items-center">
               <SortDropdown value={sortBy} onChange={setSortBy} />
             </div>
             <TooltipProvider>
-              <ArabicKeyboard />
               <ViewToggle current={view} onChange={setView} />
             </TooltipProvider>
           </div>
