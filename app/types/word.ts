@@ -4,20 +4,11 @@ import { Tag } from "../services/tagService";
 
 export type WordType = 'noun' | 'verb' | 'adjective' | 'phrase';
 
-export type WordCategory = 
-  | 'Personal Qualities & Emotions'
-  | 'Actions & Verbs'
-  | 'Daily Life'
-  | 'Weather & Environment'
-  | 'Leisure & Hobbies'
-  | 'Modern Issues';
-
 export interface Word {
   id: string;
   english: string;
   arabic: string;
   transliteration: string;
-  category: WordCategory;
   type: WordType;
   tags?: Tag[];
   created_at?: string;
@@ -38,7 +29,6 @@ export interface WordStats {
   learned: number;
   learning: number;
   new: number;
-  byCategory: Record<string, number>;
 }
 
 export type SortOption = "alphabetical" | "progress" | "type";
