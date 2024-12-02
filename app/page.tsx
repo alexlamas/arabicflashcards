@@ -15,12 +15,11 @@ import { useWordStats } from "./hooks/useWordStats";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import WordGrid from "./components/WordGrid";
-import { Tag, TagService } from "./services/tagService";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState<ViewMode>("list");
+  const [view, setView] = useState<ViewMode>("card");
   const [progress, setProgress] = useState<ProgressMap>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
@@ -148,11 +147,13 @@ function HomeContent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <Stats stats={stats} />
-          </div>
+          {session ? (
+            <div className="lg:col-span-1">
+              <Stats stats={stats} />
+            </div>
+          ) : null}
 
-          <div className="lg:col-span-3">
+          <div className={session ? "lg:col-span-3" : "lg:col-span-4"}>
             <WordGrid
               words={filteredWords}
               view={view}
