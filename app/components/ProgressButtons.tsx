@@ -15,7 +15,6 @@ interface WordType {
   english: string;
   arabic: string;
   transliteration: string;
-  category: string;
   type: string;
 }
 

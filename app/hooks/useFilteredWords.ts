@@ -5,7 +5,6 @@ import { Tag } from '../services/tagService';
 interface UseFilteredWordsProps {
   words: Word[];
   searchTerm: string;
-  selectedCategory: string | null;
   selectedTags: Tag[];  
   progress: ProgressMap;
   sortBy: SortOption;
@@ -14,14 +13,12 @@ interface UseFilteredWordsProps {
 export function useFilteredWords({
   words,
   searchTerm,
-  selectedCategory,
   selectedTags,
   progress,
   sortBy,
 }: UseFilteredWordsProps) {
   return useMemo(() => {
     const filteredWords = words.filter((word) => {
-      const matchesCategory = !selectedCategory || word.category === selectedCategory;
       const matchesSearch = !searchTerm ||
         word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
         word.arabic.includes(searchTerm) ||
@@ -29,7 +26,7 @@ export function useFilteredWords({
         const matchesTags = selectedTags.length === 0 || 
         selectedTags.every(tag => word.tags?.some(wordTag => wordTag.id === tag.id));
       
-      return matchesCategory && matchesSearch && matchesTags;
+      return matchesSearch && matchesTags;
     });
 
     return [...filteredWords].sort((a, b) => {
@@ -48,5 +45,5 @@ export function useFilteredWords({
           return 0;
       }
     });
-  }, [words, searchTerm, selectedCategory,selectedTags, progress, sortBy]);
+  }, [words, searchTerm,selectedTags, progress, sortBy]);
 }
