@@ -25,7 +25,6 @@ function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
   const [words, setWords] = useState<Word[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
 
   // Load words from Supabase
   useEffect(() => {
@@ -41,20 +40,6 @@ function HomeContent() {
     }
 
     loadWords();
-  }, []);
-
-  useEffect(() => {
-    async function loadTags() {
-      try {
-        const tags = await TagService.getTags(); // Remove session.user.id
-        setTags(tags);
-      } catch (error) {
-        console.error("Error loading tags:", error);
-        setTags([]);
-      }
-    }
-
-    loadTags();
   }, []);
 
   // Load progress whenever the session changes
