@@ -34,6 +34,7 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
             <TableHead>Arabic</TableHead>
             <TableHead>Transliteration</TableHead>
             <TableHead>Type</TableHead>
+            <TableHead>Tags</TableHead>
             <TableHead className="w-[100px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -51,6 +52,9 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
                 {word.transliteration}
               </TableCell>
               <TableCell>{word.type}</TableCell>
+              <TableCell>
+                {word.tags?.map((tag) => tag.name).join(", ")}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-1">
                   <ProgressButtons
