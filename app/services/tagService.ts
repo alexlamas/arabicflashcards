@@ -6,16 +6,15 @@ export interface Tag {
 }
 
 export class TagService {
-  static async getTags(userId: string): Promise<Tag[]> {
+  static async getTags() {  // Remove userId parameter
     const { data, error } = await supabase
-      .from('tags')
-      .select('id, name')
-      .eq('user_id', userId)
-      .order('name');
-
+        .from('tags')
+        .select('*')
+        .order('name');
+        
     if (error) throw error;
     return data;
-  }
+}
 
   static async deleteTag(userId: string, tagId: string): Promise<void> {
     // First delete all word_tag relationships

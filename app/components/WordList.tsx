@@ -8,39 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import ProgressButtons from "./ProgressButtons";
-
-interface Tag {
-  id: string;
-  name: string;
-}
-
-interface WordType {
-  id: string;
-  english: string;
-  arabic: string;
-  transliteration: string;
-  type: string;
-  tags?: Tag[];
-}
-
-type ProgressType = "learned" | "learning" | "new";
+import { ProgressMap, Word } from "../types/word";
 
 interface WordListProps {
-  words: WordType[];
-  progress: Record<string, ProgressType>;
-  onProgressChange: (value: Record<string, ProgressType>) => void;
+  words: Word[];
+  progress: ProgressMap;
+  onProgressChange: (value: ProgressMap) => void;
 }
-
-const getProgressBackground = (progress: ProgressType | undefined) => {
-  switch (progress) {
-    case "learned":
-      return "bg-emerald-50";
-    case "learning":
-      return "bg-amber-50";
-    default:
-      return "";
-  }
-};
 
 const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
   if (!words.length) {
@@ -60,7 +34,6 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
             <TableHead>Arabic</TableHead>
             <TableHead>Transliteration</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Tags</TableHead>
             <TableHead className="w-[100px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -78,11 +51,6 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
                 {word.transliteration}
               </TableCell>
               <TableCell>{word.type}</TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {word.tags?.map((tag) => tag.name)}
-                </div>
-              </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-1">
                   <ProgressButtons
@@ -98,6 +66,17 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
       </Table>
     </div>
   );
+};
+
+const getProgressBackground = (progress: string | undefined) => {
+  switch (progress) {
+    case "learned":
+      return "bg-emerald-50";
+    case "learning":
+      return "bg-amber-50";
+    default:
+      return "";
+  }
 };
 
 export default WordList;

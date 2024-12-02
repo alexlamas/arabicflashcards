@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
 import type { Word, ProgressMap, SortOption } from '../types/word';
-import { Tag } from '../services/tagService';
 
 interface UseFilteredWordsProps {
   words: Word[];
-  searchTerm: string;
-  selectedTags: Tag[];  
+  searchTerm: string;  
   progress: ProgressMap;
   sortBy: SortOption;
 }
@@ -13,7 +11,6 @@ interface UseFilteredWordsProps {
 export function useFilteredWords({
   words,
   searchTerm,
-  selectedTags,
   progress,
   sortBy,
 }: UseFilteredWordsProps) {
@@ -23,10 +20,7 @@ export function useFilteredWords({
         word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
         word.arabic.includes(searchTerm) ||
         word.transliteration.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesTags = selectedTags.length === 0 || 
-        selectedTags.every(tag => word.tags?.some(wordTag => wordTag.id === tag.id));
-      
-      return matchesSearch && matchesTags;
+      return matchesSearch;
     });
 
     return [...filteredWords].sort((a, b) => {
@@ -45,5 +39,5 @@ export function useFilteredWords({
           return 0;
       }
     });
-  }, [words, searchTerm,selectedTags, progress, sortBy]);
+  }, [words, searchTerm, progress, sortBy]);
 }
