@@ -5,16 +5,37 @@ import { supabase } from "../supabase";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Session } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import ArabicKeyboard from "./ArabicKeyboard";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { Check, List, Spinner } from "@phosphor-icons/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { ChevronsUpDown } from "lucide-react";
+import { WordStats } from "../types/word";
 
 type AuthContextType = {
   session: Session | null;
@@ -32,9 +53,10 @@ export const useAuth = () => useContext(AuthContext);
 
 interface AuthWrapperProps {
   children: React.ReactNode;
+  stats?: WordStats;
 }
 
-export function AuthWrapper({ children }: AuthWrapperProps) {
+export function AuthWrapper({ children, stats }: AuthWrapperProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -86,25 +108,11 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     }
   };
 
-  const authButton = session ? (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleLogout}
-      disabled={isLoading}
-    >
-      Log out
-    </Button>
-  ) : (
+  const login = (
     <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-      <DialogTrigger asChild>
-        <Button variant="default" size="sm">
-          Log in to track progress
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Log in to track your progress</DialogTitle>
+          <DialogTitle>Log in</DialogTitle>
           <DialogDescription>
             Create an account or log in to save your progress and track your
             learning journey.
@@ -123,16 +131,142 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   return (
     <AuthContext.Provider value={{ session, isLoading, refreshSession }}>
       <div className="animate-in fade-in duration-500">
-        <header className="p-4 bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-semibold">Lebanese Arabic</h1>
-            <div className="inline-flex gap-2">
-              <ArabicKeyboard />
-              {authButton}
-            </div>
-          </div>
-        </header>
-        {children}
+        {login}
+        <SidebarProvider>
+          <Sidebar>
+            <SidebarHeader>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuButton className="h-16">
+                        <div>
+                          <div className="text-lg font-semibold">
+                            Learn Lebanese
+                          </div>
+                          {session?.user?.email ? (
+                            session.user.email
+                          ) : (
+                            <span className="text-slate-500 text-sm">
+                              Log in to track progress
+                            </span>
+                          )}
+                        </div>
+
+                        <ChevronsUpDown className="ml-auto" />
+                      </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      side="top"
+                      className="w-[--radix-popper-anchor-width]"
+                    >
+                      {session ? (
+                        <DropdownMenuItem onClick={handleLogout}>
+                          Log out
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          onSelect={() => setShowAuthDialog(true)}
+                        >
+                          Log in
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel>Application</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <Spinner /> Learning
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <Check /> Learned
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <List /> All words
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+              {session && stats && (
+                <SidebarGroup>
+                  <SidebarGroupLabel>Progress</SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <div className="px-3 py-2">
+                      {/* Progress Bar */}
+                      <div className="h-2 w-full bg-gray-200 rounded-full mb-4 overflow-hidden">
+                        <div className="h-full flex">
+                          <div
+                            style={{
+                              width: `${(stats.learned / stats.total) * 100}%`,
+                            }}
+                            className="bg-emerald-500 transition-all duration-300"
+                          />
+                          <div
+                            style={{
+                              width: `${(stats.learning / stats.total) * 100}%`,
+                            }}
+                            className="bg-amber-500 transition-all duration-300"
+                          />
+                          <div
+                            style={{
+                              width: `${(stats.new / stats.total) * 100}%`,
+                            }}
+                            className="bg-gray-300 transition-all duration-300"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center text-emerald-600">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span>Learned:</span>
+                          </div>
+                          <span className="font-medium">{stats.learned}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-amber-600">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                            <span>Learning:</span>
+                          </div>
+                          <span className="font-medium">{stats.learning}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <span>Not started:</span>
+                          </div>
+                          <span className="font-medium">{stats.new}</span>
+                        </div>
+
+                        <div className="flex justify-between pt-2 border-t">
+                          <span>Total:</span>
+                          <span className="font-medium">{stats.total}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              )}
+            </SidebarContent>
+            <SidebarRail></SidebarRail>
+          </Sidebar>
+          <SidebarInset>{children}</SidebarInset>
+        </SidebarProvider>
       </div>
     </AuthContext.Provider>
   );

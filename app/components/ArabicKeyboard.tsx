@@ -87,7 +87,7 @@ export default function ArabicKeyboard() {
 
       <DialogContent className="max-w-100 bg-transparent border-none shadow-none">
         <DialogHeader>
-          <DialogTitle className="hidden">Arabic Keyboard</DialogTitle>
+          <DialogTitle>Arabic Keyboard</DialogTitle>
         </DialogHeader>
         <div className="space-y-2" dir="ltr">
           {keyboardLayout.map((row, rowIdx) => (

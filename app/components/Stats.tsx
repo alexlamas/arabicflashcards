@@ -16,9 +16,7 @@ export function Stats({
   const newPercent = (stats.new / stats.total) * 100;
 
   return (
-    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-      <h2 className="font-semibold mb-4">Statistics</h2>
-
+    <div className="px-2 bg-gray-50">
       {/* Progress Bar */}
       <div className="h-2 w-full bg-gray-200 rounded-full mb-4 overflow-hidden">
         <div className="h-full flex">

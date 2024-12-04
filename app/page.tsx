@@ -4,18 +4,24 @@ import { useState, useEffect } from "react";
 import { WordService } from "./services/wordService";
 import { ProgressService } from "./services/progressService";
 import { SearchBar } from "./components/SearchBar";
-import { Stats } from "./components/Stats";
 import { ViewToggle } from "./components/ViewToggle";
 import { AuthWrapper, useAuth } from "./components/AuthWrapper";
 import { SortDropdown } from "./components/SortDropdown";
-import type { Word, ProgressMap, SortOption, ViewMode } from "./types/word";
+import type {
+  Word,
+  ProgressMap,
+  SortOption,
+  ViewMode,
+  WordStats,
+} from "./types/word";
 import { useFilteredWords } from "./hooks/useFilteredWords";
-import { useWordStats } from "./hooks/useWordStats";
-import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import WordGrid from "./components/WordGrid";
+import { useWordStats } from "./hooks/useWordStats";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
-function HomeContent() {
+function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const { session, isLoading: isAuthLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("card");
@@ -120,55 +126,47 @@ function HomeContent() {
     }
   };
 
+  useEffect(() => {
+    setStats(stats);
+  }, [stats, setStats]);
+
   if (isAuthLoading || loading) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return (
-    <main className="p-8">
-      <div
-        className={cn(
-          "max-w-7xl mx-auto transition-opacity duration-500",
-          loading ? "opacity-0" : "opacity-100"
-        )}
-      >
-        <div className="flex justify-between items-center mb-6 flex-wrap">
-          <SearchBar value={searchTerm} onChange={setSearchTerm} />
+    <>
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger></SidebarTrigger>
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+        <div className="inline-flex gap-2 items-center ml-auto">
           <div className="inline-flex gap-2 items-center">
-            <div className="inline-flex gap-2 items-center">
-              <SortDropdown value={sortBy} onChange={setSortBy} />
-            </div>
-            <TooltipProvider>
-              <ViewToggle current={view} onChange={setView} />
-            </TooltipProvider>
+            <SortDropdown value={sortBy} onChange={setSortBy} />
           </div>
+          <TooltipProvider>
+            <ViewToggle current={view} onChange={setView} />
+          </TooltipProvider>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {session ? (
-            <div className="lg:col-span-1">
-              <Stats stats={stats} />
-            </div>
-          ) : null}
-
-          <div className={session ? "lg:col-span-3" : "lg:col-span-4"}>
-            <WordGrid
-              words={filteredWords}
-              view={view}
-              progress={progress}
-              onProgressChange={handleProgressChange}
-            />
-          </div>
-        </div>
+      </header>
+      <div className="p-4">
+        <WordGrid
+          words={filteredWords}
+          view={view}
+          progress={progress}
+          onProgressChange={handleProgressChange}
+        />
       </div>
-    </main>
+    </>
   );
 }
 
 export default function Home() {
+  const [stats, setStats] = useState<WordStats>({} as WordStats);
+
   return (
-    <AuthWrapper>
-      <HomeContent />
+    <AuthWrapper stats={stats}>
+      <HomeContent setStats={setStats} />
     </AuthWrapper>
   );
 }

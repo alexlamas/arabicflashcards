@@ -28,7 +28,7 @@ export function SortDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="h-8">
+        <Button variant="ghost" className="h-8">
           <SortAscending />
         </Button>
       </DropdownMenuTrigger>
