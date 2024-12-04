@@ -20,6 +20,7 @@ import WordGrid from "./components/WordGrid";
 import { useWordStats } from "./hooks/useWordStats";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { AddWordDialog } from "./components/AddWordDialog";
 
 function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -140,6 +141,11 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
         <SidebarTrigger></SidebarTrigger>
         <Separator orientation="vertical" className="mr-2 h-4" />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
+        <AddWordDialog
+          onWordAdded={(word) => {
+            setWords((prevWords) => [...prevWords, word]);
+          }}
+        />
         <div className="inline-flex gap-2 items-center ml-auto">
           <div className="inline-flex gap-2 items-center">
             <SortDropdown value={sortBy} onChange={setSortBy} />

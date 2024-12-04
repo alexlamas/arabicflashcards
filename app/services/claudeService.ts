@@ -7,6 +7,24 @@ const anthropic = new Anthropic({
 });
 
 export class ClaudeService {
+
+  static async chatCompletion(prompt: string): Promise<string> {
+    try {
+      const message = await anthropic.messages.create({
+        model: "claude-3-opus-20240229",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+  
+      const response = message.content[0].type === 'text' ? message.content[0].text : '';
+      return response;
+    } catch (error) {
+      console.error('Error in Claude chat completion:', error);
+      throw new Error('Failed to get completion from Claude');
+    }
+  }
+  
   static async generateSentence(word: string): Promise<{
     english: string;
     arabic: string;
