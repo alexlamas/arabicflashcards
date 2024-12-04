@@ -5,7 +5,7 @@ import { WordService } from "./services/wordService";
 import { ProgressService } from "./services/progressService";
 import { SearchBar } from "./components/SearchBar";
 import { ViewToggle } from "./components/ViewToggle";
-import { AuthWrapper, useAuth } from "./components/AuthWrapper";
+import { AuthWrapper } from "./components/AuthWrapper";
 import { SortDropdown } from "./components/SortDropdown";
 import type {
   Word,
@@ -21,9 +21,12 @@ import { useWordStats } from "./hooks/useWordStats";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { AddWordDialog } from "./components/AddWordDialog";
+import { useFilter } from "./contexts/FilterContext";
+import { useAuth } from "./contexts/AuthContext";
 
 function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const { session, isLoading: isAuthLoading } = useAuth();
+  const { progressFilter } = useFilter();
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("card");
   const [progress, setProgress] = useState<ProgressMap>({});
@@ -31,7 +34,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
   const [words, setWords] = useState<Word[]>([]);
 
-  // Load words from Supabase
   useEffect(() => {
     async function loadWords() {
       try {
@@ -47,7 +49,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
     loadWords();
   }, []);
 
-  // Load progress whenever the session changes
   useEffect(() => {
     let mounted = true;
 
@@ -61,7 +62,7 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
           return;
         }
 
-        const wordProgress = await ProgressService.getProgress(); // Changed from WordService to ProgressService
+        const wordProgress = await ProgressService.getProgress();
         if (mounted) {
           const progressMap: ProgressMap = {};
           wordProgress.forEach((item) => {
@@ -82,7 +83,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
     }
 
     loadProgress();
-
     return () => {
       mounted = false;
     };
@@ -93,6 +93,7 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
     searchTerm,
     progress,
     sortBy,
+    progressFilter,
   });
 
   const stats = useWordStats({
@@ -104,7 +105,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const handleProgressChange = async (newProgress: ProgressMap) => {
     try {
       if (!session?.user) {
-        // If no user is logged in, just update the local state
         setProgress(newProgress);
         return;
       }
@@ -138,7 +138,7 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger></SidebarTrigger>
+        <SidebarTrigger />
         <Separator orientation="vertical" className="mr-2 h-4" />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
         <AddWordDialog
