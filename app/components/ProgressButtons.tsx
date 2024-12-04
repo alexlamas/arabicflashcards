@@ -1,4 +1,3 @@
-import { Check } from "lucide-react";
 import {
   TooltipProvider,
   Tooltip,
@@ -7,7 +6,7 @@ import {
 } from "@/components/ui/tooltip";
 import SentenceGenerator from "./SentenceGenerator";
 import { Button } from "@/components/ui/button";
-import { ThumbsDown } from "@phosphor-icons/react";
+import { Check, Spinner } from "@phosphor-icons/react";
 
 type ProgressType = "learned" | "learning" | "new";
 
@@ -78,7 +77,7 @@ const ProgressButtons = ({
               }`}
               aria-label="Mark as still learning"
             >
-              <ThumbsDown />
+              <Spinner />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
