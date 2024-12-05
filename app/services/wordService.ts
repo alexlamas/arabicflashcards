@@ -1,4 +1,5 @@
 // app/services/wordService.ts
+import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import type { Word } from '../types/word';
 import { Tag } from './tagService';
@@ -37,8 +38,11 @@ export class WordService {
     return data;
   }
 
-  static async createWord(word: Omit<Word, 'id' | 'created_at' | 'updated_at'>): Promise<Word> {
-    const { data, error } = await supabase
+  static async createWord(
+    client: SupabaseClient, 
+    word: Omit<Word, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<Word> {
+    const { data, error } = await client
       .from('words')
       .insert([word])
       .select()

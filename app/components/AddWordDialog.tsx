@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Plus, Spinner } from "@phosphor-icons/react";
 import { Word } from "../types/word";
+import { useAuth } from "../contexts/AuthContext";
 
 interface AddWordDialogProps {
   onWordAdded: (word: Word) => void;
@@ -22,9 +23,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { session } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!session) {
+      setError("Not authenticated");
+      return;
+    }
+
     setError(null);
     setLoading(true);
 
@@ -33,7 +41,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
         },
+        credentials: "include",
         body: JSON.stringify({
           text,
         }),

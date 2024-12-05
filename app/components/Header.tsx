@@ -34,13 +34,12 @@ export function Header({
       <SidebarTrigger />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <SearchBar value={searchTerm} onChange={setSearchTerm} />
-      {session && (
-        <AddWordDialog
-          onWordAdded={(word) => {
-            setWords((prevWords) => [...prevWords, word]);
-          }}
-        />
-      )}
+
+      <AddWordDialog
+        onWordAdded={(word) => {
+          setWords((prevWords) => [...prevWords, word]);
+        }}
+      />
 
       <div className="inline-flex gap-2 items-center ml-auto">
         <div className="inline-flex gap-2 items-center">

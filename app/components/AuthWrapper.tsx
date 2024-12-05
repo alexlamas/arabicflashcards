@@ -35,8 +35,6 @@ import { WordStats } from "../types/word";
 import { AuthContext } from "../contexts/AuthContext";
 import { AppSidebar } from "./AppSidebar";
 
-export const useAuth = () => useContext(AuthContext);
-
 interface AuthWrapperProps {
   children: React.ReactNode;
   stats?: WordStats;
