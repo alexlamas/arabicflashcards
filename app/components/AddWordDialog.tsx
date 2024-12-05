@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Spinner } from "@phosphor-icons/react";
 import { Word } from "../types/word";
 import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../supabase";
 
 interface AddWordDialogProps {
   onWordAdded: (word: Word) => void;
@@ -37,24 +38,38 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     setLoading(true);
 
     try {
+      // First get the translation from Claude
       const response = await fetch("/api/words/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
         },
-        credentials: "include",
         body: JSON.stringify({
           text,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create word");
+        throw new Error("Failed to translate word");
       }
 
-      const word = await response.json();
-      onWordAdded(word);
+      const wordData = await response.json();
+
+      // Then insert directly into Supabase
+      const { data, error: supabaseError } = await supabase
+        .from("words")
+        .insert({
+          english: wordData.english,
+          arabic: wordData.arabic,
+          transliteration: wordData.transliteration,
+          type: wordData.type,
+        })
+        .select()
+        .single();
+
+      if (supabaseError) throw supabaseError;
+
+      onWordAdded(data);
       setOpen(false);
       setText("");
     } catch (err) {
