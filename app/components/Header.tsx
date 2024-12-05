@@ -35,11 +35,13 @@ export function Header({
       <Separator orientation="vertical" className="mr-2 h-4" />
       <SearchBar value={searchTerm} onChange={setSearchTerm} />
 
-      <AddWordDialog
-        onWordAdded={(word) => {
-          setWords((prevWords) => [...prevWords, word]);
-        }}
-      />
+      {session?.user.email === "lamanoujaim@gmail.com" && (
+        <AddWordDialog
+          onWordAdded={(word) => {
+            setWords((prevWords) => [...prevWords, word]);
+          }}
+        />
+      )}
 
       <div className="inline-flex gap-2 items-center ml-auto">
         <div className="inline-flex gap-2 items-center">
