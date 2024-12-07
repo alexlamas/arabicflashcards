@@ -22,7 +22,6 @@ export function useReviewCount() {
         const count = await SpacedRepetitionService.getDueWordsCount(
           session.user.id
         );
-        console.log("Fetched count:", count); // Debug log
         setCount(count);
       } catch (error) {
         console.error("Error fetching due words count:", error);
@@ -54,13 +53,10 @@ export function useReviewCount() {
           filter: `user_id=eq.${session?.user?.id}`,
         },
         (payload) => {
-          console.log("Realtime change received:", payload); // Debug log
           fetchCount();
         }
       )
-      .subscribe((status) => {
-        console.log("Subscription status:", status); // Debug log
-      });
+      .subscribe((status) => {});
 
     return () => {
       supabase.removeChannel(channel);

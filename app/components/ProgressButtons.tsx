@@ -63,7 +63,6 @@ const ProgressButtons = ({ word }: ProgressButtonsProps) => {
       window.dispatchEvent(
         new CustomEvent("wordProgressUpdated", { detail: { count } })
       );
-      console.log("Word learning started"); // Debug log
     } catch (error) {
       console.error("Error starting learning:", error);
     } finally {

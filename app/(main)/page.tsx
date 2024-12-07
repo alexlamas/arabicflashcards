@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { WordService } from "../services/wordService";
-import { AuthWrapper } from "../components/AuthWrapper";
-import type { Word, ViewMode, WordStats } from "../types/word";
+import type { Word, ViewMode } from "../types/word";
 import { useFilteredWords } from "../hooks/useFilteredWords";
 
 import WordGrid from "../components/WordGrid";
-import { useWordStats } from "../hooks/useWordStats";
 import { useAuth } from "../contexts/AuthContext";
 import { Header } from "../components/Header";
 
@@ -36,11 +34,6 @@ function HomeContent() {
   const filteredWords = useFilteredWords({
     words,
     searchTerm,
-  });
-
-  const stats = useWordStats({
-    words,
-    filteredWords,
   });
 
   if (isAuthLoading || loading) {

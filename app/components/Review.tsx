@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
@@ -32,7 +32,7 @@ export function Review() {
     }
   };
 
-  useEffect(() => {
+  useCallback(() => {
     if (!session?.user) return;
     loadNextWord();
   }, [session]);
@@ -43,7 +43,7 @@ export function Review() {
     try {
       await SpacedRepetitionService.processReview(
         session.user.id,
-        currentWord.word_english || currentWord.english, // try word_english first, fall back to english
+        currentWord.english || currentWord.english, // try word_english first, fall back to english
         rating
       );
       await loadNextWord();
@@ -60,7 +60,7 @@ export function Review() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        Loading...
       </div>
     );
   }
