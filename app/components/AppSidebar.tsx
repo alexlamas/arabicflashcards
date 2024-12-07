@@ -8,8 +8,10 @@ import {
   SidebarMenuItem,
   SidebarMenuBadge,
 } from "@/components/ui/sidebar";
-import { Check, List, Spinner } from "@phosphor-icons/react";
+import { Check, GraduationCap, List, Spinner } from "@phosphor-icons/react";
 import { WordStats } from "../types/word";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface SidebarWithProgressProps {
   stats: WordStats | null;
@@ -22,6 +24,8 @@ export function AppSidebar({
   progressFilter,
   setProgressFilter,
 }: SidebarWithProgressProps) {
+  const pathname = usePathname();
+
   return (
     <SidebarContent>
       <SidebarGroup>
@@ -73,6 +77,15 @@ export function AppSidebar({
                 <span>All words</span>
                 {stats && <SidebarMenuBadge>{stats.total}</SidebarMenuBadge>}
               </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <Link href="/review" style={{ width: "100%" }}>
+                <SidebarMenuButton isActive={pathname === "/review"}>
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Review</span>
+                  {/* You can add a badge here later to show number of cards due */}
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroupContent>

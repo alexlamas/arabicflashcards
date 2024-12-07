@@ -1,18 +1,15 @@
-// app/types/word.ts
-
-import { Tag } from "../services/tagService";
-
-export type WordType = 'noun' | 'verb' | 'adjective' | 'phrase';
+export type WordType = "noun" | "verb" | "adjective" | "phrase";
 
 export interface Word {
   id: string;
   english: string;
   arabic: string;
   transliteration: string;
-  type: WordType;
-  tags?: Tag[];
-  created_at?: string;
-  updated_at?: string;
+  type: WordType | string;
+  interval?: number;
+  ease_factor?: number;
+  review_count?: number;
+  next_review_date?: string;
 }
 
 export type ProgressState = "learned" | "learning" | "new";
@@ -30,6 +27,3 @@ export interface WordStats {
   learning: number;
   new: number;
 }
-
-export type SortOption = "alphabetical" | "progress" | "type";
-export type ViewMode = "list" | "card" | "flashcard";
