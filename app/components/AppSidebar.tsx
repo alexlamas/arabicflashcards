@@ -43,6 +43,10 @@ export function AppSidebar({
   const { count: reviewCount, loading: reviewCountLoading } = useReviewCount();
   const { session } = useAuth();
 
+  const handleLoginClick = (event: Event) => {
+    event.preventDefault();
+    setShowAuthDialog(true);
+  };
   return (
     <>
       <SidebarProvider>
@@ -77,9 +81,7 @@ export function AppSidebar({
                         Log out
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem
-                        onSelect={() => setShowAuthDialog(true)}
-                      >
+                      <DropdownMenuItem onSelect={handleLoginClick}>
                         Log in
                       </DropdownMenuItem>
                     )}
