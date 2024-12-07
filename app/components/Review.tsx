@@ -43,7 +43,7 @@ export function Review() {
     try {
       await SpacedRepetitionService.processReview(
         session.user.id,
-        currentWord.english,
+        currentWord.word_english || currentWord.english, // try word_english first, fall back to english
         rating
       );
       await loadNextWord();

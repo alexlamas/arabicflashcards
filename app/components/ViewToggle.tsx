@@ -7,8 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Eye, EyeClosed, List } from "@phosphor-icons/react";
-
-type ViewMode = "list" | "card" | "flashcard";
+import { ViewMode } from "../types/word";
 
 interface ViewToggleProps {
   current: ViewMode;

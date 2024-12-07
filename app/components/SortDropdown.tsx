@@ -7,24 +7,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { SortAscending } from "@phosphor-icons/react";
 
-type SortOption = {
-  label: string;
-  value: "alphabetical" | "progress" | "type";
-};
+export type SortOption = "alphabetical" | "progress" | "type";
 
-const sortOptions: SortOption[] = [
-  { label: "alphabetical", value: "alphabetical" },
-  { label: "by progress", value: "progress" },
-  { label: "by word type", value: "type" },
+interface SortDropdownProps {
+  value: SortOption;
+  onChange: (value: SortOption) => void;
+}
+
+const sortOptions: { label: string; value: SortOption }[] = [
+  { label: "Sort alphabetically", value: "alphabetical" },
+  { label: "Sort by progress", value: "progress" },
+  { label: "Sort by word type", value: "type" },
 ];
 
-export function SortDropdown({
-  value,
-  onChange,
-}: {
-  value: SortOption["value"];
-  onChange: (value: SortOption["value"]) => void;
-}) {
+export function SortDropdown({ value, onChange }: SortDropdownProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,7 +35,7 @@ export function SortDropdown({
             onClick={() => onChange(option.value)}
             className={value === option.value ? "bg-accent" : ""}
           >
-            Sort {option.label}
+            {option.label}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
