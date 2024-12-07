@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WordService } from "./services/wordService";
-import { AuthWrapper } from "./components/AuthWrapper";
-import type { Word, ViewMode, WordStats } from "./types/word";
-import { useFilteredWords } from "./hooks/useFilteredWords";
+import { WordService } from "../services/wordService";
+import { AuthWrapper } from "../components/AuthWrapper";
+import type { Word, ViewMode, WordStats } from "../types/word";
+import { useFilteredWords } from "../hooks/useFilteredWords";
 
-import WordGrid from "./components/WordGrid";
-import { useWordStats } from "./hooks/useWordStats";
-import { useAuth } from "./contexts/AuthContext";
-import { Header } from "./components/Header";
+import WordGrid from "../components/WordGrid";
+import { useWordStats } from "../hooks/useWordStats";
+import { useAuth } from "../contexts/AuthContext";
+import { Header } from "../components/Header";
 
-function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
+function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("card");
@@ -43,10 +43,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
     filteredWords,
   });
 
-  useEffect(() => {
-    setStats(stats);
-  }, [stats, setStats]);
-
   if (isAuthLoading || loading) {
     return null;
   }
@@ -69,11 +65,5 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
 }
 
 export default function Home() {
-  const [stats, setStats] = useState<WordStats>({} as WordStats);
-
-  return (
-    <AuthWrapper stats={stats}>
-      <HomeContent setStats={setStats} />
-    </AuthWrapper>
-  );
+  return <HomeContent />;
 }

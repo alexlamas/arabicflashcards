@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -15,16 +14,11 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata: Metadata = {
-  title: "Lebanese Arabic",
-  description: "Learn Lebanese Arabic with ease",
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" className="bg-gray-50">
       <body
