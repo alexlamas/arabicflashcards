@@ -37,7 +37,7 @@ export function AppSidebar({ stats }: SidebarWithProgressProps) {
               <Link href="/">
                 <SidebarMenuButton isActive={pathname === "/"}>
                   <GridFour className="h-4 w-4" />
-                  <span>Browse words</span>
+                  <span>Browse all words</span>
                   {stats && <SidebarMenuBadge>{stats.total}</SidebarMenuBadge>}
                 </SidebarMenuButton>
               </Link>

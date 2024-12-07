@@ -1,21 +1,51 @@
 import { supabase } from "../supabase";
 
-// app/services/spacedRepetitionService.ts
 export class SpacedRepetitionService {
+  static async startLearning(userId: string, wordEnglish: string) {
+    try {
+      const { error } = await supabase.from("word_progress").upsert(
+        {
+          user_id: userId,
+          word_english: wordEnglish,
+          status: "learning",
+          interval: 0,
+          ease_factor: 2.5,
+          review_count: 0,
+          next_review_date: new Date().toISOString(), // Available for immediate review
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id,word_english",
+        }
+      );
+
+      if (error) throw error;
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      console.error("Error starting learning:", error);
+      throw error;
+    }
+  }
+
   static async getDueWords(userId: string, limit: number = 20) {
     try {
+      const now = new Date().toISOString();
+
       const { data, error } = await supabase
         .from("word_progress")
-        .select("word_english")
+        .select("word_english, next_review_date")
         .eq("user_id", userId)
-        .eq("status", "learning")
+        .lte("next_review_date", now)
+        .order("next_review_date")
         .limit(limit);
 
       if (error) throw error;
 
       if (!data?.length) return [];
 
-      // Then get the word details in a separate query
       const { data: words, error: wordsError } = await supabase
         .from("words")
         .select("id, english, arabic, transliteration, type")
@@ -29,7 +59,7 @@ export class SpacedRepetitionService {
       return (
         words?.map((word) => ({
           ...word,
-          word_english: word.english, // ensure this field exists for the later lookup
+          word_english: word.english,
         })) || []
       );
     } catch (error) {
@@ -37,13 +67,13 @@ export class SpacedRepetitionService {
       throw error;
     }
   }
+
   static async processReview(
     userId: string,
     wordEnglish: string,
     rating: number
   ) {
     try {
-      // Get current progress data
       const { data: currentProgress, error: fetchError } = await supabase
         .from("word_progress")
         .select("interval, ease_factor, review_count")
@@ -53,15 +83,12 @@ export class SpacedRepetitionService {
 
       if (fetchError) throw fetchError;
 
-      const newInterval = calculateNewInterval(
-        currentProgress?.interval || null,
-        rating
+      const { interval, easeFactor, nextReviewDate } = calculateNextReview(
+        currentProgress?.interval || 0,
+        currentProgress?.ease_factor || 2.5,
+        rating,
+        currentProgress?.review_count || 0
       );
-      const newEaseFactor = calculateNewEaseFactor(
-        currentProgress?.ease_factor || null,
-        rating
-      );
-      const nextReviewDate = calculateNextReviewDate(newInterval);
 
       const { error: updateError } = await supabase
         .from("word_progress")
@@ -70,22 +97,23 @@ export class SpacedRepetitionService {
             user_id: userId,
             word_english: wordEnglish,
             status: rating >= 2 ? "learned" : "learning",
-            interval: newInterval,
-            ease_factor: newEaseFactor,
+            interval: interval,
+            ease_factor: easeFactor,
             review_count: (currentProgress?.review_count || 0) + 1,
-            next_review_date: nextReviewDate,
+            next_review_date: nextReviewDate.toISOString(),
             updated_at: new Date().toISOString(),
           },
           {
-            onConflict: "user_id,word_english", // Specify which columns determine uniqueness
+            onConflict: "user_id,word_english",
           }
-        )
-        .select()
-        .single();
+        );
 
       if (updateError) throw updateError;
 
-      return { status: rating >= 2 ? "learned" : "learning" };
+      return {
+        status: rating >= 2 ? "learned" : "learning",
+        nextReview: nextReviewDate,
+      };
     } catch (error) {
       console.error("Error in processReview:", error);
       throw error;
@@ -93,44 +121,54 @@ export class SpacedRepetitionService {
   }
 }
 
-// Helper functions for spaced repetition algorithm
-function calculateNewInterval(
-  currentInterval: number | null,
-  rating: number
-): number {
-  if (!currentInterval || currentInterval < 1) {
-    // First review or failed review
-    return rating >= 2 ? 1 : 0;
-  }
+function calculateNextReview(
+  currentInterval: number,
+  currentEaseFactor: number,
+  rating: number,
+  reviewCount: number
+): { interval: number; easeFactor: number; nextReviewDate: Date } {
+  let interval: number;
+  let easeFactor = currentEaseFactor;
 
-  // Success - increase interval
+  // Update ease factor if it was a successful review
   if (rating >= 2) {
-    return Math.round(currentInterval * (1 + (rating - 2) * 0.5));
+    const qualityFactor = rating - 2; // Convert 2,3 to 0,1 for ease calculation
+    easeFactor = Math.max(
+      1.3,
+      currentEaseFactor + (0.1 - qualityFactor * (0.08 + qualityFactor * 0.02))
+    );
   }
 
-  // Failed - reset interval
-  return 0;
-}
-
-function calculateNewEaseFactor(
-  currentEaseFactor: number | null,
-  rating: number
-): number {
-  const defaultEaseFactor = 2.5;
-  if (!currentEaseFactor) {
-    return defaultEaseFactor;
+  // Calculate next interval
+  if (rating < 2) {
+    // Failed review
+    if (rating === 0) {
+      // "Again"
+      interval = 0.25; // 6 hours
+    } else {
+      // "Hard"
+      interval = Math.max(0.5, currentInterval * 0.5); // At least 12 hours
+    }
+  } else {
+    // Successful review - use SuperMemo algorithm
+    if (reviewCount === 0) {
+      interval = 1; // First success: 1 day
+    } else if (reviewCount === 1) {
+      interval = 6; // Second success: 6 days
+    } else {
+      interval = Math.round(currentInterval * easeFactor);
+    }
   }
 
-  // Adjust ease factor based on rating
-  const adjustment = 0.15 * (rating - 2);
-  const newEaseFactor = currentEaseFactor + adjustment;
+  // Calculate next review date
+  const nextReviewDate = new Date();
+  nextReviewDate.setTime(
+    nextReviewDate.getTime() + interval * 24 * 60 * 60 * 1000
+  );
 
-  // Keep ease factor within reasonable bounds
-  return Math.max(1.3, Math.min(2.5, newEaseFactor));
-}
-
-function calculateNextReviewDate(interval: number): Date {
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + interval);
-  return nextDate;
+  return {
+    interval,
+    easeFactor,
+    nextReviewDate,
+  };
 }

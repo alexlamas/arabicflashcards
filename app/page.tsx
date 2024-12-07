@@ -10,14 +10,12 @@ import WordGrid from "./components/WordGrid";
 import { useWordStats } from "./hooks/useWordStats";
 import { useAuth } from "./contexts/AuthContext";
 import { Header } from "./components/Header";
-import { SortOption } from "./components/SortDropdown";
 
 function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const { session, isLoading: isAuthLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("card");
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
   const [words, setWords] = useState<Word[]>([]);
 
   useEffect(() => {
@@ -38,7 +36,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
   const filteredWords = useFilteredWords({
     words,
     searchTerm,
-    sortBy,
   });
 
   const stats = useWordStats({
@@ -61,8 +58,6 @@ function HomeContent({ setStats }: { setStats: (stats: WordStats) => void }) {
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         setWords={setWords}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
         view={view}
         setView={setView}
       />

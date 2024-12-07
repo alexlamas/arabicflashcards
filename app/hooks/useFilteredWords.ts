@@ -1,18 +1,12 @@
 import { useMemo } from "react";
 import type { Word } from "../types/word";
-import { SortOption } from "../components/SortDropdown";
 
 interface UseFilteredWordsProps {
   words: Word[];
   searchTerm: string;
-  sortBy: SortOption;
 }
 
-export function useFilteredWords({
-  words,
-  searchTerm,
-  sortBy,
-}: UseFilteredWordsProps) {
+export function useFilteredWords({ words, searchTerm }: UseFilteredWordsProps) {
   return useMemo(() => {
     // First apply search filter
     const filteredWords = words.filter((word) => {
@@ -25,17 +19,8 @@ export function useFilteredWords({
       );
     });
 
-    // Then sort the filtered results
-    return [...filteredWords].sort((a, b) => {
-      switch (sortBy) {
-        case "alphabetical":
-          return a.english.localeCompare(b.english);
-        case "type":
-          return a.type.localeCompare(b.type);
-
-        default:
-          return 0;
-      }
-    });
-  }, [words, searchTerm, sortBy]);
+    return [...filteredWords].sort((a, b) =>
+      a.english.localeCompare(b.english)
+    );
+  }, [words, searchTerm]);
 }
