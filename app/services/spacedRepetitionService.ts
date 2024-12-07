@@ -3,6 +3,9 @@ import { supabase } from "../supabase";
 export class SpacedRepetitionService {
   static async startLearning(userId: string, wordEnglish: string) {
     try {
+      const now = new Date().toISOString();
+
+      // Insert/Update into word_progress table
       const { error } = await supabase.from("word_progress").upsert(
         {
           user_id: userId,
@@ -11,18 +14,22 @@ export class SpacedRepetitionService {
           interval: 0,
           ease_factor: 2.5,
           review_count: 0,
-          next_review_date: new Date().toISOString(), // Available for immediate review
-          updated_at: new Date().toISOString(),
+          next_review_date: now,
+          updated_at: now,
         },
         {
           onConflict: "user_id,word_english",
         }
       );
 
-      if (error) throw error;
+      console.log("Word progress updated:"); // Debug log
 
+      if (error) throw error;
+      const count = await this.getDueWordsCount(userId);
+      console.log("Count:", count); // Debug log
       return {
         success: true,
+        count,
       };
     } catch (error) {
       console.error("Error starting learning:", error);
@@ -67,7 +74,24 @@ export class SpacedRepetitionService {
       throw error;
     }
   }
+  static async getDueWordsCount(userId: string): Promise<number> {
+    try {
+      const now = new Date().toISOString();
 
+      const { count, error } = await supabase
+        .from("word_progress")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .lte("next_review_date", now);
+
+      if (error) throw error;
+
+      return count || 0;
+    } catch (error) {
+      console.error("Error getting due words count:", error);
+      throw error;
+    }
+  }
   static async processReview(
     userId: string,
     wordEnglish: string,

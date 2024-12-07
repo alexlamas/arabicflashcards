@@ -9,7 +9,7 @@ import {
 import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { GraduationCap, Book, CheckCircle, Plus } from "@phosphor-icons/react";
+import { Book, CheckCircle, Plus } from "@phosphor-icons/react";
 import { supabase } from "../supabase";
 
 interface WordType {
@@ -55,11 +55,15 @@ const ProgressButtons = ({ word }: ProgressButtonsProps) => {
 
     setIsLoading(true);
     try {
-      await SpacedRepetitionService.startLearning(
+      const { count } = await SpacedRepetitionService.startLearning(
         session.user.id,
         word.english
       );
       setStatus("learning");
+      window.dispatchEvent(
+        new CustomEvent("wordProgressUpdated", { detail: { count } })
+      );
+      console.log("Word learning started"); // Debug log
     } catch (error) {
       console.error("Error starting learning:", error);
     } finally {

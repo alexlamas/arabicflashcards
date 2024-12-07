@@ -18,6 +18,7 @@ import {
 import { WordStats } from "../types/word";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useReviewCount } from "../hooks/useReviewCount";
 
 interface SidebarWithProgressProps {
   stats: WordStats | null;
@@ -27,6 +28,7 @@ interface SidebarWithProgressProps {
 
 export function AppSidebar({ stats }: SidebarWithProgressProps) {
   const pathname = usePathname();
+  const { count: reviewCount, loading: reviewCountLoading } = useReviewCount();
 
   return (
     <SidebarContent>
@@ -47,7 +49,9 @@ export function AppSidebar({ stats }: SidebarWithProgressProps) {
                 <SidebarMenuButton isActive={pathname === "/review"}>
                   <GraduationCap className="h-4 w-4" />
                   <span>Review</span>
-                  <SidebarMenuBadge>5</SidebarMenuBadge>
+                  {!reviewCountLoading && (
+                    <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
+                  )}
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
