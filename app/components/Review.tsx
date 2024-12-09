@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
@@ -12,7 +12,7 @@ export function Review() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadNextWord = async () => {
+  const loadNextWord = useCallback(async () => {
     if (!session?.user) return;
 
     setLoading(true);
@@ -30,14 +30,13 @@ export function Review() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session]);
 
   // Load the first word when component mounts
+
   useEffect(() => {
-    if (session?.user) {
-      loadNextWord();
-    }
-  }, [session]);
+    loadNextWord();
+  }, [loadNextWord]);
 
   const handleRating = async (rating: number) => {
     if (!session?.user || !currentWord) return;

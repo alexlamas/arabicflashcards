@@ -19,12 +19,7 @@ import {
 
 export const useAuth = () => useContext(AuthContext);
 
-interface AuthWrapperProps {
-  children: React.ReactNode;
-  stats?: WordStats;
-}
-
-export function AuthWrapper({ children, stats }: AuthWrapperProps) {
+export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -52,6 +47,7 @@ export function AuthWrapper({ children, stats }: AuthWrapperProps) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const stats: WordStats | null = null;
   const handleLogout = async () => {
     try {
       setIsLoading(true);
@@ -92,7 +88,7 @@ export function AuthWrapper({ children, stats }: AuthWrapperProps) {
             </DialogContent>
           </Dialog>
           <AppSidebar
-            stats={stats ?? null}
+            stats={stats}
             handleLogout={handleLogout}
             setShowAuthDialog={setShowAuthDialog}
           >

@@ -102,9 +102,7 @@ export function AppSidebar({
                     >
                       <GridFour className="h-4 w-4" />
                       <span>Browse all words</span>
-                      {stats && (
-                        <SidebarMenuBadge>{stats.total}</SidebarMenuBadge>
-                      )}
+                      <SidebarMenuBadge>{stats?.total}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>

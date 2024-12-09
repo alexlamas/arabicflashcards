@@ -52,13 +52,17 @@ export function useReviewCount() {
           table: "word_progress",
           filter: `user_id=eq.${session?.user?.id}`,
         },
-        (payload) => {
+        () => {
           fetchCount();
         }
       )
-      .subscribe((status) => {});
+      .subscribe();
 
     return () => {
+      window.removeEventListener(
+        "wordProgressUpdated",
+        handleWordProgressUpdate as EventListener
+      );
       supabase.removeChannel(channel);
     };
   }, [session]);
