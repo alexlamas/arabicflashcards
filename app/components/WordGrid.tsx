@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import WordList from "./WordList";
-import { ProgressMap, ViewMode, Word } from "../types/word";
+import { Word, ViewMode } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
 
 interface WordType {
@@ -10,19 +10,6 @@ interface WordType {
   type: string;
 }
 
-type ProgressType = "learned" | "learning" | "new";
-
-const getProgressBackground = (progress: ProgressType | undefined) => {
-  switch (progress) {
-    case "learned":
-      return "bg-emerald-50 !border-emerald-500 shadow-sm transition";
-    case "learning":
-      return "bg-amber-50 !border-amber-500 shadow-sm transition";
-    default:
-      return "bg-white";
-  }
-};
-
 const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
   <div className="text-xs font-medium px-2 py-0.5 rounded-full border-[0.5px] border-black/10 text-gray-600 mix-blend-luminosity">
     {type}
@@ -31,14 +18,8 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
 
 const ListCard: React.FC<{
   word: WordType;
-  progress: Record<string, ProgressType>;
-  onProgressChange: (value: Record<string, ProgressType>) => void;
-}> = ({ word, progress, onProgressChange }) => (
-  <div
-    className={`p-6 rounded-lg border-[0.5px] border-gray-200 ${getProgressBackground(
-      progress[word.english]
-    )}`}
-  >
+}> = ({ word }) => (
+  <div className={`p-6 rounded-lg border-[0.5px] border-gray-200`}>
     <div className="flex justify-between items-start">
       <div className="text-xl font-medium">{word.english}</div>
       <TypeBadge type={word.type} />
@@ -47,21 +28,15 @@ const ListCard: React.FC<{
     <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
     <div className="text-sm text-gray-400">{word.transliteration}</div>
 
-    <ProgressButtons
-      word={word}
-      progress={progress}
-      onProgressChange={onProgressChange}
-    />
+    <ProgressButtons word={word} />
   </div>
 );
 
 const FlashCard: React.FC<{
   word: WordType;
-  progress: Record<string, ProgressType>;
-  onProgressChange: (value: Record<string, ProgressType>) => void;
   isFlipped: boolean;
   onFlip: () => void;
-}> = ({ word, progress, onProgressChange, isFlipped, onFlip }) => (
+}> = ({ word, isFlipped, onFlip }) => (
   <div className="h-36" style={{ perspective: "1000px" }}>
     <div
       className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
@@ -70,8 +45,7 @@ const FlashCard: React.FC<{
     >
       {/* Front of card */}
       <div
-        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-sm hover:shadow-md transition border-[0.5px] border-gray-200 group
-    ${getProgressBackground(progress[word.english])} backface-hidden`}
+        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-sm hover:shadow-md transition border-[0.5px] border-gray-200 group backface-hidden`}
       >
         {/* Added flex flex-col h-full justify-between to create vertical spacing */}
         <div className="flex flex-col h-full justify-between">
@@ -86,10 +60,7 @@ const FlashCard: React.FC<{
 
       {/* Back of card */}
       <div
-        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-xl border-[0.5px] border-gray-200 
-          ${getProgressBackground(
-            progress[word.english]
-          )} backface-hidden [transform:rotateY(180deg)]`}
+        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-xl border-[0.5px] border-gray-200 backface-hidden [transform:rotateY(180deg)]`}
       >
         <div className="flex justify-between items-start">
           <div className="text-3xl font-arabic">{word.arabic}</div>
@@ -99,27 +70,13 @@ const FlashCard: React.FC<{
           {word.transliteration}
         </div>
 
-        <ProgressButtons
-          word={word}
-          progress={progress}
-          onProgressChange={onProgressChange}
-        />
+        <ProgressButtons word={word} />
       </div>
     </div>
   </div>
 );
 
-export function WordGrid({
-  words,
-  view,
-  progress,
-  onProgressChange,
-}: {
-  words: Word[];
-  view: ViewMode;
-  progress: ProgressMap;
-  onProgressChange: (value: ProgressMap) => void;
-}) {
+export function WordGrid({ words, view }: { words: Word[]; view: ViewMode }) {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 
   const handleFlip = (english: string) => {
@@ -130,13 +87,7 @@ export function WordGrid({
   };
 
   if (view === "list") {
-    return (
-      <WordList
-        words={words}
-        progress={progress}
-        onProgressChange={onProgressChange}
-      />
-    );
+    return <WordList words={words} />;
   }
 
   return (
@@ -146,17 +97,11 @@ export function WordGrid({
           {view === "flashcard" ? (
             <FlashCard
               word={word}
-              progress={progress}
-              onProgressChange={onProgressChange}
               isFlipped={flipped[word.english]}
               onFlip={() => handleFlip(word.english)}
             />
           ) : (
-            <ListCard
-              word={word}
-              progress={progress}
-              onProgressChange={onProgressChange}
-            />
+            <ListCard word={word} />
           )}
         </div>
       ))}

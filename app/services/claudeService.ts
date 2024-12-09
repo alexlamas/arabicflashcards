@@ -1,5 +1,5 @@
 // app/services/claudeService.ts
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic from "@anthropic-ai/sdk";
 
 // Initialize the Anthropic client
 const anthropic = new Anthropic({
@@ -7,7 +7,6 @@ const anthropic = new Anthropic({
 });
 
 export class ClaudeService {
-
   static async chatCompletion(prompt: string): Promise<string> {
     try {
       const message = await anthropic.messages.create({
@@ -16,15 +15,16 @@ export class ClaudeService {
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       });
-  
-      const response = message.content[0].type === 'text' ? message.content[0].text : '';
+
+      const response =
+        message.content[0].type === "text" ? message.content[0].text : "";
       return response;
     } catch (error) {
-      console.error('Error in Claude chat completion:', error);
-      throw new Error('Failed to get completion from Claude');
+      console.error("Error in Claude chat completion:", error);
+      throw new Error("Failed to get completion from Claude");
     }
   }
-  
+
   static async generateSentence(word: string): Promise<{
     english: string;
     arabic: string;
@@ -57,16 +57,17 @@ export class ClaudeService {
         model: "claude-3-opus-20240229",
         max_tokens: 1000,
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
+        temperature: 1,
       });
 
-      const response = message.content[0].type === 'text' ? message.content[0].text : '';
+      const response =
+        message.content[0].type === "text" ? message.content[0].text : "";
 
       // Parse the JSON response
       return JSON.parse(response);
     } catch (error) {
-      console.error('Error generating sentence:', error);
-      throw new Error('Failed to generate sentence');
+      console.error("Error generating sentence:", error);
+      throw new Error("Failed to generate sentence");
     }
   }
 }

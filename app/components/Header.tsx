@@ -5,18 +5,16 @@ import { AddWordDialog } from "./AddWordDialog";
 
 import React from "react";
 import { Session } from "@supabase/supabase-js";
-import { SortDropdown } from "./SortDropdown";
+
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ViewToggle } from "./ViewToggle";
-import { ViewMode, SortOption, Word } from "../types/word";
+import { ViewMode, Word } from "../types/word";
 
 export function Header({
   session,
   searchTerm,
   setSearchTerm,
   setWords,
-  sortBy,
-  setSortBy,
   view,
   setView,
 }: {
@@ -24,8 +22,6 @@ export function Header({
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   setWords: React.Dispatch<React.SetStateAction<Word[]>>;
-  sortBy: SortOption;
-  setSortBy: (SortOption: SortOption) => void;
   view: ViewMode;
   setView: (ViewMode: ViewMode) => void;
 }) {
@@ -43,9 +39,6 @@ export function Header({
       )}
 
       <div className="inline-flex gap-2 items-center ml-auto">
-        <div className="inline-flex gap-2 items-center">
-          <SortDropdown value={sortBy} onChange={setSortBy} />
-        </div>
         <TooltipProvider>
           <ViewToggle current={view} onChange={setView} />
         </TooltipProvider>

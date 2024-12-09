@@ -6,7 +6,9 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Session } from "@supabase/supabase-js";
 import { FilterContext } from "../contexts/FilterContext";
-
+import { WordStats } from "../types/word";
+import { AuthContext } from "../contexts/AuthContext";
+import { AppSidebar } from "./AppSidebar";
 import {
   Dialog,
   DialogContent,
@@ -14,35 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChevronsUpDown } from "lucide-react";
-import { WordStats } from "../types/word";
-import { AuthContext } from "../contexts/AuthContext";
-import { AppSidebar } from "./AppSidebar";
 
 export const useAuth = () => useContext(AuthContext);
 
-interface AuthWrapperProps {
-  children: React.ReactNode;
-  stats?: WordStats;
-}
-
-export function AuthWrapper({ children, stats }: AuthWrapperProps) {
+export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -70,6 +47,7 @@ export function AuthWrapper({ children, stats }: AuthWrapperProps) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const stats: WordStats | null = null;
   const handleLogout = async () => {
     try {
       setIsLoading(true);
@@ -109,60 +87,13 @@ export function AuthWrapper({ children, stats }: AuthWrapperProps) {
               />
             </DialogContent>
           </Dialog>
-
-          <SidebarProvider>
-            <Sidebar>
-              <SidebarHeader>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-between h-full"
-                        >
-                          <div>
-                            <div className="text-lg font-semibold text-left">
-                              Learn Lebanese
-                            </div>
-                            <div className="text-slate-500">
-                              {session?.user?.email ? (
-                                session.user.email
-                              ) : (
-                                <span>Log in to track progress</span>
-                              )}
-                            </div>
-                          </div>
-                          <ChevronsUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-48">
-                        {session ? (
-                          <DropdownMenuItem onClick={handleLogout}>
-                            Log out
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem
-                            onSelect={() => setShowAuthDialog(true)}
-                          >
-                            Log in
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarHeader>
-
-              <AppSidebar
-                stats={stats ?? null}
-                progressFilter={progressFilter}
-                setProgressFilter={setProgressFilter}
-              />
-              <SidebarRail />
-            </Sidebar>
-            <SidebarInset>{children}</SidebarInset>
-          </SidebarProvider>
+          <AppSidebar
+            stats={stats}
+            handleLogout={handleLogout}
+            setShowAuthDialog={setShowAuthDialog}
+          >
+            {children}
+          </AppSidebar>
         </div>
       </FilterContext.Provider>
     </AuthContext.Provider>

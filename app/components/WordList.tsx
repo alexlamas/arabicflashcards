@@ -8,15 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import ProgressButtons from "./ProgressButtons";
-import { ProgressMap, Word } from "../types/word";
+import { Word } from "../types/word";
 
 interface WordListProps {
   words: Word[];
-  progress: ProgressMap;
-  onProgressChange: (value: ProgressMap) => void;
 }
 
-const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
+const WordList = ({ words }: WordListProps) => {
   if (!words.length) {
     return (
       <div className="rounded-md border p-4 text-center text-muted-foreground">
@@ -40,10 +38,7 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
         </TableHeader>
         <TableBody>
           {words.map((word) => (
-            <TableRow
-              key={word.english}
-              className={getProgressBackground(progress[word.english])}
-            >
+            <TableRow key={word.english}>
               <TableCell className="font-medium">{word.english}</TableCell>
               <TableCell className="font-arabic text-lg">
                 {word.arabic}
@@ -57,11 +52,7 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-1">
-                  <ProgressButtons
-                    word={word}
-                    progress={progress}
-                    onProgressChange={onProgressChange}
-                  />
+                  <ProgressButtons word={word} />
                 </div>
               </TableCell>
             </TableRow>
@@ -70,17 +61,6 @@ const WordList = ({ words, progress, onProgressChange }: WordListProps) => {
       </Table>
     </div>
   );
-};
-
-const getProgressBackground = (progress: string | undefined) => {
-  switch (progress) {
-    case "learned":
-      return "bg-emerald-50";
-    case "learning":
-      return "bg-amber-50";
-    default:
-      return "";
-  }
 };
 
 export default WordList;
