@@ -19,7 +19,7 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
 const ListCard: React.FC<{
   word: WordType;
 }> = ({ word }) => (
-  <div className={`p-6 rounded-lg border-[0.5px] border-gray-200`}>
+  <div className={`p-6 rounded-lg border-[0.5px] border-gray-200 relative`}>
     <div className="flex justify-between items-start">
       <div className="text-xl font-medium">{word.english}</div>
       <TypeBadge type={word.type} />
