@@ -9,7 +9,7 @@ import {
 import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { Book, CheckCircle, Plus } from "@phosphor-icons/react";
+import { CheckCircle, Plus } from "@phosphor-icons/react";
 import { supabase } from "../supabase";
 import NextReviewBadge from "./NextReviewBadge";
 

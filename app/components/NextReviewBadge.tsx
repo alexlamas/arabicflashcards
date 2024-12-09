@@ -1,4 +1,3 @@
-import { ArrowCounterClockwise } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 
 const NextReviewBadge = ({ nextReviewDate }: { nextReviewDate: string }) => {
