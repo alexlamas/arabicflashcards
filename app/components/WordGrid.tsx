@@ -3,13 +3,6 @@ import WordList from "./WordList";
 import { Word, ViewMode } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
 
-interface WordType {
-  english: string;
-  arabic: string;
-  transliteration: string;
-  type: string;
-}
-
 const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
   <div className="text-xs font-medium px-2 py-0.5 rounded-full border-[0.5px] border-black/10 text-gray-600 mix-blend-luminosity">
     {type}
@@ -17,7 +10,7 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
 );
 
 const ListCard: React.FC<{
-  word: WordType;
+  word: Word;
 }> = ({ word }) => (
   <div className={`p-6 rounded-lg border-[0.5px] border-gray-200 relative`}>
     <div className="flex justify-between items-start">
@@ -33,7 +26,7 @@ const ListCard: React.FC<{
 );
 
 const FlashCard: React.FC<{
-  word: WordType;
+  word: Word;
   isFlipped: boolean;
   onFlip: () => void;
 }> = ({ word, isFlipped, onFlip }) => (

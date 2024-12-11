@@ -12,13 +12,7 @@ import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { CheckCircle, Plus } from "@phosphor-icons/react";
 import { supabase } from "../supabase";
 import NextReviewBadge from "./NextReviewBadge";
-
-interface WordType {
-  english: string;
-  arabic: string;
-  transliteration: string;
-  type: string;
-}
+import { Word } from "../types/word";
 
 interface WordProgress {
   status: WordStatus;
@@ -26,7 +20,7 @@ interface WordProgress {
 }
 
 interface ProgressButtonsProps {
-  word: WordType;
+  word: Word;
 }
 
 type WordStatus = "learning" | "learned" | null;
