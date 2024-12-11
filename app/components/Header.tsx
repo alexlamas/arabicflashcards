@@ -25,12 +25,13 @@ export function Header({
   view: ViewMode;
   setView: (ViewMode: ViewMode) => void;
 }) {
+  const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <SearchBar value={searchTerm} onChange={setSearchTerm} />
-      {session && (
+      {isAdmin && (
         <AddWordDialog
           onWordAdded={(word) => {
             setWords((prevWords) => [...prevWords, word]);
@@ -40,7 +41,7 @@ export function Header({
 
       <div className="inline-flex gap-2 items-center ml-auto">
         <TooltipProvider>
-          <ViewToggle current={view} onChange={setView} />
+          <ViewToggle current={view} onChange={setView} isAdmin={isAdmin} />
         </TooltipProvider>
       </div>
     </header>
