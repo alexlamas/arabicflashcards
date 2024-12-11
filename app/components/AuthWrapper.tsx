@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -16,8 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-export const useAuth = () => useContext(AuthContext);
 
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);

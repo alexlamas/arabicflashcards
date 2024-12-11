@@ -9,6 +9,8 @@ export interface Word {
   transliteration: string;
   type: WordType | string;
   tags?: Tag[];
+  status?: ProgressState;
+  next_review_date?: string;
 }
 export type ViewMode = "list" | "card" | "flashcard";
 export type ProgressState = "learned" | "learning" | "new";

@@ -5,6 +5,7 @@ import { Tag } from "./tagService";
 interface TagRelation {
   tag: Tag;
 }
+
 export class WordService {
   static async getAllWords(): Promise<Word[]> {
     const { data, error } = await supabase
@@ -14,6 +15,10 @@ export class WordService {
         *,
         tags:word_tags(
           tag:tags(*)
+        ),
+        progress:word_progress(
+          status,
+          next_review_date
         )
       `
       )
@@ -23,6 +28,8 @@ export class WordService {
     return data.map((word) => ({
       ...word,
       tags: word.tags?.map((tagRelation: TagRelation) => tagRelation.tag) || [],
+      status: word.progress?.[0]?.status || null,
+      next_review_date: word.progress?.[0]?.next_review_date || null,
     }));
   }
 

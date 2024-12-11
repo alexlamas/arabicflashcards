@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import WordList from "./WordList";
 import { Word, ViewMode } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
@@ -11,7 +11,8 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
 
 const ListCard: React.FC<{
   word: Word;
-}> = ({ word }) => (
+  onProgressUpdate: (updatedWord: Word) => void;
+}> = ({ word, onProgressUpdate }) => (
   <div className={`p-6 rounded-lg border-[0.5px] border-gray-200 relative`}>
     <div className="flex justify-between items-start">
       <div className="text-xl font-medium">{word.english}</div>
@@ -21,7 +22,7 @@ const ListCard: React.FC<{
     <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
     <div className="text-sm text-gray-400">{word.transliteration}</div>
 
-    <ProgressButtons word={word} />
+    <ProgressButtons word={word} onProgressUpdate={onProgressUpdate} />
   </div>
 );
 
@@ -29,7 +30,8 @@ const FlashCard: React.FC<{
   word: Word;
   isFlipped: boolean;
   onFlip: () => void;
-}> = ({ word, isFlipped, onFlip }) => (
+  onProgressUpdate: (updatedWord: Word) => void;
+}> = ({ word, isFlipped, onFlip, onProgressUpdate }) => (
   <div className="h-36" style={{ perspective: "1000px" }}>
     <div
       className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
@@ -63,7 +65,7 @@ const FlashCard: React.FC<{
           {word.transliteration}
         </div>
 
-        <ProgressButtons word={word} />
+        <ProgressButtons word={word} onProgressUpdate={onProgressUpdate} />
       </div>
     </div>
   </div>
@@ -71,6 +73,19 @@ const FlashCard: React.FC<{
 
 export function WordGrid({ words, view }: { words: Word[]; view: ViewMode }) {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+  const [localWords, setLocalWords] = useState<Word[]>(words);
+
+  useEffect(() => {
+    setLocalWords(words);
+  }, [words]);
+
+  const handleProgressUpdate = (updatedWord: Word) => {
+    setLocalWords((prevWords) =>
+      prevWords.map((word) =>
+        word.english === updatedWord.english ? updatedWord : word
+      )
+    );
+  };
 
   const handleFlip = (english: string) => {
     setFlipped((prev) => ({
@@ -85,16 +100,17 @@ export function WordGrid({ words, view }: { words: Word[]; view: ViewMode }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {words.map((word) => (
+      {localWords.map((word) => (
         <div key={word.english}>
           {view === "flashcard" ? (
             <FlashCard
               word={word}
               isFlipped={flipped[word.english]}
               onFlip={() => handleFlip(word.english)}
+              onProgressUpdate={handleProgressUpdate}
             />
           ) : (
-            <ListCard word={word} />
+            <ListCard word={word} onProgressUpdate={handleProgressUpdate} />
           )}
         </div>
       ))}

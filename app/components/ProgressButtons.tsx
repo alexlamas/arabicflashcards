@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   TooltipProvider,
@@ -10,44 +10,17 @@ import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { CheckCircle, Plus } from "@phosphor-icons/react";
-import { supabase } from "../supabase";
 import NextReviewBadge from "./NextReviewBadge";
 import { Word } from "../types/word";
 
-interface WordProgress {
-  status: WordStatus;
-  next_review_date?: string;
-}
-
 interface ProgressButtonsProps {
   word: Word;
+  onProgressUpdate?: (updatedWord: Word) => void;
 }
 
-type WordStatus = "learning" | "learned" | null;
-
-const ProgressButtons = ({ word }: ProgressButtonsProps) => {
+const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
   const { session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState<WordProgress | null>(null);
-
-  useEffect(() => {
-    if (!session?.user) return;
-
-    const fetchProgress = async () => {
-      const { data, error } = await supabase
-        .from("word_progress")
-        .select("status, next_review_date")
-        .eq("user_id", session.user.id)
-        .eq("word_english", word.english)
-        .maybeSingle();
-
-      if (!error && data) {
-        setProgress(data);
-      }
-    };
-
-    fetchProgress();
-  }, [session, word.english]);
 
   const handleStartLearning = async () => {
     if (!session?.user) return;
@@ -58,14 +31,12 @@ const ProgressButtons = ({ word }: ProgressButtonsProps) => {
         session.user.id,
         word.english
       );
-      const { data } = await supabase
-        .from("word_progress")
-        .select("status, next_review_date")
-        .eq("user_id", session.user.id)
-        .eq("word_english", word.english)
-        .single();
-
-      setProgress(data);
+      const updatedWord = {
+        ...word,
+        status: "learning" as const,
+        next_review_date: new Date().toISOString(),
+      };
+      onProgressUpdate?.(updatedWord);
       window.dispatchEvent(
         new CustomEvent("wordProgressUpdated", { detail: { count } })
       );
@@ -88,22 +59,22 @@ const ProgressButtons = ({ word }: ProgressButtonsProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={progress === null ? handleStartLearning : undefined}
-              disabled={isLoading || progress !== null}
+              onClick={word.status === null ? handleStartLearning : undefined}
+              disabled={isLoading || word.status !== null}
             >
-              {progress === null && <Plus className="w-4 h-4" />}
-              {progress?.status === "learning" && progress.next_review_date && (
-                <NextReviewBadge nextReviewDate={progress.next_review_date} />
+              {word.status === null && <Plus className="w-4 h-4" />}
+              {word.status === "learning" && word.next_review_date && (
+                <NextReviewBadge nextReviewDate={word.next_review_date} />
               )}
-              {progress?.status === "learned" && (
+              {word.status === "learned" && (
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
               )}
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {progress === null && "Start learning"}
-            {progress?.status === "learning" && "Time until next review"}
-            {progress?.status === "learned" && "Word learned"}
+            {word.status === null && "Start learning"}
+            {word.status === "learning" && "Time until next review"}
+            {word.status === "learned" && "Word learned"}
           </TooltipContent>
         </Tooltip>
 
