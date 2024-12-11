@@ -75,7 +75,7 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
         <DialogHeader>
           <DialogTitle>Edit Word</DialogTitle>
           <DialogDescription>
-            Make changes to the word. Click save when you're done.
+            Make changes to the word. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
 
