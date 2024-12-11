@@ -25,6 +25,14 @@ function HomeContent() {
     }
   };
 
+  const handleWordUpdate = (updatedWord: Word) => {
+    setWords((currentWords) =>
+      currentWords.map((word) =>
+        word.id === updatedWord.id ? updatedWord : word
+      )
+    );
+  };
+
   useEffect(() => {
     async function loadWords() {
       try {
@@ -64,6 +72,7 @@ function HomeContent() {
           words={filteredWords}
           view={view}
           onWordDeleted={handleWordDeleted}
+          onWordUpdate={handleWordUpdate}
         />
       </div>
     </>

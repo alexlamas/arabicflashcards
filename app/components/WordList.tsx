@@ -12,13 +12,19 @@ import { Word } from "../types/word";
 import { WordService } from "../services/wordService";
 import { Button } from "@/components/ui/button";
 import { Trash } from "@phosphor-icons/react";
+import { EditWord } from "./EditWord";
 
 interface WordListProps {
   words: Word[];
   onWordDeleted?: () => void;
+  onWordUpdate?: (updatedWord: Word) => void;
 }
 
-const WordList = ({ words, onWordDeleted }: WordListProps) => {
+const WordList = ({
+  words,
+  onWordDeleted,
+  onWordUpdate = () => {},
+}: WordListProps) => {
   const handleDelete = async (wordId: string | undefined) => {
     if (!wordId) return;
     try {
@@ -76,6 +82,7 @@ const WordList = ({ words, onWordDeleted }: WordListProps) => {
                     <Trash className="h-4 w-4" />
                     <span className="sr-only">Delete word</span>
                   </Button>
+                  <EditWord word={word} onWordUpdate={onWordUpdate} />
                 </div>
               </TableCell>
             </TableRow>

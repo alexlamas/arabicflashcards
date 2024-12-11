@@ -58,15 +58,45 @@ export class WordService {
   }
 
   static async updateWord(id: string, word: Partial<Word>): Promise<Word> {
+    // First, let's clean up the word object to only include updatable fields
+    const updatePayload = {
+      english: word.english,
+      arabic: word.arabic,
+      transliteration: word.transliteration,
+      type: word.type,
+    };
+
+    console.log("Update payload:", updatePayload); // Debug log
+
     const { data, error } = await supabase
       .from("words")
-      .update(word)
+      .update(updatePayload) // Use cleaned payload instead of full word object
       .eq("id", id)
-      .select()
+      .select(
+        `
+        *,
+        tags:word_tags(
+          tag:tags(*)
+        ),
+        progress:word_progress(
+          status,
+          next_review_date
+        )
+      `
+      )
       .single();
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error("Error updating word:", error);
+      throw error;
+    }
+
+    return {
+      ...data,
+      tags: data.tags?.map((tagRelation: TagRelation) => tagRelation.tag) || [],
+      status: data.progress?.[0]?.status || null,
+      next_review_date: data.progress?.[0]?.next_review_date || null,
+    };
   }
 
   static async deleteWord(id: string): Promise<void> {

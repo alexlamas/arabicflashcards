@@ -75,10 +75,12 @@ export function WordGrid({
   words,
   view,
   onWordDeleted,
+  onWordUpdate,
 }: {
   words: Word[];
   view: ViewMode;
-  onWordDeleted?: () => void;
+  onWordDeleted: () => void;
+  onWordUpdate: (updatedWord: Word) => void;
 }) {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [localWords, setLocalWords] = useState<Word[]>(words);
@@ -103,7 +105,13 @@ export function WordGrid({
   };
 
   if (view === "list") {
-    return <WordList words={words} onWordDeleted={onWordDeleted} />;
+    return (
+      <WordList
+        words={words}
+        onWordDeleted={onWordDeleted}
+        onWordUpdate={onWordUpdate}
+      />
+    );
   }
 
   return (
