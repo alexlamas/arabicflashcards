@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { useAuth } from "../contexts/AuthContext";
 import { Word } from "../types/word";
+import BoostReview from "./BoostReview";
 
 export function Review() {
   const { session } = useAuth();
@@ -77,10 +78,7 @@ export function Review() {
 
   if (!currentWord) {
     return (
-      <div className="text-center p-8">
-        <h2 className="text-xl font-semibold mb-4">All caught up!</h2>
-        <p>No words to review right now.</p>
-      </div>
+      <BoostReview userId={session.user.id} onBoostComplete={loadNextWord} />
     );
   }
 
