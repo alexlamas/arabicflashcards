@@ -71,7 +71,15 @@ const FlashCard: React.FC<{
   </div>
 );
 
-export function WordGrid({ words, view }: { words: Word[]; view: ViewMode }) {
+export function WordGrid({
+  words,
+  view,
+  onWordDeleted,
+}: {
+  words: Word[];
+  view: ViewMode;
+  onWordDeleted?: () => void;
+}) {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [localWords, setLocalWords] = useState<Word[]>(words);
 
@@ -95,7 +103,7 @@ export function WordGrid({ words, view }: { words: Word[]; view: ViewMode }) {
   };
 
   if (view === "list") {
-    return <WordList words={words} />;
+    return <WordList words={words} onWordDeleted={onWordDeleted} />;
   }
 
   return (

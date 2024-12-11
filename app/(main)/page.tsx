@@ -16,6 +16,15 @@ function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [words, setWords] = useState<Word[]>([]);
 
+  const handleWordDeleted = async () => {
+    try {
+      const words = await WordService.getAllWords();
+      setWords(words);
+    } catch (error) {
+      console.error("Error reloading words:", error);
+    }
+  };
+
   useEffect(() => {
     async function loadWords() {
       try {
@@ -51,7 +60,11 @@ function HomeContent() {
         setView={setView}
       />
       <div className="p-4">
-        <WordGrid words={filteredWords} view={view} />
+        <WordGrid
+          words={filteredWords}
+          view={view}
+          onWordDeleted={handleWordDeleted}
+        />
       </div>
     </>
   );

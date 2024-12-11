@@ -9,12 +9,26 @@ import {
 } from "@/components/ui/table";
 import ProgressButtons from "./ProgressButtons";
 import { Word } from "../types/word";
+import { WordService } from "../services/wordService";
+import { Button } from "@/components/ui/button";
+import { Trash } from "@phosphor-icons/react";
 
 interface WordListProps {
   words: Word[];
+  onWordDeleted?: () => void;
 }
 
-const WordList = ({ words }: WordListProps) => {
+const WordList = ({ words, onWordDeleted }: WordListProps) => {
+  const handleDelete = async (wordId: string | undefined) => {
+    if (!wordId) return;
+    try {
+      await WordService.deleteWord(wordId);
+      onWordDeleted?.();
+    } catch (error) {
+      console.error("Error deleting word:", error);
+    }
+  };
+
   if (!words.length) {
     return (
       <div className="rounded-md border p-4 text-center text-muted-foreground">
@@ -53,6 +67,15 @@ const WordList = ({ words }: WordListProps) => {
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-1">
                   <ProgressButtons word={word} />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600"
+                    onClick={() => handleDelete(word.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                    <span className="sr-only">Delete word</span>
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
