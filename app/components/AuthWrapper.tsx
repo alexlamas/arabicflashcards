@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { WordsContext } from "../contexts/WordsContext";
 
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -24,6 +25,7 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [progressFilter, setProgressFilter] = useState<
     "learning" | "learned" | "all" | null
   >(null);
+  const [totalWords, setTotalWords] = useState(0);
 
   const refreshSession = async () => {
     const {
@@ -66,31 +68,33 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{ session, isLoading, refreshSession }}>
       <FilterContext.Provider value={{ progressFilter, setProgressFilter }}>
-        <div className="animate-in fade-in duration-500">
-          <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Log in</DialogTitle>
-                <DialogDescription>
-                  Create an account or log in to save your progress and track
-                  your learning journey.
-                </DialogDescription>
-              </DialogHeader>
-              <Auth
-                supabaseClient={supabase}
-                appearance={{ theme: ThemeSupa }}
-                providers={[]}
-                theme="light"
-              />
-            </DialogContent>
-          </Dialog>
-          <AppSidebar
-            handleLogout={handleLogout}
-            setShowAuthDialog={setShowAuthDialog}
-          >
-            {children}
-          </AppSidebar>
-        </div>
+        <WordsContext.Provider value={{ totalWords, setTotalWords }}>
+          <div className="animate-in fade-in duration-500">
+            <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Log in</DialogTitle>
+                  <DialogDescription>
+                    Create an account or log in to save your progress and track
+                    your learning journey.
+                  </DialogDescription>
+                </DialogHeader>
+                <Auth
+                  supabaseClient={supabase}
+                  appearance={{ theme: ThemeSupa }}
+                  providers={[]}
+                  theme="light"
+                />
+              </DialogContent>
+            </Dialog>
+            <AppSidebar
+              handleLogout={handleLogout}
+              setShowAuthDialog={setShowAuthDialog}
+            >
+              {children}
+            </AppSidebar>
+          </div>
+        </WordsContext.Provider>
       </FilterContext.Provider>
     </AuthContext.Provider>
   );

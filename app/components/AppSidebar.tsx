@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "../contexts/AuthContext";
+import { useWords } from "../contexts/WordsContext";
 
 interface AppSidebarProps {
   children: React.ReactNode;
@@ -39,6 +40,7 @@ export function AppSidebar({
   const router = useRouter();
   const { count: reviewCount, loading: reviewCountLoading } = useReviewCount();
   const { session } = useAuth();
+  const { totalWords } = useWords();
 
   const handleLoginClick = (event: Event) => {
     event.preventDefault();
@@ -99,7 +101,7 @@ export function AppSidebar({
                     >
                       <GridFour className="h-4 w-4" />
                       <span>Browse all words</span>
-                      <SidebarMenuBadge>0</SidebarMenuBadge>
+                      <SidebarMenuBadge>{totalWords}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
