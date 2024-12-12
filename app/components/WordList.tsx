@@ -57,7 +57,7 @@ const WordList = ({
         </TableHeader>
         <TableBody>
           {words.map((word) => (
-            <TableRow key={word.english}>
+            <TableRow key={word.english} className="hover:bg-black/[2%]">
               <TableCell className="font-medium">{word.english}</TableCell>
               <TableCell className="font-arabic text-lg">
                 {word.arabic}
