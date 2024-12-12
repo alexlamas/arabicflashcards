@@ -17,7 +17,3 @@ export interface WordProgress {
   word_english: string;
   status: ProgressState;
 }
-
-export interface WordStats {
-  total: number;
-}
