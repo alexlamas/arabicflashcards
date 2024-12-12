@@ -1,5 +1,3 @@
-import { Tag } from "../services/tagService";
-
 export type WordType = "noun" | "verb" | "adjective" | "phrase";
 
 export interface Word {
@@ -8,7 +6,6 @@ export interface Word {
   arabic: string;
   transliteration: string;
   type: WordType | string;
-  tags?: Tag[];
   status?: ProgressState;
   next_review_date?: string;
 }
