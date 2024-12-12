@@ -6,7 +6,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Session } from "@supabase/supabase-js";
 import { FilterContext } from "../contexts/FilterContext";
-import { WordStats } from "../types/word";
+
 import { AuthContext } from "../contexts/AuthContext";
 import { AppSidebar } from "./AppSidebar";
 import {
@@ -45,7 +45,6 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const stats: WordStats | null = null;
   const handleLogout = async () => {
     try {
       setIsLoading(true);
@@ -86,7 +85,6 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
             </DialogContent>
           </Dialog>
           <AppSidebar
-            stats={stats}
             handleLogout={handleLogout}
             setShowAuthDialog={setShowAuthDialog}
           >

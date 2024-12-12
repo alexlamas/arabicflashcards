@@ -4,17 +4,12 @@ import type { Word, WordStats } from "../types/word";
 
 interface UseWordStatsProps {
   words: Word[];
-  filteredWords: Word[];
 }
 
-export function useWordStats({
-  words,
-  filteredWords,
-}: UseWordStatsProps): WordStats {
+export function useWordStats({ words }: UseWordStatsProps): WordStats {
   return useMemo(() => {
     return {
       total: words.length,
-      filtered: filteredWords.length,
     };
-  }, [words, filteredWords]);
+  }, [words]);
 }

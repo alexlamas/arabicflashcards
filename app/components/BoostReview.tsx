@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CircleNotch, Rocket } from "@phosphor-icons/react";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -65,25 +64,30 @@ export default function BoostReview({
   };
 
   return (
-    <Card className="max-w-xl mx-auto">
+    <div className="max-w-md mx-auto mt-48">
       <CardHeader className="text-center">
-        <CardTitle>All caught up!</CardTitle>
+        <CardTitle>You&apos;re up to date!</CardTitle>
         <CardDescription>
-          Want to review more words? Use the boost button to make some words
-          available for review right now.
+          If you want more to review, use the boost button to add five more
+          words to the front of the queue.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
-        <Button onClick={handleBoost} disabled={isLoading} className="gap-2">
+        <Button
+          variant={"outline"}
+          onClick={handleBoost}
+          disabled={isLoading}
+          className="gap-2"
+        >
           {isLoading ? (
             <CircleNotch className="h-4 w-4 animate-spin" />
           ) : (
             <Rocket className="h-4 w-4" />
           )}
-          Boost Reviews
+          Boost words
         </Button>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </CardContent>
-    </Card>
+    </div>
   );
 }

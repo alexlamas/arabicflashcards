@@ -20,5 +20,4 @@ export interface WordProgress {
 
 export interface WordStats {
   total: number;
-  filtered: number;
 }

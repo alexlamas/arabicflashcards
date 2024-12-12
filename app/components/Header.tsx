@@ -9,8 +9,10 @@ import { Session } from "@supabase/supabase-js";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ViewToggle } from "./ViewToggle";
 import { ViewMode, Word } from "../types/word";
+import ReviewTimeline from "./Timeline";
 
 export function Header({
+  variant = "default",
   session,
   searchTerm = "",
   setSearchTerm,
@@ -18,6 +20,7 @@ export function Header({
   view,
   setView,
 }: {
+  variant?: "default" | "review";
   session?: Session | null;
   searchTerm?: string;
   setSearchTerm?: (value: string) => void;
@@ -31,9 +34,10 @@ export function Header({
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30 ">
       <SidebarTrigger />
+      <Separator orientation="vertical" className="mr-2 h-4" />
+      {variant === "review" && <ReviewTimeline />}
       {showSearch && (
         <>
-          <Separator orientation="vertical" className="mr-2 h-4" />
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
         </>
       )}

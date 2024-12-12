@@ -14,7 +14,6 @@ import {
 import { GraduationCap, GridFour } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useReviewCount } from "../hooks/useReviewCount";
-import { WordStats } from "../types/word";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown } from "lucide-react";
 import {
@@ -26,14 +25,12 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 
 interface AppSidebarProps {
-  stats: WordStats | null;
   children: React.ReactNode;
   handleLogout: () => void;
   setShowAuthDialog: (show: boolean) => void;
 }
 
 export function AppSidebar({
-  stats,
   setShowAuthDialog,
   children,
   handleLogout,
@@ -102,7 +99,7 @@ export function AppSidebar({
                     >
                       <GridFour className="h-4 w-4" />
                       <span>Browse all words</span>
-                      <SidebarMenuBadge>{stats?.total}</SidebarMenuBadge>
+                      <SidebarMenuBadge>0</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { supabase } from "@/app/supabase";
 
 interface ReviewItem {
-  next_review_date: string;
-  word_count: number;
+  next_review_date: Date;
 }
 
 export default function ReviewTimeline() {
@@ -22,7 +20,7 @@ export default function ReviewTimeline() {
 
       try {
         const now = new Date();
-        now.setHours(0, 0, 0, 0); // Start of today
+        now.setHours(0, 0, 0, 0);
 
         const nextWeek = new Date(now);
         nextWeek.setDate(now.getDate() + 7);
@@ -37,27 +35,9 @@ export default function ReviewTimeline() {
 
         if (error) throw error;
 
-        // Group reviews by date and count them
-        const groupedData = data.reduce((acc: Record<string, number>, item) => {
-          // Parse the date and format it as YYYY-MM-DD to use as key
-          const date = new Date(item.next_review_date);
-          const dateKey = date.toISOString().split("T")[0];
-          acc[dateKey] = (acc[dateKey] || 0) + 1;
-          return acc;
-        }, {});
-
-        // Create an array of the next 7 days
-        const timeline: ReviewItem[] = [];
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(now);
-          date.setDate(date.getDate() + i);
-          const dateKey = date.toISOString().split("T")[0];
-
-          timeline.push({
-            next_review_date: dateKey,
-            word_count: groupedData[dateKey] || 0,
-          });
-        }
+        const timeline = data.map((item) => ({
+          next_review_date: new Date(item.next_review_date),
+        }));
 
         setReviewData(timeline);
       } catch (error) {
@@ -72,60 +52,72 @@ export default function ReviewTimeline() {
 
   if (loading) {
     return (
-      <div className="h-24 flex items-center justify-center">Loading...</div>
+      <div className="h-full flex items-center justify-center">Loading...</div>
     );
   }
 
-  if (!session?.user) {
+  if (!session?.user || reviewData.length === 0) {
     return null;
   }
 
-  if (reviewData.length === 0) {
-    return null;
-  }
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
 
-  const maxCount = Math.max(...reviewData.map((d) => d.word_count));
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 7);
+
+  const timelineWidth = 100; // percentage width
+  const totalDuration = endDate.getTime() - startDate.getTime();
+
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayMarkers = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    return date;
+  });
 
   return (
-    <Card className="p-4">
-      <h3 className="text-sm font-medium mb-4">Upcoming Reviews</h3>
-      <div className="flex gap-2 h-24">
+    <div className="inline-flex gap-4 items-center w-full">
+      <div className="relative w-full mx-8">
+        {/* Day labels */}
+        <div className="absolute bottom-0 w-full flex justify-between px-24 pb-2 z-30 ">
+          {dayMarkers.map((date, i) => {
+            const isToday = date.toDateString() === new Date().toDateString();
+            const position = (i / 6) * 100;
+            return (
+              <div
+                key={i}
+                className={`absolute text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm`}
+                style={{ left: `${position}%`, transform: "translateX(-50%)" }}
+              >
+                {isToday ? "Today" : days[date.getDay()]}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Timeline bar */}
+        <div className="absolute top-1/2 w-full h-0.5 bg-gray-100 rounded" />
+
+        {/* Review markers */}
         {reviewData.map((item, index) => {
-          const height =
-            item.word_count > 0 ? (item.word_count / maxCount) * 100 : 0;
-          const date = new Date(item.next_review_date);
-          const isToday = new Date().toDateString() === date.toDateString();
+          const timeSinceStart =
+            item.next_review_date.getTime() - startDate.getTime();
+          const position = (timeSinceStart / totalDuration) * timelineWidth;
 
           return (
-            <div key={index} className="flex flex-col items-center flex-1">
-              <div className="flex-1 w-full flex items-end">
-                <div
-                  className={`w-full rounded-t transition-all duration-200 ${
-                    height > 0 ? "bg-blue-100" : "bg-gray-50"
-                  }`}
-                  style={{ height: `${Math.max(height, 10)}%` }}
-                >
-                  {item.word_count > 0 && (
-                    <div className="text-xs text-center font-medium text-blue-600 py-1">
-                      {item.word_count}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div
-                className={`text-xs mt-2 ${
-                  isToday
-                    ? "font-medium text-blue-600"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {days[date.getDay()]}
-              </div>
-            </div>
+            <div
+              key={index}
+              className="absolute w-0.5 h-4 bg-blue-500/50 rounded-full -translate-y-1/2"
+              style={{
+                left: `${position}%`,
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }
