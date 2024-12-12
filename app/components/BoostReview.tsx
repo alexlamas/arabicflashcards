@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { CircleNotch, Rocket } from "@phosphor-icons/react";
 import {
   Card,
