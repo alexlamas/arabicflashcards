@@ -5,6 +5,8 @@ import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { useAuth } from "../contexts/AuthContext";
 import { Word } from "../types/word";
 import BoostReview from "./BoostReview";
+import HintButton from "./Hint";
+import SentenceButton from "./SentenceButton";
 
 export function Review() {
   const { session } = useAuth();
@@ -103,6 +105,10 @@ export function Review() {
           )}
         </CardContent>
       </Card>
+      <div className="inline-flex gap-1 w-full pt-4">
+        <HintButton word={currentWord} />
+        <SentenceButton word={currentWord} />
+      </div>
 
       {isFlipped && (
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">

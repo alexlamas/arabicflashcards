@@ -48,7 +48,7 @@ function HomeContent() {
     }
 
     loadWords();
-  }, []);
+  }, [setTotalWords]);
 
   const filteredWords = useFilteredWords({
     words,
