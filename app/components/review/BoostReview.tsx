@@ -11,7 +11,7 @@ import { supabase } from "../../supabase";
 
 interface BoostReviewProps {
   userId: string;
-  onBoostComplete: () => void;
+  onBoostComplete: (wordIds: string[]) => void;
 }
 
 export default function BoostReview({
@@ -26,10 +26,9 @@ export default function BoostReview({
     setError(null);
 
     try {
-      // Get 5 words that are in "learning" status but not yet due
       const { data: words } = await supabase
         .from("word_progress")
-        .select("word_english")
+        .select("id, word_english")
         .eq("user_id", userId)
         .eq("status", "learning")
         .gt("next_review_date", new Date().toISOString())
@@ -42,19 +41,21 @@ export default function BoostReview({
         return;
       }
 
-      // Update the next_review_date to now for these words
+      const wordIds = words.map((w) => w.id);
+
+      // Update UI optimistically first
+      onBoostComplete(wordIds);
+
+      // Then perform the actual update
       const now = new Date().toISOString();
       await Promise.all(
-        words.map(({ word_english }) =>
+        wordIds.map((id) =>
           supabase
             .from("word_progress")
             .update({ next_review_date: now })
-            .eq("user_id", userId)
-            .eq("word_english", word_english)
+            .eq("id", id)
         )
       );
-
-      onBoostComplete();
     } catch (err) {
       console.error("Error boosting reviews:", err);
       setError("Failed to boost reviews. Please try again.");
@@ -74,17 +75,17 @@ export default function BoostReview({
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
         <Button
-          variant={"outline"}
+          variant="outline"
           onClick={handleBoost}
           disabled={isLoading}
-          className="gap-2"
+          className="gap-2 relative group"
         >
           {isLoading ? (
             <CircleNotch className="h-4 w-4 animate-spin" />
           ) : (
-            <Rocket className="h-4 w-4" />
+            <Rocket className="h-4 w-4 transition-transform group-hover:translate-y-[-2px]" />
           )}
-          Boost words
+          {isLoading ? "Boosting..." : "Boost words"}
         </Button>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </CardContent>
