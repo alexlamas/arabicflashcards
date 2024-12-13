@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import { GraduationCap, GridFour } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useReviewCount } from "../hooks/useReviewCount";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown } from "lucide-react";
 import {
@@ -24,30 +23,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
+import { AuthDialog } from "./AuthDialog";
 
 interface AppSidebarProps {
   children: React.ReactNode;
-  handleLogout: () => void;
-  setShowAuthDialog: (show: boolean) => void;
 }
 
-export function AppSidebar({
-  setShowAuthDialog,
-  children,
-  handleLogout,
-}: AppSidebarProps) {
+export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { count: reviewCount, loading: reviewCountLoading } = useReviewCount();
+  const { reviewCount } = useWords();
   const { session } = useAuth();
   const { totalWords } = useWords();
+  const { setShowAuthDialog, handleLogout } = useAuth();
 
   const handleLoginClick = (event: Event) => {
     event.preventDefault();
-    setShowAuthDialog(true);
+    if (setShowAuthDialog) {
+      setShowAuthDialog(true);
+    }
   };
   return (
     <>
+      <AuthDialog />
+
       <SidebarProvider>
         <Sidebar>
           <SidebarHeader>
@@ -111,9 +110,7 @@ export function AppSidebar({
                     >
                       <GraduationCap className="h-4 w-4" />
                       <span>Review</span>
-                      {!reviewCountLoading && (
-                        <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
-                      )}
+                      <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
