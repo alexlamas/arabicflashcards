@@ -2,11 +2,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { supabase } from "@/app/supabase";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ReviewItem {
   next_review_date: Date;
-  id: string; // Adding ID to track items
-  isNew?: boolean; // Flag for newly added reviews
+  id: string;
+  isNew?: boolean;
 }
 
 export default function ReviewTimeline() {
@@ -42,14 +48,12 @@ export default function ReviewTimeline() {
       setReviewData(timeline);
     } catch (error) {
       console.error("Error fetching review data:", error);
-    } finally {
     }
   }, [session]);
 
   useEffect(() => {
     fetchReviewData();
 
-    // Set up realtime subscription
     if (!session?.user) return;
 
     const channel = supabase
@@ -64,15 +68,10 @@ export default function ReviewTimeline() {
         },
         async (payload) => {
           if (payload.new && payload.eventType === "UPDATE") {
-            // Set the new review ID to trigger animation
             setNewReviewId(payload.new.id);
-
-            // Remove the highlight after animation
             setTimeout(() => {
               setNewReviewId(null);
             }, 3000);
-
-            // Refresh the data
             await fetchReviewData();
           }
         }
@@ -107,55 +106,73 @@ export default function ReviewTimeline() {
     };
   });
 
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
   return (
-    <div className="inline-flex gap-4 items-center w-full">
-      <div className="relative w-full mr-8 ml-12">
-        {/* Day labels */}
-        <div className="absolute bottom-[0.5px] w-full flex justify-between px-24 pb-2 z-30">
-          {dayLabels.map(({ label }, i) => {
-            const position = (i / 6) * 100;
-            return (
-              <div
-                key={i}
-                className="absolute text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm first:-ml-6 "
-                style={{ left: `${position}%`, transform: "translateX(-50%)" }}
-              >
-                {label}
-              </div>
-            );
+    <TooltipProvider delayDuration={200}>
+      <div className="inline-flex gap-4 items-center w-full">
+        <div className="relative w-full mr-8 ml-12">
+          {/* Day labels */}
+          <div className="absolute bottom-[0.5px] w-full flex justify-between px-24 pb-2 z-30">
+            {dayLabels.map(({ label }, i) => {
+              const position = (i / 6) * 100;
+              return (
+                <div
+                  key={i}
+                  className="absolute text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm first:-ml-6"
+                  style={{
+                    left: `${position}%`,
+                    transform: "translateX(-50%)",
+                  }}
+                >
+                  {label}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Timeline bar */}
+          <div className="absolute top-1/2 w-full h-0.5 bg-gray-100 rounded" />
+
+          {/* Review markers */}
+          {reviewData.map((item) => {
+            const timeSinceStart =
+              item.next_review_date.getTime() - now.getTime();
+            const position = (timeSinceStart / totalDuration) * timelineWidth;
+
+            if (position >= 0 && position <= 100) {
+              return (
+                <Tooltip key={item.id}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        "absolute w-1 h-4 rounded-full -translate-y-1/2 top-1/2 -translate-x-1/2 transition-all duration-300 cursor-pointer hover:h-5 hover:w-2 bg-transparent",
+                        newReviewId === item.id
+                          ? "bg-blue-500 animate-in fade-in zoom-in"
+                          : "bg-blue-500/50"
+                      )}
+                      style={{
+                        left: `${position}%`,
+                      }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-transparent">
+                    <div className="text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm">
+                      {formatTime(item.next_review_date)}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+            return null;
           })}
         </div>
-
-        {/* Timeline bar */}
-        <div className="absolute top-1/2 w-full h-0.5 bg-gray-100 rounded" />
-
-        {/* Review markers */}
-        {reviewData.map((item) => {
-          const timeSinceStart =
-            item.next_review_date.getTime() - now.getTime();
-          const position = (timeSinceStart / totalDuration) * timelineWidth;
-
-          if (position >= 0 && position <= 100) {
-            return (
-              <div
-                key={item.id}
-                className={cn(
-                  "absolute w-0.5 h-4 rounded-full -translate-y-1/2 transition-all duration-300",
-                  newReviewId === item.id
-                    ? "bg-blue-500 animate-in fade-in zoom-in" // Animation classes for new reviews
-                    : "bg-blue-500/50"
-                )}
-                style={{
-                  left: `${position}%`,
-                  top: "50%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
-            );
-          }
-          return null;
-        })}
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
