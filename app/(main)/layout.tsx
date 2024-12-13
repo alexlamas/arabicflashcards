@@ -1,5 +1,6 @@
 "use client";
 
+import { AppSidebar } from "../components/AppSidebar";
 import { AuthProvider } from "../providers/AuthProvider";
 import { WordsProvider } from "../providers/WordsProvider";
 
@@ -10,7 +11,9 @@ export default function MainLayout({
 }) {
   return (
     <AuthProvider>
-      <WordsProvider>{children}</WordsProvider>
+      <WordsProvider>
+        <AppSidebar>{children}</AppSidebar>
+      </WordsProvider>
     </AuthProvider>
   );
 }

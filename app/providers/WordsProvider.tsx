@@ -23,6 +23,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     try {
       const fetchedWords = await WordService.getAllWords();
       setWords(fetchedWords);
+      setTotalWords(fetchedWords.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
       console.error("Error loading words:", err);
@@ -53,8 +54,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       value={{
         words,
         setWords,
-        totalWords: words.length,
-        setTotalWords,
+        totalWords,
         isLoading,
         error,
         handleWordDeleted,
