@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/private/"],
     },
-    sitemap: "https://yourdomain.com/sitemap.xml",
+    sitemap: "https://arabicflashcards.vercel.app/sitemap.xml",
   };
 }
