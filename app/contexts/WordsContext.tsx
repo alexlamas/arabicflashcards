@@ -11,6 +11,8 @@ type WordsContextType = {
   handleWordDeleted: () => Promise<void>;
   handleWordUpdate: (updatedWord: Word) => void;
   refreshWords: () => Promise<void>;
+  reviewCount: number;
+  fetchReviewCount: () => Promise<void>;
 };
 
 export const WordsContext = createContext<WordsContextType>({
@@ -22,6 +24,8 @@ export const WordsContext = createContext<WordsContextType>({
   handleWordDeleted: async () => {},
   handleWordUpdate: () => {},
   refreshWords: async () => {},
+  reviewCount: 0,
+  fetchReviewCount: async () => {},
 });
 
 export const useWords = () => useContext(WordsContext);

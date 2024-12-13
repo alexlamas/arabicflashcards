@@ -7,6 +7,7 @@ import { Word } from "../types/word";
 import BoostReview from "./BoostReview";
 import HintButton from "./Hint";
 import SentenceButton from "./SentenceButton";
+import { useWords } from "../contexts/WordsContext";
 
 export function Review() {
   const { session } = useAuth();
@@ -14,6 +15,7 @@ export function Review() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { fetchReviewCount } = useWords();
 
   const loadNextWord = useCallback(async () => {
     if (!session?.user) return;
@@ -50,6 +52,7 @@ export function Review() {
         currentWord.english,
         rating
       );
+      fetchReviewCount();
       await loadNextWord();
     } catch (error) {
       console.error("Error saving review:", error);

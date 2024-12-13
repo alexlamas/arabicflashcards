@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import { GraduationCap, GridFour } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useReviewCount } from "../hooks/useReviewCount";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown } from "lucide-react";
 import {
@@ -33,7 +32,7 @@ interface AppSidebarProps {
 export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { count: reviewCount, loading: reviewCountLoading } = useReviewCount();
+  const { reviewCount } = useWords();
   const { session } = useAuth();
   const { totalWords } = useWords();
   const { setShowAuthDialog, handleLogout } = useAuth();
@@ -111,9 +110,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                     >
                       <GraduationCap className="h-4 w-4" />
                       <span>Review</span>
-                      {!reviewCountLoading && (
-                        <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
-                      )}
+                      <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
