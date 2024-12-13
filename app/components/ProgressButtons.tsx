@@ -10,7 +10,7 @@ import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { CheckCircle, Plus } from "@phosphor-icons/react";
-import NextReviewBadge from "./NextReviewBadge";
+import NextReviewBadge from "./review/NextReviewBadge";
 import { Word } from "../types/word";
 
 interface ProgressButtonsProps {

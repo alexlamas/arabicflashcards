@@ -7,7 +7,7 @@ import { Session } from "@supabase/supabase-js";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ViewToggle } from "./ViewToggle";
 import { ViewMode } from "../types/word";
-import ReviewTimeline from "./Timeline";
+import ReviewTimeline from "./review/ReviewTimeline";
 import { useWords } from "../contexts/WordsContext";
 
 export function Header({

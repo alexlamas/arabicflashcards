@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/app/components/Header";
-import { Review } from "../../components/Review";
+import { Review } from "../../components/review/Review";
 
 export default function ReviewPage() {
   return (

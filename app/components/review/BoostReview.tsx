@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "../supabase";
+import { supabase } from "../../supabase";
 
 interface BoostReviewProps {
   userId: string;
@@ -64,7 +64,7 @@ export default function BoostReview({
   };
 
   return (
-    <div className="max-w-md mx-auto mt-48">
+    <div className="max-w-md mx-auto m-4">
       <CardHeader className="text-center">
         <CardTitle>You&apos;re up to date!</CardTitle>
         <CardDescription>

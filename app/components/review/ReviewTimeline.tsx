@@ -1,0 +1,161 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { supabase } from "@/app/supabase";
+import { cn } from "@/lib/utils";
+
+interface ReviewItem {
+  next_review_date: Date;
+  id: string; // Adding ID to track items
+  isNew?: boolean; // Flag for newly added reviews
+}
+
+export default function ReviewTimeline() {
+  const { session } = useAuth();
+  const [reviewData, setReviewData] = useState<ReviewItem[]>([]);
+  const [newReviewId, setNewReviewId] = useState<string | null>(null);
+
+  const fetchReviewData = useCallback(async () => {
+    if (!session?.user) {
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const nextWeek = new Date(now);
+      nextWeek.setDate(now.getDate() + 7);
+
+      const { data, error } = await supabase
+        .from("word_progress")
+        .select("id, next_review_date")
+        .eq("user_id", session.user.id)
+        .gte("next_review_date", now.toISOString())
+        .lte("next_review_date", nextWeek.toISOString())
+        .order("next_review_date");
+
+      if (error) throw error;
+
+      const timeline = data.map((item) => ({
+        id: item.id,
+        next_review_date: new Date(item.next_review_date),
+      }));
+
+      setReviewData(timeline);
+    } catch (error) {
+      console.error("Error fetching review data:", error);
+    } finally {
+    }
+  }, [session]);
+
+  useEffect(() => {
+    fetchReviewData();
+
+    // Set up realtime subscription
+    if (!session?.user) return;
+
+    const channel = supabase
+      .channel("word-progress-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "word_progress",
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        async (payload) => {
+          if (payload.new && payload.eventType === "UPDATE") {
+            // Set the new review ID to trigger animation
+            setNewReviewId(payload.new.id);
+
+            // Remove the highlight after animation
+            setTimeout(() => {
+              setNewReviewId(null);
+            }, 3000);
+
+            // Refresh the data
+            await fetchReviewData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session, fetchReviewData]);
+
+  if (!session?.user || reviewData.length === 0) {
+    return null;
+  }
+
+  const now = new Date();
+  const endDate = new Date(now);
+  endDate.setDate(endDate.getDate() + 7);
+
+  const timelineWidth = 100;
+  const totalDuration = endDate.getTime() - now.getTime();
+
+  const dayLabels = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() + i);
+    return {
+      date,
+      label:
+        i === 0
+          ? "Now"
+          : date.toLocaleDateString(undefined, { weekday: "short" }),
+    };
+  });
+
+  return (
+    <div className="inline-flex gap-4 items-center w-full">
+      <div className="relative w-full mr-8 ml-12">
+        {/* Day labels */}
+        <div className="absolute bottom-[0.5px] w-full flex justify-between px-24 pb-2 z-30">
+          {dayLabels.map(({ label }, i) => {
+            const position = (i / 6) * 100;
+            return (
+              <div
+                key={i}
+                className="absolute text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm first:-ml-6 "
+                style={{ left: `${position}%`, transform: "translateX(-50%)" }}
+              >
+                {label}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Timeline bar */}
+        <div className="absolute top-1/2 w-full h-0.5 bg-gray-100 rounded" />
+
+        {/* Review markers */}
+        {reviewData.map((item) => {
+          const timeSinceStart =
+            item.next_review_date.getTime() - now.getTime();
+          const position = (timeSinceStart / totalDuration) * timelineWidth;
+
+          if (position >= 0 && position <= 100) {
+            return (
+              <div
+                key={item.id}
+                className={cn(
+                  "absolute w-0.5 h-4 rounded-full -translate-y-1/2 transition-all duration-300",
+                  newReviewId === item.id
+                    ? "bg-blue-500 animate-in fade-in zoom-in" // Animation classes for new reviews
+                    : "bg-blue-500/50"
+                )}
+                style={{
+                  left: `${position}%`,
+                  top: "50%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              />
+            );
+          }
+          return null;
+        })}
+      </div>
+    </div>
+  );
+}

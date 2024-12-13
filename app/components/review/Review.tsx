@@ -1,26 +1,24 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { useAuth } from "../contexts/AuthContext";
-import { Word } from "../types/word";
+import { SpacedRepetitionService } from "../../services/spacedRepetitionService";
+import { useAuth } from "../../contexts/AuthContext";
+import { Word } from "../../types/word";
 import BoostReview from "./BoostReview";
 import HintButton from "./Hint";
 import SentenceButton from "./SentenceButton";
-import { useWords } from "../contexts/WordsContext";
+import { useWords } from "../../contexts/WordsContext";
 
 export function Review() {
   const { session } = useAuth();
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchReviewCount } = useWords();
 
   const loadNextWord = useCallback(async () => {
     if (!session?.user) return;
 
-    setLoading(true);
     setError(null);
     try {
       const words = await SpacedRepetitionService.getDueWords(
@@ -33,7 +31,6 @@ export function Review() {
       console.error("Error loading word:", error);
       setError("Failed to load words. Please try again.");
     } finally {
-      setLoading(false);
     }
   }, [session]);
 
@@ -60,18 +57,6 @@ export function Review() {
     }
   };
 
-  if (!session) {
-    return <div>Please log in to review words.</div>;
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        Loading...
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="text-center p-8">
@@ -82,6 +67,7 @@ export function Review() {
   }
 
   if (!currentWord) {
+    if (!session) return null;
     return (
       <BoostReview userId={session.user.id} onBoostComplete={loadNextWord} />
     );
