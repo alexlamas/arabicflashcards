@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface ReviewItem {
   id: string;
@@ -26,17 +27,31 @@ export default function ReviewTimeline() {
       const nextWeek = new Date(now);
       nextWeek.setDate(now.getDate() + 7);
 
-      const { data, error } = await supabase
+      // First fetch current reviews (due now or overdue)
+      const { data: currentReviews, error: currentError } = await supabase
         .from("word_progress")
         .select("id, next_review_date, word_english")
         .eq("user_id", session.user.id)
-        .gte("next_review_date", now.toISOString())
+        .lte("next_review_date", now.toISOString())
+        .order("next_review_date", { ascending: false });
+
+      if (currentError) throw currentError;
+
+      // Then fetch upcoming reviews
+      const { data: upcomingReviews, error: upcomingError } = await supabase
+        .from("word_progress")
+        .select("id, next_review_date, word_english")
+        .eq("user_id", session.user.id)
+        .gt("next_review_date", now.toISOString())
         .lte("next_review_date", nextWeek.toISOString())
         .order("next_review_date");
 
-      if (error) throw error;
+      if (upcomingError) throw upcomingError;
 
-      const timeline = data.map((item) => ({
+      const timeline = [
+        ...(currentReviews || []),
+        ...(upcomingReviews || []),
+      ].map((item) => ({
         id: item.id,
         word_english: item.word_english,
         next_review_date: new Date(item.next_review_date),
@@ -50,7 +65,44 @@ export default function ReviewTimeline() {
 
   useEffect(() => {
     fetchReviewData();
-  }, [fetchReviewData]);
+
+    // Listen for word progress updates
+    const handleWordProgressUpdate = () => {
+      fetchReviewData();
+    };
+
+    window.addEventListener("wordProgressUpdated", handleWordProgressUpdate);
+
+    // Subscribe to realtime updates as backup
+    let channel: RealtimeChannel;
+    if (session?.user) {
+      channel = supabase
+        .channel("word_progress_changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "word_progress",
+            filter: `user_id=eq.${session.user.id}`,
+          },
+          () => {
+            fetchReviewData();
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      window.removeEventListener(
+        "wordProgressUpdated",
+        handleWordProgressUpdate
+      );
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [fetchReviewData, session]);
 
   if (!session?.user || reviewData.length === 0) return null;
 
@@ -103,28 +155,30 @@ export default function ReviewTimeline() {
           {reviewData.map((item) => {
             const timeSinceStart =
               item.next_review_date.getTime() - now.getTime();
-            const position = (timeSinceStart / totalDuration) * 100;
+            const position = Math.max(
+              0,
+              (timeSinceStart / totalDuration) * 100
+            );
 
-            if (position >= 0 && position <= 100) {
-              return (
-                <Tooltip key={item.id}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className="absolute w-1 h-4 rounded-full -translate-y-1/2 top-1/2 -translate-x-1/2 cursor-pointer bg-blue-500/50 transition-all hover:h-5 hover:w-2"
-                      style={{
-                        left: `${position}%`,
-                      }}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-transparent">
-                    <div className="text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm">
-                      {item.word_english} - {formatTime(item.next_review_date)}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
-            return null;
+            return (
+              <Tooltip key={item.id}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`absolute w-1 h-4 rounded-full -translate-y-1/2 top-1/2 -translate-x-1/2 cursor-pointer transition-all hover:h-5 hover:w-2 ${
+                      position === 0 ? "bg-blue-600/70" : "bg-blue-500/50"
+                    }`}
+                    style={{
+                      left: `${position}%`,
+                    }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent className="bg-transparent">
+                  <div className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-white/80 border border-black/5 shadow-sm">
+                    {item.word_english} - {formatTime(item.next_review_date)}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
           })}
         </div>
       </div>

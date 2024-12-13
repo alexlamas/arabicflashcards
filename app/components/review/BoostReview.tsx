@@ -11,12 +11,12 @@ import { supabase } from "../../supabase";
 
 interface BoostReviewProps {
   userId: string;
-  onBoostComplete: (wordIds: string[]) => void;
+  loadNextWord: () => void;
 }
 
 export default function BoostReview({
   userId,
-  onBoostComplete,
+  loadNextWord,
 }: BoostReviewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,8 +30,8 @@ export default function BoostReview({
         .from("word_progress")
         .select("id, word_english")
         .eq("user_id", userId)
-        .eq("status", "learning")
         .gt("next_review_date", new Date().toISOString())
+        .order("next_review_date", { nullsFirst: true })
         .limit(5);
 
       if (!words || words.length === 0) {
@@ -42,9 +42,6 @@ export default function BoostReview({
       }
 
       const wordIds = words.map((w) => w.id);
-
-      // Update UI optimistically first
-      onBoostComplete(wordIds);
 
       // Then perform the actual update
       const now = new Date().toISOString();
@@ -61,6 +58,8 @@ export default function BoostReview({
       setError("Failed to boost reviews. Please try again.");
     } finally {
       setIsLoading(false);
+      loadNextWord();
+      window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
     }
   };
 

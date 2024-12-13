@@ -50,6 +50,7 @@ export function Review() {
         rating
       );
       fetchReviewCount();
+      window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
       await loadNextWord();
     } catch (error) {
       console.error("Error saving review:", error);
@@ -68,9 +69,7 @@ export function Review() {
 
   if (!currentWord) {
     if (!session) return null;
-    return (
-      <BoostReview userId={session.user.id} onBoostComplete={loadNextWord} />
-    );
+    return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} />;
   }
 
   return (
