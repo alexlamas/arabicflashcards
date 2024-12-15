@@ -5,9 +5,10 @@ import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  __request: NextRequest,
+  context: { params: { id: string } } // Changed this line
 ) {
+  const { params } = context;
   const supabase = createRouteHandlerClient({ cookies });
 
   const { data, error } = await supabase
