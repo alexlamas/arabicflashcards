@@ -7,42 +7,25 @@ import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { Word } from "../types/word";
 import WordMasteryRing from "./WordMasteryRing";
 import { Plus } from "@phosphor-icons/react";
+import { useWords } from "../contexts/WordsContext";
 
-interface ProgressButtonsProps {
-  word: Word & {
-    progress?: {
-      ease_factor: number;
-      interval: number;
-      review_count: number;
-      next_review_date: string | null;
-      success_rate: number;
-    }[];
-  };
-  onProgressUpdate?: (updatedWord: Word) => void;
-}
-
-const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
+const ProgressButtons = ({ word }: { word: Word }) => {
   const { session } = useAuth();
+  const { progress } = useWords();
   const [isLoading, setIsLoading] = useState(false);
+
+  const wordProgress = progress[word.english];
 
   const handleStartLearning = async () => {
     if (!session?.user) return;
 
     setIsLoading(true);
     try {
-      const { count } = await SpacedRepetitionService.startLearning(
+      await SpacedRepetitionService.startLearning(
         session.user.id,
         word.english
       );
-      const updatedWord = {
-        ...word,
-        status: "learning" as const,
-        next_review_date: new Date().toISOString(),
-      };
-      onProgressUpdate?.(updatedWord);
-      window.dispatchEvent(
-        new CustomEvent("wordProgressUpdated", { detail: { count } })
-      );
+      window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
     } catch (error) {
       console.error("Error starting learning:", error);
     } finally {
@@ -50,11 +33,9 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
     }
   };
 
-  if (!session) {
-    return null;
-  }
+  if (!session) return null;
 
-  if (!word.progress?.[0]) {
+  if (!wordProgress) {
     return (
       <div className="flex items-center gap-0 justify-end">
         <Button
@@ -65,32 +46,21 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
         >
           <Plus className="w-4 h-4" />
         </Button>
-        <SentenceGenerator
-          word={{
-            english: word.english,
-            arabic: word.arabic,
-          }}
-        />
+        <SentenceGenerator word={word} />
       </div>
     );
   }
 
-  // Show the mastery ring for words being learned
   return (
     <div className="flex items-center gap-0 justify-end">
       <WordMasteryRing
-        easeFactor={word.progress[0].ease_factor}
-        interval={word.progress[0].interval}
-        reviewCount={word.progress[0].review_count}
-        lastReviewDate={word.progress[0].next_review_date}
-        successRate={word.progress[0].success_rate}
+        easeFactor={wordProgress.ease_factor}
+        interval={wordProgress.interval}
+        reviewCount={wordProgress.review_count}
+        lastReviewDate={wordProgress.next_review_date ?? undefined}
+        successRate={wordProgress.success_rate}
       />
-      <SentenceGenerator
-        word={{
-          english: word.english,
-          arabic: word.arabic,
-        }}
-      />
+      <SentenceGenerator word={word} />
     </div>
   );
 };

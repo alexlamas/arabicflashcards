@@ -6,27 +6,11 @@ export class WordService {
   static async getAllWords(): Promise<Word[]> {
     const { data, error } = await supabase
       .from("words")
-      .select(
-        `
-        *,
-        progress:word_progress(
-          status,
-          next_review_date,
-          ease_factor,
-          interval,
-          review_count,
-          success_rate
-        )
-      `
-      )
+      .select("*")
       .order("english");
 
     if (error) throw error;
-    return data.map((word) => ({
-      ...word,
-      status: word.progress?.[0]?.status || null,
-      next_review_date: word.progress?.[0]?.next_review_date || null,
-    }));
+    return data;
   }
 
   static async getWordByEnglish(english: string): Promise<Word | null> {

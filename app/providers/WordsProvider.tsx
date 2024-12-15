@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { WordService } from "../services/wordService";
 import { WordsContext } from "../contexts/WordsContext";
-import { Word } from "../types/word";
+import { Word, WordProgress } from "../types/word";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { supabase } from "../supabase";
@@ -15,6 +15,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [totalWords, setTotalWords] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const [progress, setProgress] = useState<Record<string, WordProgress>>({});
 
   const fetchReviewCount = useCallback(async () => {
     if (!session?.user) {
@@ -52,17 +53,32 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
+      // First get all words
       const fetchedWords = await WordService.getAllWords();
       setWords(fetchedWords);
-      setTotalWords(fetchedWords.length);
-      fetchReviewCount();
+
+      // Then get progress if user is logged in
+      if (session?.user) {
+        const wordIds = fetchedWords.map((w) => w.english);
+        const progressData = await SpacedRepetitionService.getProgressForWords(
+          session.user.id,
+          wordIds
+        );
+
+        // Convert to lookup object
+        const progressMap = progressData.reduce((acc, curr) => {
+          acc[curr.word_english] = { ...curr, user_id: session.user.id };
+          return acc;
+        }, {} as Record<string, WordProgress>);
+
+        setProgress(progressMap);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
-      console.error("Error loading words:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchReviewCount]);
+  }, [session]);
 
   useEffect(() => {
     refreshWords();
@@ -107,6 +123,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     <WordsContext.Provider
       value={{
         words,
+        progress,
         setWords,
         totalWords,
         isLoading,

@@ -10,6 +10,7 @@ import {
   SidebarProvider,
   Sidebar,
   SidebarInset,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import { GraduationCap, GridFour } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
@@ -128,20 +129,13 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <WordMasteryStats
-                      words={wordsWithProgress.map((word) => ({
-                        id: word.id!,
-                        easeFactor: word.progress![0].ease_factor,
-                        interval: word.progress![0].interval,
-                        reviewCount: word.progress![0].review_count,
-                      }))}
-                    />
-                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
+          <SidebarFooter>
+            <WordMasteryStats />
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>

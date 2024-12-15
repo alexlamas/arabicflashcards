@@ -90,6 +90,27 @@ export class SpacedRepetitionService {
     }
   }
 
+  static async getProgressForWords(userId: string, wordIds: string[]) {
+    const { data, error } = await supabase
+      .from("word_progress")
+      .select(
+        `
+        word_english,
+        status,
+        next_review_date,
+        ease_factor,
+        interval,
+        review_count,
+        success_rate
+      `
+      )
+      .eq("user_id", userId)
+      .in("word_english", wordIds);
+
+    if (error) throw error;
+    return data;
+  }
+
   static async getDueWords(userId: string, limit: number = 20) {
     try {
       const now = new Date().toISOString();

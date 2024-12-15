@@ -1,22 +1,15 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useWords } from "../contexts/WordsContext";
 
-interface WordStats {
-  id: string;
-  easeFactor: number;
-  interval: number;
-  reviewCount: number;
-}
+export default function WordMasteryStats() {
+  const { words, progress } = useWords();
+  const wordsWithProgress = words.filter((word) => progress[word.english]);
 
-interface MasteryStatsProps {
-  words: WordStats[];
-}
-
-export default function MasteryStats({ words }: MasteryStatsProps) {
   // Calculate overall stats
   const calculateStats = () => {
-    if (!words.length)
+    if (!wordsWithProgress.length)
       return {
         totalMastery: 0,
         masteryLevels: {
@@ -40,14 +33,18 @@ export default function MasteryStats({ words }: MasteryStatsProps) {
     };
     let totalReviews = 0;
 
-    words.forEach((word) => {
-      const easeScore = Math.min(((word.easeFactor - 1.3) / 1.2) * 30, 30);
-      const intervalScore = Math.min((word.interval / 30) * 40, 40);
-      const reviewScore = Math.min((word.reviewCount / 5) * 30, 30);
+    wordsWithProgress.forEach((word) => {
+      const wordProgress = progress[word.english]; // Get the progress from our progress lookup
+      const easeScore = Math.min(
+        ((wordProgress.ease_factor - 1.3) / 1.2) * 30,
+        30
+      );
+      const intervalScore = Math.min((wordProgress.interval / 30) * 40, 40);
+      const reviewScore = Math.min((wordProgress.review_count / 5) * 30, 30);
       const score = Math.round(easeScore + intervalScore + reviewScore);
 
       totalMastery += score;
-      totalReviews += word.reviewCount;
+      totalReviews += wordProgress.review_count;
 
       if (score < 20) masteryLevels.novice++;
       else if (score < 40) masteryLevels.beginner++;
@@ -68,9 +65,6 @@ export default function MasteryStats({ words }: MasteryStatsProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Mastery Progress</CardTitle>
-      </CardHeader>
       <CardContent className="space-y-4">
         {/* Overall mastery ring */}
         <div className="flex items-center justify-center py-4">
