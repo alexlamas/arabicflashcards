@@ -19,6 +19,7 @@ import {
 import { PencilSimple, Spinner } from "@phosphor-icons/react";
 import { Word, WordType } from "../types/word";
 import { WordService } from "../services/wordService";
+import { useWords } from "../contexts/WordsContext";
 
 interface EditWordProps {
   word: Word;
@@ -26,6 +27,7 @@ interface EditWordProps {
 }
 
 export function EditWord({ word, onWordUpdate }: EditWordProps) {
+  const { handleWordDeleted } = useWords();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,18 +141,40 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-between gap-2">
             <Button
               type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
+              variant="destructive"
+              onClick={async () => {
+                if (!word.id) return;
+                setLoading(true);
+                try {
+                  await WordService.deleteWord(word.id);
+                  await handleWordDeleted();
+                  setOpen(false);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Failed to delete word");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
             >
-              Cancel
+              Delete
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

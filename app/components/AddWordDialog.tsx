@@ -81,9 +81,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       }
 
       const savedWord = await response.json();
-      // Fetch the complete word data including progress
-      const completeWord = await fetch(`/api/words/${savedWord.id}`).then(res => res.json());
-      onWordAdded(completeWord);
+      onWordAdded(savedWord); // The complete word data is already here
       setOpen(false);
       setInputText("");
       setPreviewWord(null);
@@ -120,12 +118,14 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         {!previewWord ? (
           // Step 1: Input word and generate translation
           <div className="space-y-4">
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (!isGenerating && inputText.trim()) {
-                handleGenerate();
-              }
-            }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!isGenerating && inputText.trim()) {
+                  handleGenerate();
+                }
+              }}
+            >
               <Input
                 placeholder="Enter word in English or Arabic..."
                 value={inputText}
@@ -157,83 +157,89 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           </div>
         ) : (
           // Step 2: Review and edit translation
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            handleSave();
-          }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSave();
+            }}
+          >
             <div className="space-y-4">
               <div className="grid gap-4">
-              <div>
-                <Input
-                  placeholder="English"
-                  value={previewWord.english}
-                  onChange={(e) =>
-                    setPreviewWord((prev) => ({
-                      ...prev,
-                      english: e.target.value,
-                    }))
-                  }
-                />
+                <div>
+                  <Input
+                    placeholder="English"
+                    value={previewWord.english}
+                    onChange={(e) =>
+                      setPreviewWord((prev) => ({
+                        ...prev,
+                        english: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Arabic"
+                    value={previewWord.arabic}
+                    onChange={(e) =>
+                      setPreviewWord((prev) => ({
+                        ...prev,
+                        arabic: e.target.value,
+                      }))
+                    }
+                    dir="rtl"
+                    className="font-arabic text-lg"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Transliteration"
+                    value={previewWord.transliteration}
+                    onChange={(e) =>
+                      setPreviewWord((prev) => ({
+                        ...prev,
+                        transliteration: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Select
+                    value={previewWord.type}
+                    onValueChange={(value) =>
+                      setPreviewWord((prev) => ({ ...prev, type: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wordTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <Input
-                  placeholder="Arabic"
-                  value={previewWord.arabic}
-                  onChange={(e) =>
-                    setPreviewWord((prev) => ({
-                      ...prev,
-                      arabic: e.target.value,
-                    }))
-                  }
-                  dir="rtl"
-                  className="font-arabic text-lg"
-                />
-              </div>
-              <div>
-                <Input
-                  placeholder="Transliteration"
-                  value={previewWord.transliteration}
-                  onChange={(e) =>
-                    setPreviewWord((prev) => ({
-                      ...prev,
-                      transliteration: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <Select
-                  value={previewWord.type}
-                  onValueChange={(value) =>
-                    setPreviewWord((prev) => ({ ...prev, type: value }))
-                  }
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPreviewWord(null)}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wordTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  Back
+                </Button>
+                <Button type="button" variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button type="submit">Save Word</Button>
               </div>
             </div>
-
-            {error && <p className="text-sm text-red-500">{error}</p>}
-
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setPreviewWord(null)}>
-                Back
-              </Button>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
-              </Button>
-              <Button type="submit">Save Word</Button>
-            </div>
-          </div>
           </form>
         )}
       </DialogContent>
