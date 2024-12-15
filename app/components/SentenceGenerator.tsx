@@ -31,38 +31,45 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [sentence, setSentence] = useState<GeneratedSentence | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const generateSentence = async () => {
-    setIsGenerating(true);
-    setError(null);
+  React.useEffect(() => {
+    const generateSentence = async () => {
+      setIsGenerating(true);
+      setError(null);
 
-    try {
-      const response = await fetch("/api/generate-sentence", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          word: word.arabic,
-        }),
-      });
+      try {
+        const response = await fetch("/api/generate-sentence", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            word: word.arabic,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate sentence");
+        if (!response.ok) {
+          throw new Error("Failed to generate sentence");
+        }
+
+        const data = await response.json();
+        setSentence(data);
+      } catch (error) {
+        console.error("Error:", error);
+        setError("Failed to generate sentence. Please try again.");
+      } finally {
+        setIsGenerating(false);
       }
+    };
 
-      const data = await response.json();
-      setSentence(data);
-    } catch (error) {
-      console.error("Error:", error);
-      setError("Failed to generate sentence. Please try again.");
-    } finally {
-      setIsGenerating(false);
+    if (isOpen && !sentence && !isGenerating) {
+      generateSentence();
     }
-  };
+  }, [isOpen, sentence, isGenerating, word, setError, setSentence]);
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
           <DialogTrigger asChild>
@@ -85,48 +92,42 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">
-          {!sentence && !isGenerating && (
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                Generate an example sentence using this word in context
-              </p>
-              <Button onClick={generateSentence}>Generate</Button>
+        <div className="relative min-h-28">
+          <div
+            className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
+              isGenerating ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div className="relative ">
+              <div className="absolute inset-[-30px] rounded-full bg-gradient-to-r from-violet-600/50 via-fuchsia-500/50 to-violet-600/50 animate-[pulse_2s_ease-in-out_infinite] blur-2xl" />
+              <div className="absolute inset-[-20px] rounded-full bg-gradient-to-r from-violet-400/40 via-fuchsia-400/40 to-violet-400/40 animate-[pulse_2s_ease-in-out_infinite_500ms] blur-xl" />
+              <div className="relative bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent animate-[pulse_2s_ease-in-out_infinite_1000ms]">
+                <CircleNotch className="h-16 w-16 animate-spin" />
+              </div>
             </div>
-          )}
-
-          {isGenerating && (
-            <div className="flex items-center justify-center py-8">
-              <CircleNotch className="h-8 w-8 animate-spin text-primary/70" />
-            </div>
-          )}
+          </div>
 
           {error && (
-            <div className="text-center text-red-500 text-sm">{error}</div>
-          )}
-
-          {sentence && !isGenerating && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="text-lg font-arabic">{sentence.arabic}</div>
-                <div className="text-sm text-muted-foreground">
-                  {sentence.transliteration}
-                </div>
-                <div className="text-sm">{sentence.english}</div>
-              </div>
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSentence(null);
-                  generateSentence();
-                }}
-                className="w-full"
-              >
-                Generate Another
-              </Button>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center text-red-500 text-sm">{error}</div>
             </div>
           )}
+
+          <div
+            className={`transition-opacity duration-800 my-2 ${
+              sentence && !isGenerating ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="text-3xl font-arabic">{sentence?.arabic}</div>
+                <div className="text-sm text-muted-foreground">
+                  {sentence?.transliteration}
+                </div>
+                <div className="text-sm font-medium">{sentence?.english}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
