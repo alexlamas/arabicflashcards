@@ -71,13 +71,25 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
 
     // Set up realtime subscription
     const channel = supabase
-      .channel("word-progress-changes")
+      .channel("word-changes")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "word_progress",
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        () => {
+          refreshWords();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "words",
           filter: `user_id=eq.${session.user.id}`,
         },
         () => {

@@ -81,7 +81,9 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       }
 
       const savedWord = await response.json();
-      onWordAdded(savedWord);
+      // Fetch the complete word data including progress
+      const completeWord = await fetch(`/api/words/${savedWord.id}`).then(res => res.json());
+      onWordAdded(completeWord);
       setOpen(false);
       setInputText("");
       setPreviewWord(null);
