@@ -6,16 +6,28 @@ import { WordType } from "@/app/types/word";
 
 export async function POST(req: Request) {
   try {
-    const { text } = await req.json();
+    const { text, confirmed, word } = await req.json();
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    // Call Claude to get translation and details
+    // If this is a confirmed word save with edited details
+    if (confirmed && word) {
+      const savedWord = await WordService.createWord({
+        english: word.english,
+        arabic: word.arabic,
+        transliteration: word.transliteration,
+        type: word.type as WordType,
+      });
+
+      return NextResponse.json(savedWord);
+    }
+
+    // Otherwise generate a new translation
     const prompt = `Translate this word to Lebanese arabic, unless it is already given in arabic: ${text}
     
-   Make sure to provide the response as a JSON object with these fields:
+    Make sure to provide the response as a JSON object with these fields:
     {
       "english": "the English word/phrase",
       "arabic": "the Arabic word/phrase in Arabic script",
@@ -46,15 +58,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Save to database
-    const word = await WordService.createWord({
+    // Return the generated word data without saving
+    return NextResponse.json({
       english: wordData.english,
       arabic: wordData.arabic,
       transliteration: wordData.transliteration,
       type: wordData.type as WordType,
     });
-
-    return NextResponse.json(word);
   } catch (error: unknown) {
     console.error("Error creating word:", error);
     const errorMessage =

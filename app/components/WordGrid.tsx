@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import WordList from "./WordList";
 import { Word, ViewMode } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
+import { EditWord } from "./EditWord";
+import { useAuth } from "../contexts/AuthContext";
 
 const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
   <div className="text-xs font-medium px-2 py-0.5 rounded-full border-[0.5px] border-black/10 text-gray-600 mix-blend-luminosity">
@@ -12,10 +14,19 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
 const ListCard: React.FC<{
   word: Word;
   onProgressUpdate: (updatedWord: Word) => void;
-}> = ({ word, onProgressUpdate }) => (
-  <div className={`p-6 rounded-lg border-[0.5px] border-gray-200 relative`}>
-    <div className="flex justify-between items-start">
-      <div className="text-xl font-medium">{word.english}</div>
+  onWordUpdate: (updatedWord: Word) => void;
+  isAdmin: boolean;
+}> = ({ word, onProgressUpdate, onWordUpdate, isAdmin }) => (
+  <div className="p-6 rounded-lg border-[0.5px] border-gray-200 relative group">
+    <div className="flex justify-between items-center">
+      <div className="flex items-center gap-2">
+        <div className="text-xl font-medium">{word.english}</div>
+        {isAdmin && (
+          <div className="group-hover:opacity-100 opacity-0 transition mix-blend-luminosity">
+            <EditWord word={word} onWordUpdate={onWordUpdate} />
+          </div>
+        )}
+      </div>
       <TypeBadge type={word.type} />
     </div>
 
@@ -31,7 +42,9 @@ const FlashCard: React.FC<{
   isFlipped: boolean;
   onFlip: () => void;
   onProgressUpdate: (updatedWord: Word) => void;
-}> = ({ word, isFlipped, onFlip, onProgressUpdate }) => (
+  onWordUpdate: (updatedWord: Word) => void;
+  isAdmin: boolean;
+}> = ({ word, isFlipped, onFlip, onProgressUpdate, onWordUpdate, isAdmin }) => (
   <div className="h-36" style={{ perspective: "1000px" }}>
     <div
       className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
@@ -39,10 +52,7 @@ const FlashCard: React.FC<{
       onClick={onFlip}
     >
       {/* Front of card */}
-      <div
-        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-sm hover:shadow-md transition border-[0.5px] border-gray-200 group backface-hidden`}
-      >
-        {/* Added flex flex-col h-full justify-between to create vertical spacing */}
+      <div className="absolute inset-0 w-full h-full p-6 rounded-lg shadow-sm hover:shadow-md transition border-[0.5px] border-gray-200 group backface-hidden">
         <div className="flex flex-col h-full justify-between">
           <div className="flex justify-between items-start">
             <div className="text-xl font-medium">{word.english}</div>
@@ -54,9 +64,7 @@ const FlashCard: React.FC<{
       </div>
 
       {/* Back of card */}
-      <div
-        className={`absolute inset-0 w-full h-full p-6 rounded-lg shadow-xl border-[0.5px] border-gray-200 backface-hidden [transform:rotateY(180deg)]`}
-      >
+      <div className="absolute inset-0 w-full h-full p-6 rounded-lg shadow-xl border-[0.5px] border-gray-200 backface-hidden [transform:rotateY(180deg)]">
         <div className="flex justify-between items-start">
           <div className="text-3xl font-arabic">{word.arabic}</div>
           <TypeBadge type={word.type} />
@@ -66,6 +74,12 @@ const FlashCard: React.FC<{
         </div>
 
         <ProgressButtons word={word} onProgressUpdate={onProgressUpdate} />
+
+        {isAdmin && (
+          <div className="absolute left-2 bottom-2">
+            <EditWord word={word} onWordUpdate={onWordUpdate} />
+          </div>
+        )}
       </div>
     </div>
   </div>
@@ -82,6 +96,8 @@ export function WordGrid({
   onWordDeleted: () => void;
   onWordUpdate: (updatedWord: Word) => void;
 }) {
+  const { session } = useAuth();
+  const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [localWords, setLocalWords] = useState<Word[]>(words);
 
@@ -124,9 +140,16 @@ export function WordGrid({
               isFlipped={flipped[word.english]}
               onFlip={() => handleFlip(word.english)}
               onProgressUpdate={handleProgressUpdate}
+              onWordUpdate={onWordUpdate}
+              isAdmin={isAdmin}
             />
           ) : (
-            <ListCard word={word} onProgressUpdate={handleProgressUpdate} />
+            <ListCard
+              word={word}
+              onProgressUpdate={handleProgressUpdate}
+              onWordUpdate={onWordUpdate}
+              isAdmin={isAdmin}
+            />
           )}
         </div>
       ))}

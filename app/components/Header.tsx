@@ -1,12 +1,12 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchBar } from "./SearchBar";
-import { AddWordDialog } from "./AddWordDialog";
+import AddWordDialog from "./AddWordDialog";
 import React from "react";
 import { Session } from "@supabase/supabase-js";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ViewToggle } from "./ViewToggle";
-import { ViewMode } from "../types/word";
+import { ViewMode, Word } from "../types/word";
 import ReviewTimeline from "./review/ReviewTimeline";
 import { useWords } from "../contexts/WordsContext";
 
@@ -43,7 +43,7 @@ export function Header({
       )}
       {isAdmin && setWords && (
         <AddWordDialog
-          onWordAdded={(word) => {
+          onWordAdded={(word: Word) => {
             setWords((prevWords) => [...prevWords, word]);
           }}
         />

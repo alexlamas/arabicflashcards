@@ -1,4 +1,3 @@
-// app/components/AddWordDialog.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,23 +9,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Spinner } from "@phosphor-icons/react";
-import { Word } from "../types/word";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CircleNotch, Plus } from "@phosphor-icons/react";
+import { Word, WordType } from "../types/word";
 
 interface AddWordDialogProps {
   onWordAdded: (word: Word) => void;
 }
 
-export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
+export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewWord, setPreviewWord] = useState<Partial<Word> | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const wordTypes: WordType[] = ["noun", "verb", "adjective", "phrase"];
+
+  const handleGenerate = async () => {
     setError(null);
-    setLoading(true);
+    setIsGenerating(true);
 
     try {
       const response = await fetch("/api/words/create", {
@@ -35,29 +43,64 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text,
+          text: inputText,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create word");
+        throw new Error("Failed to generate translation");
       }
 
       const word = await response.json();
-      onWordAdded(word);
-      setOpen(false);
-      setText("");
+      setPreviewWord(word);
     } catch (err) {
       setError("Error: " + err);
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
+  };
+
+  const handleSave = async () => {
+    if (!previewWord) return;
+
+    try {
+      const response = await fetch("/api/words/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: previewWord.english,
+          confirmed: true,
+          word: previewWord,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save word");
+      }
+
+      const savedWord = await response.json();
+      onWordAdded(savedWord);
+      setOpen(false);
+      setInputText("");
+      setPreviewWord(null);
+    } catch (err) {
+      setError("Error saving: " + err);
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setInputText("");
+    setPreviewWord(null);
+    setError(null);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"outline"} size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2">
           <Plus />
           Add Word
         </Button>
@@ -66,32 +109,119 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         <DialogHeader>
           <DialogTitle>Add New Word</DialogTitle>
           <DialogDescription>
-            Add a new word to your vocabulary list.
+            {!previewWord
+              ? "Enter a word in English or Arabic to get started."
+              : "Review and edit the translation before saving."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+
+        {!previewWord ? (
+          // Step 1: Input word and generate translation
+          <div className="space-y-4">
             <Input
               placeholder="Enter word in English or Arabic..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              disabled={loading}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              disabled={isGenerating}
             />
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !inputText.trim()}
+              >
+                {isGenerating ? (
+                  <>
+                    <CircleNotch className="mr-2 h-4 w-4 animate-spin" />
+                    Translating...
+                  </>
+                ) : (
+                  "Generate Translation"
+                )}
+              </Button>
+            </div>
           </div>
+        ) : (
+          // Step 2: Review and edit translation
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              <div>
+                <Input
+                  placeholder="English"
+                  value={previewWord.english}
+                  onChange={(e) =>
+                    setPreviewWord((prev) => ({
+                      ...prev,
+                      english: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <Input
+                  placeholder="Arabic"
+                  value={previewWord.arabic}
+                  onChange={(e) =>
+                    setPreviewWord((prev) => ({
+                      ...prev,
+                      arabic: e.target.value,
+                    }))
+                  }
+                  dir="rtl"
+                  className="font-arabic text-lg"
+                />
+              </div>
+              <div>
+                <Input
+                  placeholder="Transliteration"
+                  value={previewWord.transliteration}
+                  onChange={(e) =>
+                    setPreviewWord((prev) => ({
+                      ...prev,
+                      transliteration: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <Select
+                  value={previewWord.type}
+                  onValueChange={(value) =>
+                    setPreviewWord((prev) => ({ ...prev, type: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wordTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
 
-          <Button type="submit" disabled={loading || !text.trim()}>
-            {loading ? (
-              <>
-                <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                Translating...
-              </>
-            ) : (
-              "Add Word"
-            )}
-          </Button>
-        </form>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setPreviewWord(null)}>
+                Back
+              </Button>
+              <Button variant="outline" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>Save Word</Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
