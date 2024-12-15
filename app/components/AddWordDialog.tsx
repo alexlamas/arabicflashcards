@@ -120,12 +120,19 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         {!previewWord ? (
           // Step 1: Input word and generate translation
           <div className="space-y-4">
-            <Input
-              placeholder="Enter word in English or Arabic..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              disabled={isGenerating}
-            />
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!isGenerating && inputText.trim()) {
+                handleGenerate();
+              }
+            }}>
+              <Input
+                placeholder="Enter word in English or Arabic..."
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                disabled={isGenerating}
+              />
+            </form>
 
             {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -150,8 +157,12 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           </div>
         ) : (
           // Step 2: Review and edit translation
-          <div className="space-y-4">
-            <div className="grid gap-4">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}>
+            <div className="space-y-4">
+              <div className="grid gap-4">
               <div>
                 <Input
                   placeholder="English"
@@ -214,15 +225,16 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
             {error && <p className="text-sm text-red-500">{error}</p>}
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setPreviewWord(null)}>
+              <Button type="button" variant="outline" onClick={() => setPreviewWord(null)}>
                 Back
               </Button>
-              <Button variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>Save Word</Button>
+              <Button type="submit">Save Word</Button>
             </div>
           </div>
+          </form>
         )}
       </DialogContent>
     </Dialog>
