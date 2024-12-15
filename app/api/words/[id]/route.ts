@@ -8,7 +8,7 @@ type Props = {
   };
 };
 
-export async function GET(request: Request, { params }: Props) {
+export async function GET({ params }: Props) {
   const supabase = createRouteHandlerClient({ cookies });
 
   const { data, error } = await supabase
