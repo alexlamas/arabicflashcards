@@ -5,10 +5,9 @@ import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 
 export async function GET(
-  __request: NextRequest,
-  context: { params: { id: string } } // Changed this line
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  const { params } = context;
   const supabase = createRouteHandlerClient({ cookies });
 
   const { data, error } = await supabase
@@ -26,7 +25,10 @@ export async function GET(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message, request: request },
+      { status: 500 }
+    );
   }
 
   const word = {
