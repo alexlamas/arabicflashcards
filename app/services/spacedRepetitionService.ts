@@ -1,6 +1,59 @@
 import { supabase } from "../supabase";
 
 export class SpacedRepetitionService {
+  private static calculateNextReview(
+    currentInterval: number,
+    currentEaseFactor: number,
+    rating: number,
+    reviewCount: number
+  ): { interval: number; easeFactor: number; nextReviewDate: Date } {
+    let interval: number;
+    let easeFactor = currentEaseFactor;
+
+    // Update ease factor if it was a successful review
+    if (rating >= 2) {
+      const qualityFactor = rating - 2; // Convert 2,3 to 0,1 for ease calculation
+      easeFactor = Math.max(
+        1.3,
+        currentEaseFactor +
+          (0.1 - qualityFactor * (0.08 + qualityFactor * 0.02))
+      );
+    }
+
+    // Calculate next interval
+    if (rating < 2) {
+      // Failed review
+      if (rating === 0) {
+        // "Again"
+        interval = 0.25; // 6 hours
+      } else {
+        // "Hard"
+        interval = Math.max(0.5, currentInterval * 0.5); // At least 12 hours
+      }
+    } else {
+      // Successful review - use SuperMemo algorithm
+      if (reviewCount === 0) {
+        interval = 1; // First success: 1 day
+      } else if (reviewCount === 1) {
+        interval = 6; // Second success: 6 days
+      } else {
+        interval = Math.round(currentInterval * easeFactor);
+      }
+    }
+
+    // Calculate next review date
+    const nextReviewDate = new Date();
+    nextReviewDate.setTime(
+      nextReviewDate.getTime() + interval * 24 * 60 * 60 * 1000
+    );
+
+    return {
+      interval,
+      easeFactor,
+      nextReviewDate,
+    };
+  }
+
   static async startLearning(userId: string, wordEnglish: string) {
     try {
       const now = new Date().toISOString();
@@ -107,7 +160,7 @@ export class SpacedRepetitionService {
 
       if (fetchError) throw fetchError;
 
-      const { interval, easeFactor, nextReviewDate } = calculateNextReview(
+      const { interval, easeFactor, nextReviewDate } = this.calculateNextReview(
         currentProgress?.interval || 0,
         currentProgress?.ease_factor || 2.5,
         rating,
@@ -143,56 +196,4 @@ export class SpacedRepetitionService {
       throw error;
     }
   }
-}
-
-function calculateNextReview(
-  currentInterval: number,
-  currentEaseFactor: number,
-  rating: number,
-  reviewCount: number
-): { interval: number; easeFactor: number; nextReviewDate: Date } {
-  let interval: number;
-  let easeFactor = currentEaseFactor;
-
-  // Update ease factor if it was a successful review
-  if (rating >= 2) {
-    const qualityFactor = rating - 2; // Convert 2,3 to 0,1 for ease calculation
-    easeFactor = Math.max(
-      1.3,
-      currentEaseFactor + (0.1 - qualityFactor * (0.08 + qualityFactor * 0.02))
-    );
-  }
-
-  // Calculate next interval
-  if (rating < 2) {
-    // Failed review
-    if (rating === 0) {
-      // "Again"
-      interval = 0.25; // 6 hours
-    } else {
-      // "Hard"
-      interval = Math.max(0.5, currentInterval * 0.5); // At least 12 hours
-    }
-  } else {
-    // Successful review - use SuperMemo algorithm
-    if (reviewCount === 0) {
-      interval = 1; // First success: 1 day
-    } else if (reviewCount === 1) {
-      interval = 6; // Second success: 6 days
-    } else {
-      interval = Math.round(currentInterval * easeFactor);
-    }
-  }
-
-  // Calculate next review date
-  const nextReviewDate = new Date();
-  nextReviewDate.setTime(
-    nextReviewDate.getTime() + interval * 24 * 60 * 60 * 1000
-  );
-
-  return {
-    interval,
-    easeFactor,
-    nextReviewDate,
-  };
 }

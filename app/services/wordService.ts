@@ -11,7 +11,11 @@ export class WordService {
         *,
         progress:word_progress(
           status,
-          next_review_date
+          next_review_date,
+          ease_factor,
+          interval,
+          review_count,
+          success_rate
         )
       `
       )

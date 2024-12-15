@@ -24,6 +24,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
 import { AuthDialog } from "./AuthDialog";
+import WordMasteryStats from "./WordMasteryStats";
 
 interface AppSidebarProps {
   children: React.ReactNode;
@@ -36,6 +37,20 @@ export function AppSidebar({ children }: AppSidebarProps) {
   const { session } = useAuth();
   const { totalWords } = useWords();
   const { setShowAuthDialog, handleLogout } = useAuth();
+
+  const {
+    words,
+  }: {
+    words: {
+      id?: string;
+      progress?: {
+        ease_factor: number;
+        interval: number;
+        review_count: number;
+      }[];
+    }[];
+  } = useWords();
+  const wordsWithProgress = words.filter((word) => word.progress?.[0]);
 
   const handleLoginClick = (event: Event) => {
     event.preventDefault();
@@ -112,6 +127,16 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       <span>Review</span>
                       <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <WordMasteryStats
+                      words={wordsWithProgress.map((word) => ({
+                        id: word.id!,
+                        easeFactor: word.progress![0].ease_factor,
+                        interval: word.progress![0].interval,
+                        reviewCount: word.progress![0].review_count,
+                      }))}
+                    />
                   </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>

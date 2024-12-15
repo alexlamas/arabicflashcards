@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { CheckCircle, Plus } from "@phosphor-icons/react";
-import NextReviewBadge from "./review/NextReviewBadge";
 import { Word } from "../types/word";
+import WordMasteryRing from "./WordMasteryRing";
+import { Plus } from "@phosphor-icons/react";
 
 interface ProgressButtonsProps {
-  word: Word;
+  word: Word & {
+    progress?: {
+      ease_factor: number;
+      interval: number;
+      review_count: number;
+      next_review_date: string | null;
+      success_rate: number;
+    }[];
+  };
   onProgressUpdate?: (updatedWord: Word) => void;
 }
 
@@ -51,40 +54,43 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
     return null;
   }
 
-  return (
-    <div className=" flex items-center gap-0 justify-end">
-      <TooltipProvider delayDuration={100}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={word.status === null ? handleStartLearning : undefined}
-              disabled={isLoading || word.status !== null}
-            >
-              {word.status === null && <Plus className="w-4 h-4" />}
-              {word.status === "learning" && word.next_review_date && (
-                <NextReviewBadge nextReviewDate={word.next_review_date} />
-              )}
-              {word.status === "learned" && (
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {word.status === null && "Start learning"}
-            {word.status === "learning" && "Time until next review"}
-            {word.status === "learned" && "Word learned"}
-          </TooltipContent>
-        </Tooltip>
-
+  if (!word.progress?.[0]) {
+    return (
+      <div className="flex items-center gap-0 justify-end">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleStartLearning}
+          disabled={isLoading}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
         <SentenceGenerator
           word={{
             english: word.english,
             arabic: word.arabic,
           }}
         />
-      </TooltipProvider>
+      </div>
+    );
+  }
+
+  // Show the mastery ring for words being learned
+  return (
+    <div className="flex items-center gap-0 justify-end">
+      <WordMasteryRing
+        easeFactor={word.progress[0].ease_factor}
+        interval={word.progress[0].interval}
+        reviewCount={word.progress[0].review_count}
+        lastReviewDate={word.progress[0].next_review_date}
+        successRate={word.progress[0].success_rate}
+      />
+      <SentenceGenerator
+        word={{
+          english: word.english,
+          arabic: word.arabic,
+        }}
+      />
     </div>
   );
 };
