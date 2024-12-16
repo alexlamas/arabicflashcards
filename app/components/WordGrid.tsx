@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import WordList from "./WordList";
 import { Word, ViewMode } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
@@ -99,18 +99,9 @@ export function WordGrid({
   const { session } = useAuth();
   const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [localWords, setLocalWords] = useState<Word[]>(words);
-
-  useEffect(() => {
-    setLocalWords(words);
-  }, [words]);
 
   const handleProgressUpdate = (updatedWord: Word) => {
-    setLocalWords((prevWords) =>
-      prevWords.map((word) =>
-        word.english === updatedWord.english ? updatedWord : word
-      )
-    );
+    onWordUpdate(updatedWord);
   };
 
   const handleFlip = (english: string) => {
@@ -132,7 +123,7 @@ export function WordGrid({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {localWords.map((word) => (
+      {words.map((word) => (
         <div key={word.english}>
           {view === "flashcard" ? (
             <FlashCard

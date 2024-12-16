@@ -38,12 +38,14 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         word.id === updatedWord.id ? updatedWord : word
       )
     );
+    setTotalWords(words.length);
   };
 
   const handleWordDeleted = async () => {
     try {
       const words = await WordService.getAllWords();
       setWords(words);
+      setTotalWords(words.length);
     } catch (error) {
       console.error("Error reloading words:", error);
     }
@@ -56,21 +58,21 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       // First get all words
       const fetchedWords = await WordService.getAllWords();
       setWords(fetchedWords);
+      setTotalWords(fetchedWords.length);
 
-      // Then get progress if user is logged in
       if (session?.user) {
         const wordIds = fetchedWords.map((w) => w.english);
+        console.log("Fetching progress for words:", wordIds);
         const progressData = await SpacedRepetitionService.getProgressForWords(
           session.user.id,
           wordIds
         );
-
-        // Convert to lookup object
+        console.log("Progress data from DB:", progressData);
         const progressMap = progressData.reduce((acc, curr) => {
           acc[curr.word_english] = { ...curr, user_id: session.user.id };
           return acc;
         }, {} as Record<string, WordProgress>);
-
+        console.log("Progress map:", progressMap);
         setProgress(progressMap);
       }
     } catch (err) {
@@ -82,12 +84,13 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshWords();
+    fetchReviewCount();
 
     if (!session?.user) return;
 
-    // Set up realtime subscription
+    // Consolidated realtime subscription
     const channel = supabase
-      .channel("word-changes")
+      .channel("database-changes")
       .on(
         "postgres_changes",
         {
@@ -96,8 +99,8 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
           table: "word_progress",
           filter: `user_id=eq.${session.user.id}`,
         },
-        () => {
-          refreshWords();
+        async () => {
+          await Promise.all([refreshWords(), fetchReviewCount()]);
         }
       )
       .on(
@@ -106,7 +109,6 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
           event: "*",
           schema: "public",
           table: "words",
-          filter: `user_id=eq.${session.user.id}`,
         },
         () => {
           refreshWords();
@@ -117,7 +119,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session, refreshWords]);
+  }, [session, refreshWords, fetchReviewCount]);
 
   return (
     <WordsContext.Provider

@@ -19,7 +19,6 @@ export interface Word {
 }
 export type ViewMode = "list" | "card" | "flashcard";
 export type ProgressState = "learned" | "learning" | "new";
-export type ProgressMap = Record<string, ProgressState>;
 
 export interface WordProgress {
   user_id: string;

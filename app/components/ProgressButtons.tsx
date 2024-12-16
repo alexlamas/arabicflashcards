@@ -9,12 +9,18 @@ import WordMasteryRing from "./WordMasteryRing";
 import { Plus } from "@phosphor-icons/react";
 import { useWords } from "../contexts/WordsContext";
 
-const ProgressButtons = ({ word }: { word: Word }) => {
+const ProgressButtons = ({
+  word,
+  onProgressUpdate,
+}: {
+  word: Word;
+  onProgressUpdate: (updatedWord: Word) => void;
+}) => {
   const { session } = useAuth();
   const { progress } = useWords();
   const [isLoading, setIsLoading] = useState(false);
-
   const wordProgress = progress[word.english];
+  console.log('Word progress:', word.english, wordProgress);
 
   const handleStartLearning = async () => {
     if (!session?.user) return;
@@ -25,6 +31,12 @@ const ProgressButtons = ({ word }: { word: Word }) => {
         session.user.id,
         word.english
       );
+      const updatedWord = {
+        ...word,
+        status: "learning" as const,
+        next_review_date: new Date().toISOString(),
+      };
+      onProgressUpdate?.(updatedWord);
       window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
     } catch (error) {
       console.error("Error starting learning:", error);
@@ -57,7 +69,7 @@ const ProgressButtons = ({ word }: { word: Word }) => {
         easeFactor={wordProgress.ease_factor}
         interval={wordProgress.interval}
         reviewCount={wordProgress.review_count}
-        lastReviewDate={wordProgress.next_review_date ?? undefined}
+        nextReviewDate={wordProgress.next_review_date ?? undefined}
         successRate={wordProgress.success_rate}
       />
       <SentenceGenerator word={word} />

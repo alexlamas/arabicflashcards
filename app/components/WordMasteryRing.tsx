@@ -5,55 +5,55 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Brain, Clock, BarChart2, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WordMasteryProps {
   easeFactor: number;
   interval: number;
   reviewCount: number;
-  lastReviewDate?: string;
+  nextReviewDate?: string;
   successRate?: number;
 }
+
+const calculateStability = (interval: number, successRate: number = 0) => {
+  // Normalize interval (0 to 30 days) to a 0-100 score
+  const retentionScore = Math.min((interval / 30) * 100, 100);
+
+  // Weight: 70% retention, 30% success rate
+  return Math.round(retentionScore * 0.7 + successRate * 100 * 0.3);
+};
 
 export default function WordMasteryRing({
   easeFactor,
   interval,
   reviewCount,
-  lastReviewDate,
+  nextReviewDate,
   successRate = 0,
 }: WordMasteryProps) {
-  // Calculate component scores
-  const easeScore = Math.min(((easeFactor - 1.3) / 1.2) * 30, 30);
-  const intervalScore = Math.min((interval / 30) * 40, 40);
-  const reviewScore = Math.min((reviewCount / 5) * 30, 30);
+  const stability = calculateStability(interval, successRate);
 
-  // Calculate total mastery score (0-100)
-  const totalScore = Math.round(easeScore + intervalScore + reviewScore);
-
-  // Determine color based on score
-  const getColor = () => {
-    if (totalScore < 20) return "bg-slate-200 text-slate-600";
-    if (totalScore < 40) return "bg-blue-100 text-blue-600";
-    if (totalScore < 60) return "bg-green-100 text-green-600";
-    if (totalScore < 80) return "bg-violet-100 text-violet-600";
-    return "bg-amber-100 text-amber-600";
-  };
-
-  const getMasteryLabel = () => {
-    if (totalScore < 20) return "Novice";
-    if (totalScore < 40) return "Beginner";
-    if (totalScore < 60) return "Intermediate";
-    if (totalScore < 80) return "Advanced";
-    return "Mastered";
-  };
-
-  // Calculate days since last review
-  const daysSinceReview = lastReviewDate
+  // Calculate days until next review
+  const daysUntilReview = nextReviewDate
     ? Math.round(
-        (new Date().getTime() - new Date(lastReviewDate).getTime()) /
+        (new Date(nextReviewDate).getTime() - new Date().getTime()) /
           (1000 * 60 * 60 * 24)
       )
     : null;
+
+  // Format next review text
+  const nextReviewText =
+    daysUntilReview === null
+      ? "Not started"
+      : daysUntilReview === 0
+      ? "Today"
+      : daysUntilReview === 1
+      ? "Tomorrow"
+      : daysUntilReview < 0
+      ? `${Math.abs(daysUntilReview)}d overdue`
+      : `In ${daysUntilReview}d`;
 
   return (
     <TooltipProvider>
@@ -61,13 +61,13 @@ export default function WordMasteryRing({
         <TooltipTrigger>
           <div className="relative">
             {/* Background ring */}
-            <div className="w-8 h-8 rounded-full bg-gray-100" />
+            <div className="w-8 h-8 rounded-full bg-gray-50" />
 
             {/* Progress ring */}
             <div
               className="absolute inset-0 rounded-full"
               style={{
-                background: `conic-gradient(currentColor ${totalScore}%, transparent ${totalScore}%)`,
+                background: `conic-gradient(currentColor ${stability}%, transparent ${stability}%)`,
                 opacity: 0.2,
               }}
             />
@@ -76,84 +76,75 @@ export default function WordMasteryRing({
             <div
               className={cn(
                 "absolute inset-1 rounded-full flex items-center justify-center text-xs font-medium",
-                getColor()
+                stability < 25
+                  ? "bg-slate-200 text-slate-600"
+                  : stability < 50
+                  ? "bg-blue-100 text-blue-600"
+                  : stability < 75
+                  ? "bg-green-100 text-green-600"
+                  : "bg-amber-100 text-amber-600"
               )}
             >
-              {totalScore}
+              {stability}
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top" className="w-64 p-3">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">{getMasteryLabel()}</span>
-              <span className="text-sm text-muted-foreground">
-                {totalScore}% Mastery
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-sm">
-                <span>Ease</span>
-                <span>{Math.round((easeScore / 30) * 100)}%</span>
-              </div>
-              <div className="h-1.5 bg-gray-100 rounded-full">
-                <div
-                  className="h-full bg-blue-500 rounded-full"
-                  style={{ width: `${(easeScore / 30) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-sm">
-                <span>Retention</span>
-                <span>{Math.round((intervalScore / 40) * 100)}%</span>
-              </div>
-              <div className="h-1.5 bg-gray-100 rounded-full">
-                <div
-                  className="h-full bg-green-500 rounded-full"
-                  style={{ width: `${(intervalScore / 40) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-sm">
-                <span>Practice</span>
-                <span>{Math.round((reviewScore / 30) * 100)}%</span>
-              </div>
-              <div className="h-1.5 bg-gray-100 rounded-full">
-                <div
-                  className="h-full bg-violet-500 rounded-full"
-                  style={{ width: `${(reviewScore / 30) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="pt-2 text-sm text-muted-foreground">
-              <div className="flex justify-between">
-                <span>Reviews</span>
-                <span>{reviewCount}</span>
-              </div>
-              {successRate > 0 && (
-                <div className="flex justify-between">
-                  <span>Success Rate</span>
-                  <span>{Math.round(successRate * 100)}%</span>
+        <TooltipContent side="top" className="p-0">
+          <Card className="w-72 bg-gray-900 text-white shadow-xl border-gray-800">
+            <CardContent className="space-y-4 p-4">
+              {/* Memory Stability */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-blue-400" />
+                    <span className="text-sm">Memory Stability</span>
+                  </div>
+                  <span className="text-sm font-medium">{stability}%</span>
                 </div>
-              )}
-              {daysSinceReview !== null && (
-                <div className="flex justify-between">
-                  <span>Last Review</span>
-                  <span>
-                    {daysSinceReview === 0
-                      ? "Today"
-                      : `${daysSinceReview}d ago`}
-                  </span>
+                <Progress value={stability} className="h-2 bg-gray-700" />
+              </div>
+
+              {/* Key Stats */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Repeat className="w-4 h-4" />
+                    <span className="text-xs">Repetitions</span>
+                  </div>
+                  <div className="text-sm font-medium">{reviewCount}x</div>
                 </div>
-              )}
-            </div>
-          </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <BarChart2 className="w-4 h-4" />
+                    <span className="text-xs">Accuracy</span>
+                  </div>
+                  <div className="text-sm font-medium">
+                    {Math.round(successRate * 100)}%
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-xs">Current Interval</span>
+                  </div>
+                  <div className="text-sm font-medium">{interval} days</div>
+                </div>
+
+                <div className="space-y-1 text-gray-400">
+                  <div className="text-xs">Ease Factor</div>
+                  <div className="text-sm font-medium">
+                    {easeFactor.toFixed(1)}x
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-xs text-gray-500 pt-2">
+                Next review: {nextReviewText}
+              </div>
+            </CardContent>
+          </Card>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

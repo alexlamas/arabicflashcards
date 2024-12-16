@@ -9,15 +9,35 @@ export class SpacedRepetitionService {
   ): { interval: number; easeFactor: number; nextReviewDate: Date } {
     let interval: number;
     let easeFactor = currentEaseFactor;
+    const MIN_INTERVAL = {
+      AGAIN: 0.25, // 6 hours
+      HARD: 0.5, // 12 hours
+      GOOD: 1, // 1 day
+      EASY: 4, // 4 days
+    };
 
-    // Update ease factor if it was a successful review
-    if (rating >= 2) {
-      const qualityFactor = rating - 2; // Convert 2,3 to 0,1 for ease calculation
-      easeFactor = Math.max(
-        1.3,
-        currentEaseFactor +
-          (0.1 - qualityFactor * (0.08 + qualityFactor * 0.02))
-      );
+    // Update ease factor based on performance (SuperMemo algorithm)
+    if (rating < 2) {
+      // Failed review - decrease ease factor
+      easeFactor = Math.max(1.3, easeFactor - 0.2);
+      interval =
+        rating === 0
+          ? MIN_INTERVAL.AGAIN
+          : Math.max(MIN_INTERVAL.HARD, currentInterval * 0.5);
+    } else {
+      // Successful review - adjust ease factor
+      const easeChange = rating === 3 ? 0.15 : 0; // Increase for "Easy", maintain for "Good"
+      easeFactor = Math.min(2.5, Math.max(1.3, easeFactor + easeChange));
+
+      if (reviewCount === 0) {
+        interval = rating === 3 ? MIN_INTERVAL.EASY : MIN_INTERVAL.GOOD;
+      } else if (reviewCount === 1) {
+        interval = rating === 3 ? 8 : 6;
+      } else {
+        interval = Math.round(
+          currentInterval * easeFactor * (rating === 3 ? 1.3 : 1)
+        );
+      }
     }
 
     // Calculate next interval
@@ -67,6 +87,7 @@ export class SpacedRepetitionService {
           interval: 0,
           ease_factor: 2.5,
           review_count: 0,
+          success_rate: 0,
           next_review_date: now,
           updated_at: now,
         },
@@ -90,6 +111,21 @@ export class SpacedRepetitionService {
     }
   }
 
+  private static calculateInitialSuccessRate(
+    easeFactor: number,
+    reviewCount: number
+  ): number {
+    if (reviewCount === 0) return 0;
+
+    // ease_factor ranges from 1.3 (struggling) to 2.5 (very easy)
+    // Map this to a more intuitive accuracy range:
+    // 1.3 -> 0% (needs work)
+    // 1.9 -> 50% (making progress)
+    // 2.5 -> 100% (mastered)
+    const rate = Math.min(Math.max((easeFactor - 1.3) / 1.2, 0), 1);
+    return Math.round(rate * 100) / 100;
+  }
+
   static async getProgressForWords(userId: string, wordIds: string[]) {
     const { data, error } = await supabase
       .from("word_progress")
@@ -108,7 +144,49 @@ export class SpacedRepetitionService {
       .in("word_english", wordIds);
 
     if (error) throw error;
-    return data;
+
+    // Calculate success rates for words that don't have one
+    const progressWithRates = data?.map((progress) => {
+      if (
+        progress.success_rate === null ||
+        progress.success_rate === undefined
+      ) {
+        return {
+          ...progress,
+          success_rate: this.calculateInitialSuccessRate(
+            progress.ease_factor,
+            progress.review_count
+          ),
+        };
+      }
+      return progress;
+    });
+
+    // Update any words that didn't have a success rate
+    const updates = progressWithRates
+      ?.filter(
+        (p) =>
+          p.success_rate !==
+          data.find((d) => d.word_english === p.word_english)?.success_rate
+      )
+      .map((p) => ({
+        user_id: userId,
+        word_english: p.word_english,
+        success_rate: p.success_rate,
+      }));
+
+    if (updates && updates.length > 0) {
+      console.log("Updating success rates for", updates.length, "words");
+      const { error: updateError } = await supabase
+        .from("word_progress")
+        .upsert(updates, {
+          onConflict: "user_id,word_english",
+        });
+      if (updateError)
+        console.error("Error updating success rates:", updateError);
+    }
+
+    return progressWithRates || [];
   }
 
   static async getDueWords(userId: string, limit: number = 20) {
@@ -172,14 +250,30 @@ export class SpacedRepetitionService {
     rating: number
   ) {
     try {
+      console.log("Fetching current progress for:", wordEnglish);
       const { data: currentProgress, error: fetchError } = await supabase
         .from("word_progress")
-        .select("interval, ease_factor, review_count")
+        .select("interval, ease_factor, review_count, success_rate")
         .eq("user_id", userId)
         .eq("word_english", wordEnglish)
         .maybeSingle();
 
+      console.log("Current progress:", currentProgress);
+
       if (fetchError) throw fetchError;
+
+      // Calculate new success rate based on ease factor
+      const isSuccess = rating >= 2;
+      const currentReviewCount = currentProgress?.review_count || 0;
+      const newSuccessRate =
+        currentReviewCount === 0
+          ? isSuccess
+            ? 1
+            : 0
+          : Math.min(
+              Math.max((currentProgress?.ease_factor - 1.3) / 1.2, 0),
+              1
+            );
 
       const { interval, easeFactor, nextReviewDate } = this.calculateNextReview(
         currentProgress?.interval || 0,
@@ -188,23 +282,25 @@ export class SpacedRepetitionService {
         currentProgress?.review_count || 0
       );
 
+      const updateData = {
+        user_id: userId,
+        word_english: wordEnglish,
+        status: rating >= 2 ? "learned" : "learning",
+        interval: interval,
+        ease_factor: easeFactor,
+        review_count: currentReviewCount + 1,
+        success_rate: newSuccessRate,
+        next_review_date: nextReviewDate.toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      console.log("Updating progress with:", updateData);
+
       const { error: updateError } = await supabase
         .from("word_progress")
-        .upsert(
-          {
-            user_id: userId,
-            word_english: wordEnglish,
-            status: rating >= 2 ? "learned" : "learning",
-            interval: interval,
-            ease_factor: easeFactor,
-            review_count: (currentProgress?.review_count || 0) + 1,
-            next_review_date: nextReviewDate.toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "user_id,word_english",
-          }
-        );
+        .upsert(updateData, {
+          onConflict: "user_id,word_english",
+        });
 
       if (updateError) throw updateError;
 
