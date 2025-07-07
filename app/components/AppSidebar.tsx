@@ -37,7 +37,6 @@ export function AppSidebar({ children }: AppSidebarProps) {
   const { totalWords } = useWords();
   const { setShowAuthDialog, handleLogout } = useAuth();
 
-
   const handleLoginClick = (event: Event) => {
     event.preventDefault();
     if (setShowAuthDialog) {
