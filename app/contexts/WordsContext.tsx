@@ -1,6 +1,6 @@
 // app/contexts/WordsContext.tsx
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
-import { Word } from "../types/word";
+import { Word, WordProgress } from "../types/word";
 
 type WordsContextType = {
   words: Word[];
@@ -13,6 +13,7 @@ type WordsContextType = {
   refreshWords: () => Promise<void>;
   reviewCount: number;
   fetchReviewCount: () => Promise<void>;
+  progress: Record<string, WordProgress>;
 };
 
 export const WordsContext = createContext<WordsContextType>({
@@ -26,6 +27,7 @@ export const WordsContext = createContext<WordsContextType>({
   refreshWords: async () => {},
   reviewCount: 0,
   fetchReviewCount: async () => {},
+  progress: {},
 });
 
 export const useWords = () => useContext(WordsContext);
