@@ -81,7 +81,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       }
 
       const savedWord = await response.json();
-      onWordAdded(savedWord);
+      onWordAdded(savedWord); // The complete word data is already here
       setOpen(false);
       setInputText("");
       setPreviewWord(null);

@@ -44,18 +44,13 @@ export function Review() {
     if (!session?.user || !currentWord) return;
 
     try {
-      console.log('Processing review:', {
-        word: currentWord.english,
-        rating
-      });
       await SpacedRepetitionService.processReview(
         session.user.id,
         currentWord.english,
         rating
       );
-      console.log('Review processed, fetching new count');
-      await fetchReviewCount();
-      console.log('Loading next word');
+      fetchReviewCount();
+      window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
       await loadNextWord();
     } catch (error) {
       console.error("Error saving review:", error);

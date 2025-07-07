@@ -3,8 +3,6 @@ import { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SchemaOrg } from "./schema";
-import { ServiceWorkerRegistration } from "./components/ServiceWorkerRegistration";
-import { OfflineIndicator } from "./components/OfflineIndicator";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -69,15 +67,12 @@ export default function RootLayout({
         name="google-site-verification"
         content="rSU7GMMmHm5j4KHAcS3QjX1PMwFA3NGGnaOJLFJn_kY"
       />
-      <link rel="manifest" href="/manifest.json" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         {children}
         <Analytics />
         <SchemaOrg />
-        <ServiceWorkerRegistration />
-        <OfflineIndicator />
       </body>
     </html>
   );
