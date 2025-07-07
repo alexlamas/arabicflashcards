@@ -68,7 +68,7 @@ const WordList = ({
               <TableCell>{word.type}</TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-1">
-                  <ProgressButtons word={word} />
+                  <ProgressButtons word={word} onProgressUpdate={onWordUpdate} />
                   <Button
                     variant="ghost"
                     size="sm"

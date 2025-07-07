@@ -7,6 +7,8 @@ import { Word, WordProgress } from "../types/word";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { supabase } from "../supabase";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
+import { useCachedData } from "../hooks/useCachedData";
 
 export function WordsProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
@@ -16,30 +18,51 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const [totalWords, setTotalWords] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [progress, setProgress] = useState<Record<string, WordProgress>>({});
+  const isOnline = useOnlineStatus();
+
+  const { loadFromCache, saveToCache } = useCachedData();
 
   const fetchReviewCount = useCallback(async () => {
     if (!session?.user) {
       setReviewCount(0);
       return;
     }
+    
+    // Try to fetch from cache if offline
+    if (!isOnline) {
+      const { reviewCount } = loadFromCache();
+      if (reviewCount !== null) {
+        setReviewCount(reviewCount);
+        return;
+      }
+    }
+    
     try {
       const count = await SpacedRepetitionService.getDueWordsCount(
         session.user.id
       );
       setReviewCount(count);
+      saveToCache({ reviewCount: count });
     } catch (err) {
       console.error("Error fetching review count:", err);
+      // Fallback to cached count if available
+      const { reviewCount } = loadFromCache();
+      if (reviewCount !== null) {
+        setReviewCount(reviewCount);
+      }
     }
-  }, [session]);
+  }, [session, isOnline, loadFromCache, saveToCache]);
 
-  const handleWordUpdate = (updatedWord: Word) => {
-    setWords((currentWords) =>
-      currentWords.map((word) =>
+  const handleWordUpdate = useCallback((updatedWord: Word) => {
+    setWords((currentWords) => {
+      const updated = currentWords.map((word) =>
         word.id === updatedWord.id ? updatedWord : word
-      )
-    );
-    setTotalWords(words.length);
-  };
+      );
+      // Update cache with new words
+      saveToCache({ words: updated });
+      return updated;
+    });
+  }, [saveToCache]);
 
   const handleWordDeleted = async () => {
     try {
@@ -51,37 +74,86 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loadCachedData = useCallback(() => {
+    const { words: cachedWords, progress: cachedProgress } = loadFromCache();
+    
+    if (cachedWords) {
+      setWords(cachedWords);
+      setTotalWords(cachedWords.length);
+      if (cachedProgress && session?.user) {
+        setProgress(cachedProgress);
+      }
+      return true;
+    }
+    return false;
+  }, [loadFromCache, session]);
+
+  const fetchProgressForWords = useCallback(async (fetchedWords: Word[]) => {
+    if (!session?.user) return;
+    
+    const wordIds = fetchedWords.map((w) => w.english);
+    const progressData = await SpacedRepetitionService.getProgressForWords(
+      session.user.id,
+      wordIds
+    );
+    
+    const progressMap = progressData.reduce((acc, curr) => {
+      acc[curr.word_english] = { ...curr, user_id: session.user.id };
+      return acc;
+    }, {} as Record<string, WordProgress>);
+    
+    setProgress(progressMap);
+    return progressMap;
+  }, [session]);
+
   const refreshWords = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    
+    // If offline, try to load from cache first
+    if (!isOnline) {
+      if (loadCachedData()) {
+        setIsLoading(false);
+        return;
+      }
+    }
+    
     try {
-      // First get all words
+      // Fetch words from API
       const fetchedWords = await WordService.getAllWords();
       setWords(fetchedWords);
       setTotalWords(fetchedWords.length);
-
-      if (session?.user) {
-        const wordIds = fetchedWords.map((w) => w.english);
-        console.log("Fetching progress for words:", wordIds);
-        const progressData = await SpacedRepetitionService.getProgressForWords(
-          session.user.id,
-          wordIds
-        );
-        console.log("Progress data from DB:", progressData);
-        const progressMap = progressData.reduce((acc, curr) => {
-          acc[curr.word_english] = { ...curr, user_id: session.user.id };
-          return acc;
-        }, {} as Record<string, WordProgress>);
-        console.log("Progress map:", progressMap);
-        setProgress(progressMap);
-      }
+      
+      // Fetch and set progress if user is authenticated
+      const progressMap = await fetchProgressForWords(fetchedWords);
+      
+      // Cache everything
+      saveToCache({ 
+        words: fetchedWords, 
+        progress: progressMap || undefined 
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
+      
+      // Try cache as fallback
+      if (!loadCachedData()) {
+        // Keep error if no cached data available
+        console.error("No cached data available", err);
+      } else {
+        // Clear error since we have cached data
+        setError(null);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [session]);
+  }, [isOnline, loadCachedData, fetchProgressForWords, saveToCache]);
 
+  // Update total words when words change
+  useEffect(() => {
+    setTotalWords(words.length);
+  }, [words]);
+
+  // Initial load and realtime subscriptions
   useEffect(() => {
     refreshWords();
     fetchReviewCount();

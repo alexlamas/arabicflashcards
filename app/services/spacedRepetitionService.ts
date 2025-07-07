@@ -1,4 +1,5 @@
 import { supabase } from "../supabase";
+import { calculateSuccessRate } from "../utils/memoryStability";
 
 export class SpacedRepetitionService {
   private static calculateNextReview(
@@ -113,15 +114,19 @@ export class SpacedRepetitionService {
 
   private static calculateInitialSuccessRate(
     easeFactor: number,
-    reviewCount: number
+    reviewCount: number,
+    currentSuccessRate?: number
   ): number {
+    // If we already have a success rate tracked, use it
+    if (currentSuccessRate !== undefined && currentSuccessRate !== null) {
+      return currentSuccessRate;
+    }
+    
+    // For new words or missing data, start at 0
     if (reviewCount === 0) return 0;
 
-    // ease_factor ranges from 1.3 (struggling) to 2.5 (very easy)
-    // Map this to a more intuitive accuracy range:
-    // 1.3 -> 0% (needs work)
-    // 1.9 -> 50% (making progress)
-    // 2.5 -> 100% (mastered)
+    // Legacy fallback: estimate based on ease factor if no success rate exists
+    // This is only for backward compatibility with existing data
     const rate = Math.min(Math.max((easeFactor - 1.3) / 1.2, 0), 1);
     return Math.round(rate * 100) / 100;
   }
@@ -155,7 +160,8 @@ export class SpacedRepetitionService {
           ...progress,
           success_rate: this.calculateInitialSuccessRate(
             progress.ease_factor,
-            progress.review_count
+            progress.review_count,
+            progress.success_rate
           ),
         };
       }
@@ -249,6 +255,13 @@ export class SpacedRepetitionService {
     wordEnglish: string,
     rating: number
   ) {
+    // Validate inputs
+    if (!userId || !wordEnglish) {
+      throw new Error("Missing required parameters: userId and wordEnglish");
+    }
+    if (rating < 0 || rating > 3) {
+      throw new Error("Rating must be between 0 and 3");
+    }
     try {
       console.log("Fetching current progress for:", wordEnglish);
       const { data: currentProgress, error: fetchError } = await supabase
@@ -262,18 +275,14 @@ export class SpacedRepetitionService {
 
       if (fetchError) throw fetchError;
 
-      // Calculate new success rate based on ease factor
+      // Calculate new success rate based on actual performance
       const isSuccess = rating >= 2;
       const currentReviewCount = currentProgress?.review_count || 0;
-      const newSuccessRate =
-        currentReviewCount === 0
-          ? isSuccess
-            ? 1
-            : 0
-          : Math.min(
-              Math.max((currentProgress?.ease_factor - 1.3) / 1.2, 0),
-              1
-            );
+      const newSuccessRate = calculateSuccessRate(
+        currentProgress?.success_rate,
+        currentReviewCount,
+        isSuccess
+      );
 
       const { interval, easeFactor, nextReviewDate } = this.calculateNextReview(
         currentProgress?.interval || 0,

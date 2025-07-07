@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Brain, Clock, BarChart2, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { calculateMemoryStability, getStabilityLevel } from "@/app/utils/memoryStability";
 
 interface WordMasteryProps {
   easeFactor: number;
@@ -18,14 +19,6 @@ interface WordMasteryProps {
   successRate?: number;
 }
 
-const calculateStability = (interval: number, successRate: number = 0) => {
-  // Normalize interval (0 to 30 days) to a 0-100 score
-  const retentionScore = Math.min((interval / 30) * 100, 100);
-
-  // Weight: 70% retention, 30% success rate
-  return Math.round(retentionScore * 0.7 + successRate * 100 * 0.3);
-};
-
 export default function WordMasteryRing({
   easeFactor,
   interval,
@@ -33,7 +26,13 @@ export default function WordMasteryRing({
   nextReviewDate,
   successRate = 0,
 }: WordMasteryProps) {
-  const stability = calculateStability(interval, successRate);
+  const stability = calculateMemoryStability({
+    interval,
+    successRate,
+    reviewCount,
+    easeFactor,
+  });
+  const stabilityLevel = getStabilityLevel(stability);
 
   // Calculate days until next review
   const daysUntilReview = nextReviewDate
@@ -64,25 +63,31 @@ export default function WordMasteryRing({
             <div className="w-8 h-8 rounded-full bg-gray-50" />
 
             {/* Progress ring */}
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: `conic-gradient(currentColor ${stability}%, transparent ${stability}%)`,
-                opacity: 0.2,
-              }}
-            />
+            <svg
+              className="absolute inset-0 w-8 h-8 -rotate-90"
+              viewBox="0 0 32 32"
+            >
+              <circle
+                cx="16"
+                cy="16"
+                r="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeDasharray={`${stability * 0.88} 88`}
+                className={cn(
+                  "transition-all duration-300",
+                  stabilityLevel.colorClass.progress
+                )}
+              />
+            </svg>
 
             {/* Inner circle with score */}
             <div
               className={cn(
                 "absolute inset-1 rounded-full flex items-center justify-center text-xs font-medium",
-                stability < 25
-                  ? "bg-slate-200 text-slate-600"
-                  : stability < 50
-                  ? "bg-blue-100 text-blue-600"
-                  : stability < 75
-                  ? "bg-green-100 text-green-600"
-                  : "bg-amber-100 text-amber-600"
+                stabilityLevel.colorClass.bg,
+                stabilityLevel.colorClass.text
               )}
             >
               {stability}
@@ -102,6 +107,9 @@ export default function WordMasteryRing({
                   <span className="text-sm font-medium">{stability}%</span>
                 </div>
                 <Progress value={stability} className="h-2 bg-gray-700" />
+                <div className="text-xs text-gray-400">
+                  {stabilityLevel.description}
+                </div>
               </div>
 
               {/* Key Stats */}
