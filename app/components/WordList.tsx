@@ -13,10 +13,11 @@ import { WordService } from "../services/wordService";
 import { Button } from "@/components/ui/button";
 import { Trash } from "@phosphor-icons/react";
 import { EditWord } from "./EditWord";
+import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 
 interface WordListProps {
   words: Word[];
-  onWordDeleted?: () => void;
+  onWordDeleted?: (wordId?: string) => void;
   onWordUpdate?: (updatedWord: Word) => void;
 }
 
@@ -25,14 +26,17 @@ const WordList = ({
   onWordDeleted,
   onWordUpdate = () => {},
 }: WordListProps) => {
+  const { handleOfflineAction } = useOfflineSync();
+
   const handleDelete = async (wordId: string | undefined) => {
     if (!wordId) return;
-    try {
-      await WordService.deleteWord(wordId);
-      onWordDeleted?.();
-    } catch (error) {
-      console.error("Error deleting word:", error);
-    }
+    
+    await handleOfflineAction(
+      () => WordService.deleteWord(wordId),
+      () => offlineHelpers.deleteWord(wordId)
+    );
+    
+    onWordDeleted?.(wordId);
   };
 
   if (!words.length) {

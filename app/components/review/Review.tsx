@@ -8,6 +8,7 @@ import BoostReview from "./BoostReview";
 import HintButton from "./Hint";
 import SentenceButton from "./SentenceButton";
 import { useWords } from "../../contexts/WordsContext";
+import { useOfflineSync, offlineHelpers } from "../../hooks/useOfflineSync";
 
 export function Review() {
   const { session } = useAuth();
@@ -15,6 +16,7 @@ export function Review() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { fetchReviewCount } = useWords();
+  const { handleOfflineAction } = useOfflineSync();
 
   const loadNextWord = useCallback(async () => {
     if (!session?.user) return;
@@ -43,19 +45,18 @@ export function Review() {
   const handleRating = async (rating: number) => {
     if (!session?.user || !currentWord) return;
 
-    try {
-      await SpacedRepetitionService.processReview(
+    await handleOfflineAction(
+      () => SpacedRepetitionService.processReview(
         session.user.id,
         currentWord.english,
         rating
-      );
-      fetchReviewCount();
-      window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
-      await loadNextWord();
-    } catch (error) {
-      console.error("Error saving review:", error);
-      setError("Failed to save review. Please try again.");
-    }
+      ),
+      () => offlineHelpers.updateProgress(session.user.id, currentWord.english, rating)
+    );
+    
+    fetchReviewCount();
+    window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
+    await loadNextWord();
   };
 
   if (error) {

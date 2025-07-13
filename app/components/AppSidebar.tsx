@@ -12,7 +12,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { GraduationCap, GridFour } from "@phosphor-icons/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown } from "lucide-react";
 import {
@@ -24,6 +24,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
 import { AuthDialog } from "./AuthDialog";
+import { useOfflineNavigation } from "../hooks/useOfflineNavigation";
 
 interface AppSidebarProps {
   children: React.ReactNode;
@@ -31,7 +32,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { navigate } = useOfflineNavigation();
   const { reviewCount } = useWords();
   const { session } = useAuth();
   const { totalWords } = useWords();
@@ -96,7 +97,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/"}
-                      onClick={() => router.push("/")}
+                      onClick={() => navigate("/")}
                     >
                       <GridFour className="h-4 w-4" />
                       <span>Browse all words</span>
@@ -106,7 +107,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/review"}
-                      onClick={() => router.push("/review")}
+                      onClick={() => navigate("/review")}
                     >
                       <GraduationCap className="h-4 w-4" />
                       <span>Review</span>

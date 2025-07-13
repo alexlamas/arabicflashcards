@@ -1,4 +1,7 @@
 import { supabase } from "../supabase";
+import { getOnlineStatus } from "../utils/connectivity";
+import { OfflineStorage } from "./offlineStorage";
+import { calculateDueWords, countDueWords } from "../utils/dueWordsCalculator";
 
 export class SpacedRepetitionService {
   static async startLearning(userId: string, wordEnglish: string) {
@@ -38,6 +41,16 @@ export class SpacedRepetitionService {
   }
 
   static async getDueWords(userId: string, limit: number = 20) {
+    // If offline, use cached words
+    if (!getOnlineStatus()) {
+      const cachedWords = OfflineStorage.getWords();
+      const dueWords = calculateDueWords(cachedWords, limit);
+      return dueWords.map((word) => ({
+        ...word,
+        word_english: word.english,
+      }));
+    }
+
     try {
       const now = new Date().toISOString();
 
@@ -71,10 +84,22 @@ export class SpacedRepetitionService {
       );
     } catch (error) {
       console.error("Error in getDueWords:", error);
-      throw error;
+      // Fallback to offline data on error
+      const cachedWords = OfflineStorage.getWords();
+      const dueWords = calculateDueWords(cachedWords, limit);
+      return dueWords.map((word) => ({
+        ...word,
+        word_english: word.english,
+      }));
     }
   }
   static async getDueWordsCount(userId: string): Promise<number> {
+    // If offline, use cached words
+    if (!getOnlineStatus()) {
+      const cachedWords = OfflineStorage.getWords();
+      return countDueWords(cachedWords);
+    }
+
     try {
       const now = new Date().toISOString();
 
@@ -89,7 +114,9 @@ export class SpacedRepetitionService {
       return count || 0;
     } catch (error) {
       console.error("Error getting due words count:", error);
-      throw error;
+      // Fallback to offline data on error
+      const cachedWords = OfflineStorage.getWords();
+      return countDueWords(cachedWords);
     }
   }
   static async processReview(

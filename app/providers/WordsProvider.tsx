@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { WordService } from "../services/wordService";
 import { WordsContext } from "../contexts/WordsContext";
 import { Word } from "../types/word";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { supabase } from "../supabase";
+import { SyncService } from "../services/syncService";
+import { OfflineStorage } from "../services/offlineStorage";
+import { getOnlineStatus } from "../utils/connectivity";
 
 export function WordsProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
@@ -39,12 +41,11 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const handleWordDeleted = async () => {
-    try {
-      const words = await WordService.getAllWords();
-      setWords(words);
-    } catch (error) {
-      console.error("Error reloading words:", error);
+  const handleWordDeleted = async (wordId?: string) => {
+    if (wordId) {
+      setWords((currentWords) => currentWords.filter((w) => w.id !== wordId));
+    } else {
+      await refreshWords();
     }
   };
 
@@ -52,13 +53,27 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const fetchedWords = await WordService.getAllWords();
+      let fetchedWords: Word[];
+      
+      if (getOnlineStatus()) {
+        fetchedWords = await SyncService.loadInitialData();
+      } else {
+        fetchedWords = OfflineStorage.getWords();
+      }
+      
       setWords(fetchedWords);
       setTotalWords(fetchedWords.length);
       fetchReviewCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
       console.error("Error loading words:", err);
+      
+      const cachedWords = OfflineStorage.getWords();
+      if (cachedWords.length > 0) {
+        setWords(cachedWords);
+        setTotalWords(cachedWords.length);
+        setError(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +83,9 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     refreshWords();
 
     if (!session?.user) return;
+
+    // Set up connectivity listener
+    const cleanupConnectivity = SyncService.setupConnectivityListeners();
 
     // Set up realtime subscription
     const channel = supabase
@@ -98,8 +116,14 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       )
       .subscribe();
 
+    // Initial sync if online
+    if (getOnlineStatus()) {
+      SyncService.syncPendingActions();
+    }
+
     return () => {
       supabase.removeChannel(channel);
+      cleanupConnectivity();
     };
   }, [session, refreshWords]);
 

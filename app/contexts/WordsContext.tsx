@@ -8,7 +8,7 @@ type WordsContextType = {
   totalWords: number;
   isLoading: boolean;
   error: string | null;
-  handleWordDeleted: () => Promise<void>;
+  handleWordDeleted: (wordId?: string) => Promise<void>;
   handleWordUpdate: (updatedWord: Word) => void;
   refreshWords: () => Promise<void>;
   reviewCount: number;

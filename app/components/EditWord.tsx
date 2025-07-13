@@ -20,6 +20,7 @@ import { PencilSimple, Spinner } from "@phosphor-icons/react";
 import { Word, WordType } from "../types/word";
 import { WordService } from "../services/wordService";
 import { useWords } from "../contexts/WordsContext";
+import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 
 interface EditWordProps {
   word: Word;
@@ -28,6 +29,7 @@ interface EditWordProps {
 
 export function EditWord({ word, onWordUpdate }: EditWordProps) {
   const { handleWordDeleted } = useWords();
+  const { handleOfflineAction } = useOfflineSync();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,13 +50,21 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
     try {
       if (!word.id) throw new Error("Word ID is required");
 
-      const updatedWord = await WordService.updateWord(word.id, {
-        ...word,
-        ...formData,
-      });
+      const updatedWord = await handleOfflineAction(
+        async () => {
+          return await WordService.updateWord(word.id!, {
+            ...word,
+            ...formData,
+          });
+        },
+        () => offlineHelpers.updateWord(word.id!, formData),
+        { ...word, ...formData }
+      );
 
-      onWordUpdate(updatedWord);
-      setOpen(false);
+      if (updatedWord) {
+        onWordUpdate(updatedWord);
+        setOpen(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update word");
     } finally {
@@ -149,8 +159,12 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
                 if (!word.id) return;
                 setLoading(true);
                 try {
-                  await WordService.deleteWord(word.id);
-                  await handleWordDeleted();
+                  await handleOfflineAction(
+                    () => WordService.deleteWord(word.id!),
+                    () => offlineHelpers.deleteWord(word.id!)
+                  );
+                  
+                  await handleWordDeleted(word.id);
                   setOpen(false);
                 } catch (err) {
                   setError(err instanceof Error ? err.message : "Failed to delete word");

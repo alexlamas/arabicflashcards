@@ -63,10 +63,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="bg-gray-50">
-      <meta
-        name="google-site-verification"
-        content="rSU7GMMmHm5j4KHAcS3QjX1PMwFA3NGGnaOJLFJn_kY"
-      />
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta
+          name="google-site-verification"
+          content="rSU7GMMmHm5j4KHAcS3QjX1PMwFA3NGGnaOJLFJn_kY"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >

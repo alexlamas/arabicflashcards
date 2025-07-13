@@ -12,6 +12,7 @@ import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { CheckCircle, Plus } from "@phosphor-icons/react";
 import NextReviewBadge from "./review/NextReviewBadge";
 import { Word } from "../types/word";
+import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 
 interface ProgressButtonsProps {
   word: Word;
@@ -21,27 +22,34 @@ interface ProgressButtonsProps {
 const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
   const { session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const { handleOfflineAction } = useOfflineSync();
 
   const handleStartLearning = async () => {
     if (!session?.user) return;
 
     setIsLoading(true);
     try {
-      const { count } = await SpacedRepetitionService.startLearning(
-        session.user.id,
-        word.english
-      );
       const updatedWord = {
         ...word,
         status: "learning" as const,
         next_review_date: new Date().toISOString(),
       };
-      onProgressUpdate?.(updatedWord);
-      window.dispatchEvent(
-        new CustomEvent("wordProgressUpdated", { detail: { count } })
+      
+      await handleOfflineAction(
+        async () => {
+          const { count } = await SpacedRepetitionService.startLearning(
+            session.user.id,
+            word.english
+          );
+          window.dispatchEvent(
+            new CustomEvent("wordProgressUpdated", { detail: { count } })
+          );
+          return count;
+        },
+        () => offlineHelpers.startLearning(session.user.id, word.english)
       );
-    } catch (error) {
-      console.error("Error starting learning:", error);
+      
+      onProgressUpdate?.(updatedWord);
     } finally {
       setIsLoading(false);
     }
