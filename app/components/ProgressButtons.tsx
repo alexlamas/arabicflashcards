@@ -59,8 +59,26 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
     return null;
   }
 
+  const getStatusContent = () => {
+    if (word.status === null) {
+      return { icon: <Plus className="w-4 h-4" />, tooltip: "Start learning" };
+    }
+    if (word.status === "learning") {
+      return { 
+        icon: word.next_review_date ? <NextReviewBadge nextReviewDate={word.next_review_date} /> : null, 
+        tooltip: "Time until next review" 
+      };
+    }
+    return { 
+      icon: <CheckCircle className="w-4 h-4 text-emerald-600" />, 
+      tooltip: "Word learned" 
+    };
+  };
+
+  const statusContent = getStatusContent();
+
   return (
-    <div className=" flex items-center gap-0 justify-end">
+    <div className="flex items-center gap-0 justify-end">
       <TooltipProvider delayDuration={100}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -70,28 +88,12 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
               onClick={word.status === null ? handleStartLearning : undefined}
               disabled={isLoading || word.status !== null}
             >
-              {word.status === null && <Plus className="w-4 h-4" />}
-              {word.status === "learning" && word.next_review_date && (
-                <NextReviewBadge nextReviewDate={word.next_review_date} />
-              )}
-              {word.status === "learned" && (
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-              )}
+              {statusContent.icon}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            {word.status === null && "Start learning"}
-            {word.status === "learning" && "Time until next review"}
-            {word.status === "learned" && "Word learned"}
-          </TooltipContent>
+          <TooltipContent>{statusContent.tooltip}</TooltipContent>
         </Tooltip>
-
-        <SentenceGenerator
-          word={{
-            english: word.english,
-            arabic: word.arabic,
-          }}
-        />
+        <SentenceGenerator word={{ english: word.english, arabic: word.arabic }} />
       </TooltipProvider>
     </div>
   );

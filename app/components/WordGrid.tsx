@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import WordList from "./WordList";
 import { Word, ViewMode } from "../types/word";
 import ProgressButtons from "./ProgressButtons";
 import { EditWord } from "./EditWord";
 import { useAuth } from "../contexts/AuthContext";
 
-const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
+const TypeBadge = ({ type }: { type: string }) => (
   <div className="text-xs font-medium px-2 py-0.5 rounded-full border-[0.5px] border-black/10 text-gray-600 mix-blend-luminosity">
     {type}
   </div>
 );
 
-const ListCard: React.FC<{
+const ListCard = ({ 
+  word, 
+  onProgressUpdate, 
+  onWordUpdate, 
+  isAdmin 
+}: {
   word: Word;
   onProgressUpdate: (updatedWord: Word) => void;
   onWordUpdate: (updatedWord: Word) => void;
   isAdmin: boolean;
-}> = ({ word, onProgressUpdate, onWordUpdate, isAdmin }) => (
+}) => (
   <div className="p-6 rounded-lg border-[0.5px] border-gray-200 relative group">
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2">
@@ -37,14 +42,21 @@ const ListCard: React.FC<{
   </div>
 );
 
-const FlashCard: React.FC<{
+const FlashCard = ({ 
+  word, 
+  isFlipped, 
+  onFlip, 
+  onProgressUpdate, 
+  onWordUpdate, 
+  isAdmin 
+}: {
   word: Word;
   isFlipped: boolean;
   onFlip: () => void;
   onProgressUpdate: (updatedWord: Word) => void;
   onWordUpdate: (updatedWord: Word) => void;
   isAdmin: boolean;
-}> = ({ word, isFlipped, onFlip, onProgressUpdate, onWordUpdate, isAdmin }) => (
+}) => (
   <div className="h-36" style={{ perspective: "1000px" }}>
     <div
       className="absolute inset-0 w-full h-full transition-transform duration-500 preserve-3d cursor-pointer"
@@ -99,25 +111,9 @@ export function WordGrid({
   const { session } = useAuth();
   const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [localWords, setLocalWords] = useState<Word[]>(words);
-
-  useEffect(() => {
-    setLocalWords(words);
-  }, [words]);
-
-  const handleProgressUpdate = (updatedWord: Word) => {
-    setLocalWords((prevWords) =>
-      prevWords.map((word) =>
-        word.english === updatedWord.english ? updatedWord : word
-      )
-    );
-  };
 
   const handleFlip = (english: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [english]: !prev[english],
-    }));
+    setFlipped(prev => ({ ...prev, [english]: !prev[english] }));
   };
 
   if (view === "list") {
@@ -132,21 +128,21 @@ export function WordGrid({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {localWords.map((word) => (
+      {words.map((word) => (
         <div key={word.english}>
           {view === "flashcard" ? (
             <FlashCard
               word={word}
               isFlipped={flipped[word.english]}
               onFlip={() => handleFlip(word.english)}
-              onProgressUpdate={handleProgressUpdate}
+              onProgressUpdate={onWordUpdate}
               onWordUpdate={onWordUpdate}
               isAdmin={isAdmin}
             />
           ) : (
             <ListCard
               word={word}
-              onProgressUpdate={handleProgressUpdate}
+              onProgressUpdate={onWordUpdate}
               onWordUpdate={onWordUpdate}
               isAdmin={isAdmin}
             />

@@ -1,17 +1,24 @@
-// app/api/generate-hint/route.ts
 import { NextResponse } from "next/server";
 import { ClaudeService } from "@/app/services/claudeService";
+import { handleApiError, validateRequest } from "../utils";
+
+type HintRequest = {
+  english: string;
+  arabic: string;
+};
 
 export async function POST(req: Request) {
   try {
-    const { english, arabic } = await req.json();
+    const data = await req.json();
 
-    if (!english || !arabic) {
+    if (!validateRequest<HintRequest>(data, ["english", "arabic"])) {
       return NextResponse.json(
         { error: "Both English and Arabic words are required" },
         { status: 400 }
       );
     }
+
+    const { english, arabic } = data;
 
     const prompt = `Create a memorable mnemonic hint to help an English speaker remember the Arabic word "${arabic}" which means "${english}". 
 
@@ -25,13 +32,8 @@ export async function POST(req: Request) {
     Provide ONLY the hint text itself with no additional formatting or explanation.`;
 
     const hint = await ClaudeService.chatCompletion(prompt);
-
     return NextResponse.json({ hint });
   } catch (error) {
-    console.error("API Error:", error);
-    return NextResponse.json(
-      { error: "Failed to generate hint" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to generate hint");
   }
 }

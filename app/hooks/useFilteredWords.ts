@@ -1,26 +1,17 @@
 import { useMemo } from "react";
 import type { Word } from "../types/word";
 
-interface UseFilteredWordsProps {
-  words: Word[];
-  searchTerm: string;
-}
-
-export function useFilteredWords({ words, searchTerm }: UseFilteredWordsProps) {
+export function useFilteredWords({ words, searchTerm }: { words: Word[]; searchTerm: string }) {
   return useMemo(() => {
-    // First apply search filter
-    const filteredWords = words.filter((word) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        !searchTerm ||
+    if (!searchTerm) return [...words].sort((a, b) => a.english.localeCompare(b.english));
+    
+    const searchLower = searchTerm.toLowerCase();
+    return words
+      .filter(word => 
         word.english.toLowerCase().includes(searchLower) ||
         word.arabic.includes(searchTerm) ||
         word.transliteration.toLowerCase().includes(searchLower)
-      );
-    });
-
-    return [...filteredWords].sort((a, b) =>
-      a.english.localeCompare(b.english)
-    );
+      )
+      .sort((a, b) => a.english.localeCompare(b.english));
   }, [words, searchTerm]);
 }

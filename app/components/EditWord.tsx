@@ -51,12 +51,7 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
       if (!word.id) throw new Error("Word ID is required");
 
       const updatedWord = await handleOfflineAction(
-        async () => {
-          return await WordService.updateWord(word.id!, {
-            ...word,
-            ...formData,
-          });
-        },
+        () => WordService.updateWord(word.id!, { ...word, ...formData }),
         () => offlineHelpers.updateWord(word.id!, formData),
         { ...word, ...formData }
       );
@@ -93,40 +88,23 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
-            <div className="grid w-full items-center gap-2">
-              <Input
-                placeholder="English"
-                value={formData.english}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, english: e.target.value }))
-                }
-              />
-            </div>
-
-            <div className="grid w-full items-center gap-2">
-              <Input
-                placeholder="Arabic"
-                value={formData.arabic}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, arabic: e.target.value }))
-                }
-                dir="rtl"
-                className="font-arabic text-lg"
-              />
-            </div>
-
-            <div className="grid w-full items-center gap-2">
-              <Input
-                placeholder="Transliteration"
-                value={formData.transliteration}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    transliteration: e.target.value,
-                  }))
-                }
-              />
-            </div>
+            <Input
+              placeholder="English"
+              value={formData.english}
+              onChange={(e) => setFormData(prev => ({ ...prev, english: e.target.value }))}
+            />
+            <Input
+              placeholder="Arabic"
+              value={formData.arabic}
+              onChange={(e) => setFormData(prev => ({ ...prev, arabic: e.target.value }))}
+              dir="rtl"
+              className="font-arabic text-lg"
+            />
+            <Input
+              placeholder="Transliteration"
+              value={formData.transliteration}
+              onChange={(e) => setFormData(prev => ({ ...prev, transliteration: e.target.value }))}
+            />
 
             <div className="grid w-full items-center gap-2">
               <Select

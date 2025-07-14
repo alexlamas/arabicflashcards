@@ -1,24 +1,25 @@
-// app/services/claudeService.ts
 import Anthropic from "@anthropic-ai/sdk";
 
-// Initialize the Anthropic client
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
 
+const MODEL = "claude-3-opus-20240229";
+
 export class ClaudeService {
+  private static async createMessage(prompt: string, temperature = 0.7) {
+    const message = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+      temperature,
+    });
+    return message.content[0].type === "text" ? message.content[0].text : "";
+  }
+
   static async chatCompletion(prompt: string): Promise<string> {
     try {
-      const message = await anthropic.messages.create({
-        model: "claude-3-opus-20240229",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      });
-
-      const response =
-        message.content[0].type === "text" ? message.content[0].text : "";
-      return response;
+      return await this.createMessage(prompt);
     } catch (error) {
       console.error("Error in Claude chat completion:", error);
       throw new Error("Failed to get completion from Claude");
@@ -53,17 +54,7 @@ export class ClaudeService {
 
                       Remember, your final output should be ONLY the JSON object, with no additional text or explanations.`;
 
-      const message = await anthropic.messages.create({
-        model: "claude-3-opus-20240229",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 1,
-      });
-
-      const response =
-        message.content[0].type === "text" ? message.content[0].text : "";
-
-      // Parse the JSON response
+      const response = await this.createMessage(prompt, 1);
       return JSON.parse(response);
     } catch (error) {
       console.error("Error generating sentence:", error);
