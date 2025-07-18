@@ -5,7 +5,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useWords } from "@/app/contexts/WordsContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Shuffle, Trophy } from "@phosphor-icons/react";
+import { Shuffle, Trophy } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 interface MemoryCard {
