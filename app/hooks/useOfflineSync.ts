@@ -163,6 +163,7 @@ export const offlineHelpers = {
         },
         timestamp: Date.now(),
         id: `action_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        retries: 0,
       });
     }
   },
