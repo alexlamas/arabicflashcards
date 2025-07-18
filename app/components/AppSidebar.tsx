@@ -2,7 +2,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -13,7 +12,13 @@ import {
   SidebarInset,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, GridFour, BookOpen, Archive, CheckCircle } from "@phosphor-icons/react";
+import {
+  GraduationCap,
+  GridFour,
+  BookOpen,
+  Archive,
+  CheckCircle,
+} from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown } from "lucide-react";
@@ -35,7 +40,8 @@ interface AppSidebarProps {
 export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
   const { navigate } = useOfflineNavigation();
-  const { reviewCount, totalWords, learningCount, learnedCount, archiveCount } = useWords();
+  const { reviewCount, totalWords, learningCount, learnedCount, archiveCount } =
+    useWords();
   const { session } = useAuth();
   const { setShowAuthDialog, handleLogout } = useAuth();
 
@@ -138,9 +144,9 @@ export function AppSidebar({ children }: AppSidebarProps) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-            
+
             <SidebarSeparator />
-            
+
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
