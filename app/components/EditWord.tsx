@@ -9,6 +9,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
@@ -17,10 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PencilSimple, Spinner } from "@phosphor-icons/react";
-import { Word, WordType } from "../types/word";
+import { Word, WordType, ExampleSentence } from "../types/word";
 import { WordService } from "../services/wordService";
 import { useWords } from "../contexts/WordsContext";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
+import { ExampleSentenceManager } from "./ExampleSentenceManager";
 
 interface EditWordProps {
   word: Word;
@@ -38,6 +41,8 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
     arabic: word.arabic,
     transliteration: word.transliteration,
     type: word.type,
+    notes: word.notes || "",
+    example_sentences: word.example_sentences || [],
   });
 
   const wordTypes: WordType[] = ["noun", "verb", "adjective", "phrase"];
@@ -70,11 +75,7 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hover:bg-black/5 w-8 h-8 p-0"
-        >
+        <Button variant="ghost" size="icon">
           <PencilSimple className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -91,19 +92,28 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
             <Input
               placeholder="English"
               value={formData.english}
-              onChange={(e) => setFormData(prev => ({ ...prev, english: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, english: e.target.value }))
+              }
             />
             <Input
               placeholder="Arabic"
               value={formData.arabic}
-              onChange={(e) => setFormData(prev => ({ ...prev, arabic: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, arabic: e.target.value }))
+              }
               dir="rtl"
               className="font-arabic text-lg"
             />
             <Input
               placeholder="Transliteration"
               value={formData.transliteration}
-              onChange={(e) => setFormData(prev => ({ ...prev, transliteration: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  transliteration: e.target.value,
+                }))
+              }
             />
 
             <div className="grid w-full items-center gap-2">
@@ -125,6 +135,30 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Notes</label>
+              <Textarea
+                placeholder="Add any notes or extra details about this word..."
+                value={formData.notes || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                }
+                className="min-h-[80px]"
+              />
+            </div>
+
+            <ExampleSentenceManager
+              sentences={formData.example_sentences || []}
+              onChange={(sentences: ExampleSentence[]) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  example_sentences: sentences,
+                }))
+              }
+              wordArabic={formData.arabic || word.arabic}
+              wordEnglish={formData.english || word.english}
+            />
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
@@ -141,11 +175,13 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
                     () => WordService.deleteWord(word.id!),
                     () => offlineHelpers.deleteWord(word.id!)
                   );
-                  
+
                   await handleWordDeleted(word.id);
                   setOpen(false);
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : "Failed to delete word");
+                  setError(
+                    err instanceof Error ? err.message : "Failed to delete word"
+                  );
                 } finally {
                   setLoading(false);
                 }

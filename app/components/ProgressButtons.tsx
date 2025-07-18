@@ -6,7 +6,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { Archive, Plus } from "@phosphor-icons/react";
@@ -123,7 +122,6 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
             <TooltipContent>Archive word</TooltipContent>
           </Tooltip>
         )}
-        <SentenceGenerator word={{ english: word.english, arabic: word.arabic }} />
       </TooltipProvider>
     </div>
   );

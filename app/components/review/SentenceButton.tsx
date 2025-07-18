@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CircleNotch, Quotes, X } from "@phosphor-icons/react";
+import { ExampleSentence } from "../../types/word";
 
 interface SentenceButtonProps {
   word: {
     english: string;
     arabic: string;
+    example_sentences?: ExampleSentence[];
   };
 }
 
 export default function SentenceButton({ word }: SentenceButtonProps) {
-  const [sentence, setSentence] = useState<{
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [generatedSentence, setGeneratedSentence] = useState<{
     arabic: string;
     english: string;
     transliteration: string;
@@ -19,12 +22,35 @@ export default function SentenceButton({ word }: SentenceButtonProps) {
   const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
+  const hasSavedSentences = word.example_sentences && word.example_sentences.length > 0;
+  const currentSentence = hasSavedSentences 
+    ? word.example_sentences![currentIndex]
+    : generatedSentence;
+
   const getSentence = async () => {
-    if (sentence) {
+    // If we have saved sentences, just toggle visibility or cycle through them
+    if (hasSavedSentences) {
+      if (isVisible) {
+        // Cycle to next sentence or hide if at the end
+        if (currentIndex < word.example_sentences!.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+        } else {
+          setIsVisible(false);
+          setCurrentIndex(0);
+        }
+      } else {
+        setIsVisible(true);
+      }
+      return;
+    }
+
+    // If no saved sentences and we already generated one, just toggle visibility
+    if (generatedSentence) {
       setIsVisible(!isVisible);
       return;
     }
 
+    // Generate new sentence if none saved and none generated yet
     setLoading(true);
     setError(null);
     setIsVisible(true);
@@ -45,13 +71,22 @@ export default function SentenceButton({ word }: SentenceButtonProps) {
       }
 
       const data = await response.json();
-      setSentence(data);
+      setGeneratedSentence(data);
     } catch (error) {
       console.error("Error:", error);
       setError("Failed to generate example sentence. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const getButtonText = () => {
+    if (loading) return "Loading...";
+    if (!isVisible) return hasSavedSentences ? "Show saved examples" : "Show example";
+    if (hasSavedSentences && word.example_sentences!.length > 1) {
+      return `Example ${currentIndex + 1} of ${word.example_sentences!.length}`;
+    }
+    return "Hide example";
   };
 
   return (
@@ -70,10 +105,10 @@ export default function SentenceButton({ word }: SentenceButtonProps) {
           <Quotes className="mr-1 h-4 w-4" />
         )}
 
-        {!isVisible || loading ? "Show example" : "Hide example"}
+        {getButtonText()}
       </Button>
 
-      {isVisible && (sentence || error) && (
+      {isVisible && (currentSentence || error) && (
         <div className="animate-in slide-in-from-top-2 duration-200">
           {error ? (
             <div className="text-red-500 text-sm p-3 bg-red-50 rounded-md">
@@ -81,16 +116,19 @@ export default function SentenceButton({ word }: SentenceButtonProps) {
             </div>
           ) : (
             <div className="p-3 bg-violet-50 rounded-md border border-violet-100 font-medium">
-              {sentence && (
+              {currentSentence && (
                 <>
                   <p className="text-3xl font-arabic text-black/90 mb-2 font-medium">
-                    {sentence.arabic}
+                    {currentSentence.arabic}
                   </p>
                   <p className="text-sm text-black/50 ">
-                    {sentence.transliteration}
+                    {currentSentence.transliteration}
                   </p>
                   <div className="h-[0.5px] w-full bg-black/10 my-2"></div>
-                  <p className="text-sm text-black mt-2">{sentence.english}</p>
+                  <p className="text-sm text-black mt-2">{currentSentence.english}</p>
+                  {hasSavedSentences && (
+                    <p className="text-xs text-violet-600 mt-2">Saved example</p>
+                  )}
                 </>
               )}
             </div>

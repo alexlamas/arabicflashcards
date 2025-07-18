@@ -1,5 +1,11 @@
 export type WordType = "noun" | "verb" | "adjective" | "phrase";
 
+export interface ExampleSentence {
+  arabic: string;
+  transliteration: string;
+  english: string;
+}
+
 export interface Word {
   id?: string;
   english: string;
@@ -8,6 +14,8 @@ export interface Word {
   type: WordType | string;
   status?: ProgressState;
   next_review_date?: string;
+  example_sentences?: ExampleSentence[];
+  notes?: string;
 }
 export type ViewMode = "list" | "card" | "flashcard";
 export type ProgressState = "learned" | "learning" | "new" | "archived";

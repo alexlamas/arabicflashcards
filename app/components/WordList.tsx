@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,13 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import ProgressButtons from "./ProgressButtons";
 import { Word } from "../types/word";
 import { WordService } from "../services/wordService";
 import { Button } from "@/components/ui/button";
 import { Trash } from "@phosphor-icons/react";
-import { EditWord } from "./EditWord";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
+import { WordDetailModal } from "./WordDetailModal";
 
 interface WordListProps {
   words: Word[];
@@ -27,6 +26,8 @@ const WordList = ({
   onWordUpdate = () => {},
 }: WordListProps) => {
   const { handleOfflineAction } = useOfflineSync();
+  const [selectedWord, setSelectedWord] = useState<Word | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDelete = async (wordId: string | undefined) => {
     if (!wordId) return;
@@ -39,6 +40,11 @@ const WordList = ({
     onWordDeleted?.(wordId);
   };
 
+  const handleViewDetails = (word: Word) => {
+    setSelectedWord(word);
+    setIsModalOpen(true);
+  };
+
   if (!words.length) {
     return (
       <div className="rounded-md border p-4 text-center text-muted-foreground">
@@ -49,6 +55,18 @@ const WordList = ({
 
   return (
     <div className="rounded-md border">
+      <WordDetailModal 
+        word={selectedWord}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onWordUpdate={(updatedWord) => {
+          onWordUpdate?.(updatedWord);
+          // Update the selected word if it's the one being edited
+          if (selectedWord && selectedWord.id === updatedWord.id) {
+            setSelectedWord(updatedWord);
+          }
+        }}
+      />
       <Table>
         <TableHeader>
           <TableRow>
@@ -61,7 +79,11 @@ const WordList = ({
         </TableHeader>
         <TableBody>
           {words.map((word) => (
-            <TableRow key={word.english} className="hover:bg-black/[2%]">
+            <TableRow 
+              key={word.english} 
+              className="hover:bg-black/[2%] cursor-pointer"
+              onClick={() => handleViewDetails(word)}
+            >
               <TableCell className="font-medium">{word.english}</TableCell>
               <TableCell className="font-arabic text-lg">
                 {word.arabic}
@@ -70,9 +92,8 @@ const WordList = ({
                 {word.transliteration}
               </TableCell>
               <TableCell>{word.type}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-end space-x-1">
-                  <ProgressButtons word={word} />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -82,7 +103,6 @@ const WordList = ({
                     <Trash className="h-4 w-4" />
                     <span className="sr-only">Delete word</span>
                   </Button>
-                  <EditWord word={word} onWordUpdate={onWordUpdate} />
                 </div>
               </TableCell>
             </TableRow>

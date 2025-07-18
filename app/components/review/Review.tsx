@@ -9,6 +9,7 @@ import HintButton from "./Hint";
 import SentenceButton from "./SentenceButton";
 import { useWords } from "../../contexts/WordsContext";
 import { useOfflineSync, offlineHelpers } from "../../hooks/useOfflineSync";
+import { WordNotes } from "../WordNotes";
 
 export function Review() {
   const { session } = useAuth();
@@ -98,6 +99,12 @@ export function Review() {
         <HintButton word={currentWord} />
         <SentenceButton word={currentWord} />
       </div>
+      
+      {currentWord.notes && (
+        <div className="mt-4">
+          <WordNotes notes={currentWord.notes} />
+        </div>
+      )}
 
       {isFlipped && (
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">

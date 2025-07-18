@@ -55,6 +55,8 @@ export class WordService {
       arabic: word.arabic,
       transliteration: word.transliteration,
       type: word.type,
+      notes: word.notes,
+      example_sentences: word.example_sentences,
     };
 
     console.log("Update payload:", updatePayload);
