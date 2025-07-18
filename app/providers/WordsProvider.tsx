@@ -16,6 +16,9 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalWords, setTotalWords] = useState(0);
+  const [learningCount, setLearningCount] = useState(0);
+  const [learnedCount, setLearnedCount] = useState(0);
+  const [archiveCount, setArchiveCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
   const fetchReviewCount = useCallback(async () => {
@@ -61,17 +64,51 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         fetchedWords = OfflineStorage.getWords();
       }
       
+      // Default undefined/null status to "learning"
+      fetchedWords = fetchedWords.map(word => ({
+        ...word,
+        status: word.status || "learning"
+      }));
+      
       setWords(fetchedWords);
       setTotalWords(fetchedWords.length);
+      
+      // Calculate category counts
+      const learningWords = fetchedWords.filter(w => w.status === "learning" || !w.status);
+      setLearningCount(learningWords.length);
+      
+      const learnedWords = fetchedWords.filter(w => w.status === "learned");
+      setLearnedCount(learnedWords.length);
+      
+      const archiveWords = fetchedWords.filter(w => w.status === "archived");
+      setArchiveCount(archiveWords.length);
+      
       fetchReviewCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
       console.error("Error loading words:", err);
       
-      const cachedWords = OfflineStorage.getWords();
+      let cachedWords = OfflineStorage.getWords();
       if (cachedWords.length > 0) {
+        // Default undefined/null status to "learning" for cached words too
+        cachedWords = cachedWords.map(word => ({
+          ...word,
+          status: word.status || "learning"
+        }));
+        
         setWords(cachedWords);
         setTotalWords(cachedWords.length);
+        
+        // Calculate category counts for cached words
+        const learningWords = cachedWords.filter(w => w.status === "learning" || !w.status);
+        setLearningCount(learningWords.length);
+        
+        const learnedWords = cachedWords.filter(w => w.status === "learned");
+        setLearnedCount(learnedWords.length);
+        
+        const archiveWords = cachedWords.filter(w => w.status === "archived");
+        setArchiveCount(archiveWords.length);
+        
         setError(null);
       }
     } finally {
@@ -133,6 +170,9 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         words,
         setWords,
         totalWords,
+        learningCount,
+        learnedCount,
+        archiveCount,
         isLoading,
         error,
         handleWordDeleted,

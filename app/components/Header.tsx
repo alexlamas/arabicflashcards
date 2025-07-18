@@ -15,7 +15,7 @@ export function Header({
   session,
   searchTerm = "",
   setSearchTerm,
-
+  title,
   view,
   setView,
 }: {
@@ -23,7 +23,7 @@ export function Header({
   session?: Session | null;
   searchTerm?: string;
   setSearchTerm?: (value: string) => void;
-
+  title?: string;
   view?: ViewMode;
   setView?: (ViewMode: ViewMode) => void;
 }) {
@@ -35,6 +35,7 @@ export function Header({
     <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30 ">
       <SidebarTrigger />
       <Separator orientation="vertical" className="mr-2 h-4" />
+      {title && <h1 className="font-semibold text-lg">{title}</h1>}
       {variant === "review" && <ReviewTimeline />}
       {showSearch && (
         <>

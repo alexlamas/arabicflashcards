@@ -10,7 +10,7 @@ export interface Word {
   next_review_date?: string;
 }
 export type ViewMode = "list" | "card" | "flashcard";
-export type ProgressState = "learned" | "learning" | "new";
+export type ProgressState = "learned" | "learning" | "new" | "archived";
 export type ProgressMap = Record<string, ProgressState>;
 
 export interface WordProgress {

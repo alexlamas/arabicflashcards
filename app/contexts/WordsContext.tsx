@@ -6,6 +6,9 @@ type WordsContextType = {
   words: Word[];
   setWords: Dispatch<SetStateAction<Word[]>>;
   totalWords: number;
+  learningCount: number;
+  learnedCount: number;
+  archiveCount: number;
   isLoading: boolean;
   error: string | null;
   handleWordDeleted: (wordId?: string) => Promise<void>;
@@ -19,6 +22,9 @@ export const WordsContext = createContext<WordsContextType>({
   words: [],
   setWords: () => {},
   totalWords: 0,
+  learningCount: 0,
+  learnedCount: 0,
+  archiveCount: 0,
   isLoading: true,
   error: null,
   handleWordDeleted: async () => {},

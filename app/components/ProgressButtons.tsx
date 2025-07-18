@@ -9,8 +9,7 @@ import {
 import SentenceGenerator from "./SentenceGenerator";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { CheckCircle, Plus } from "@phosphor-icons/react";
-import NextReviewBadge from "./review/NextReviewBadge";
+import { Archive, Plus } from "@phosphor-icons/react";
 import { Word } from "../types/word";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 
@@ -24,7 +23,38 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { handleOfflineAction } = useOfflineSync();
 
-  const handleStartLearning = async () => {
+  const handleArchive = async () => {
+    if (!session?.user) return;
+
+    setIsLoading(true);
+    try {
+      const updatedWord = {
+        ...word,
+        status: "archived" as const,
+      };
+      
+      await handleOfflineAction(
+        async () => {
+          // Archive the word
+          const { count } = await SpacedRepetitionService.markAsArchived(
+            session.user.id,
+            word.english
+          );
+          window.dispatchEvent(
+            new CustomEvent("wordProgressUpdated", { detail: { count } })
+          );
+          return count;
+        },
+        () => offlineHelpers.markAsArchived(session.user.id, word.english)
+      );
+      
+      onProgressUpdate?.(updatedWord);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnarchive = async () => {
     if (!session?.user) return;
 
     setIsLoading(true);
@@ -59,40 +89,40 @@ const ProgressButtons = ({ word, onProgressUpdate }: ProgressButtonsProps) => {
     return null;
   }
 
-  const getStatusContent = () => {
-    if (word.status === null) {
-      return { icon: <Plus className="w-4 h-4" />, tooltip: "Start learning" };
-    }
-    if (word.status === "learning") {
-      return { 
-        icon: word.next_review_date ? <NextReviewBadge nextReviewDate={word.next_review_date} /> : null, 
-        tooltip: "Time until next review" 
-      };
-    }
-    return { 
-      icon: <CheckCircle className="w-4 h-4 text-emerald-600" />, 
-      tooltip: "Word learned" 
-    };
-  };
-
-  const statusContent = getStatusContent();
+  const isArchived = word.status === "archived";
 
   return (
     <div className="flex items-center gap-0 justify-end">
       <TooltipProvider delayDuration={100}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={word.status === null ? handleStartLearning : undefined}
-              disabled={isLoading || word.status !== null}
-            >
-              {statusContent.icon}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{statusContent.tooltip}</TooltipContent>
-        </Tooltip>
+        {isArchived ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleUnarchive}
+                disabled={isLoading}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Learn</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleArchive}
+                disabled={isLoading}
+              >
+                <Archive className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Archive word</TooltipContent>
+          </Tooltip>
+        )}
         <SentenceGenerator word={{ english: word.english, arabic: word.arabic }} />
       </TooltipProvider>
     </div>

@@ -142,4 +142,28 @@ export const offlineHelpers = {
     
     OfflineStorage.addAction(OfflineQueue.createProgressAction(userId, wordEnglish, rating));
   },
+  markAsArchived: (userId: string, wordEnglish: string) => {
+    const words = OfflineStorage.getWords();
+    const wordIndex = words.findIndex(w => w.english === wordEnglish);
+    
+    if (wordIndex !== -1) {
+      const updatedWord = {
+        ...words[wordIndex],
+        status: "archived" as const,
+      };
+      OfflineStorage.updateWord(words[wordIndex].id!, updatedWord);
+      
+      // Add an action to sync when online  
+      OfflineStorage.addAction({
+        type: "UPDATE_PROGRESS",
+        payload: {
+          userId,
+          wordEnglish,
+          rating: -1, // Special value for archiving
+        },
+        timestamp: Date.now(),
+        id: `action_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      });
+    }
+  },
 };

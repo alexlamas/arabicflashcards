@@ -15,7 +15,11 @@ export async function POST(req: Request) {
 
     // If this is a confirmed word save with edited details
     if (confirmed && word) {
-      const { data, error } = await supabase
+      // Get the current user to create the word with learning status
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // First insert the word
+      const { data: wordData, error: wordError } = await supabase
         .from("words")
         .insert([
           {
@@ -25,6 +29,38 @@ export async function POST(req: Request) {
             type: word.type as WordType,
           },
         ])
+        .select()
+        .single();
+      
+      if (wordError) {
+        console.error("Word insert error:", wordError);
+        throw wordError;
+      }
+
+      // Then create word_progress entry to mark it as learning by default
+      if (user) {
+        const { error: progressError } = await supabase
+          .from("word_progress")
+          .insert([
+            {
+              user_id: user.id,
+              word_english: word.english,
+              status: "learning",
+              interval: 0,
+              ease_factor: 2.5,
+              review_count: 0,
+              next_review_date: new Date().toISOString(),
+            },
+          ]);
+        
+        if (progressError) {
+          console.error("Progress insert error:", progressError);
+        }
+      }
+
+      // Fetch the complete data with progress
+      const { data, error } = await supabase
+        .from("words")
         .select(
           `
           *,
@@ -34,6 +70,7 @@ export async function POST(req: Request) {
           )
         `
         )
+        .eq('id', wordData.id)
         .single();
 
       if (error) {

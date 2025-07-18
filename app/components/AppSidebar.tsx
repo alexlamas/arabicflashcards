@@ -2,6 +2,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -10,8 +11,9 @@ import {
   SidebarProvider,
   Sidebar,
   SidebarInset,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, GridFour } from "@phosphor-icons/react";
+import { GraduationCap, GridFour, BookOpen, Archive, CheckCircle } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown } from "lucide-react";
@@ -33,9 +35,8 @@ interface AppSidebarProps {
 export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
   const { navigate } = useOfflineNavigation();
-  const { reviewCount } = useWords();
+  const { reviewCount, totalWords, learningCount, learnedCount, archiveCount } = useWords();
   const { session } = useAuth();
-  const { totalWords } = useWords();
   const { setShowAuthDialog, handleLogout } = useAuth();
 
   const handleLoginClick = (event: Event) => {
@@ -100,10 +101,49 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       onClick={() => navigate("/")}
                     >
                       <GridFour className="h-4 w-4" />
-                      <span>Browse all words</span>
+                      <span>All words</span>
                       <SidebarMenuBadge>{totalWords}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/learning"}
+                      onClick={() => navigate("/learning")}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span>Learning</span>
+                      <SidebarMenuBadge>{learningCount}</SidebarMenuBadge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/learned"}
+                      onClick={() => navigate("/learned")}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Learned</span>
+                      <SidebarMenuBadge>{learnedCount}</SidebarMenuBadge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/archive"}
+                      onClick={() => navigate("/archive")}
+                    >
+                      <Archive className="h-4 w-4" />
+                      <span>Archive</span>
+                      <SidebarMenuBadge>{archiveCount}</SidebarMenuBadge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+            
+            <SidebarSeparator />
+            
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/review"}
