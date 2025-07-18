@@ -193,13 +193,6 @@ export default function MemoryGamePage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
             <h1 className="text-2xl font-bold">Memory Game</h1>
           </div>
           <Button
