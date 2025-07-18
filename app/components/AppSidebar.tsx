@@ -18,6 +18,7 @@ import {
   BookOpen,
   Archive,
   CheckCircle,
+  GameController,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -150,6 +151,15 @@ export function AppSidebar({ children }: AppSidebarProps) {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/memory-game"}
+                      onClick={() => navigate("/memory-game")}
+                    >
+                      <GameController className="h-4 w-4" />
+                      <span>Memory Game</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/review"}
