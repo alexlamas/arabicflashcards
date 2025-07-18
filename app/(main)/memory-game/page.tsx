@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Shuffle, Trophy } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
-import type { Word } from "@/app/types/word";
 
 interface MemoryCard {
   id: string;
@@ -30,7 +29,7 @@ export default function MemoryGamePage() {
   const [gameComplete, setGameComplete] = useState(false);
 
   // Get learning words
-  const learningWords = words.filter(word => word.status === "learning");
+  const learningWords = words.filter((word) => word.status === "learning");
 
   useEffect(() => {
     if (learningWords.length > 0) {
@@ -46,7 +45,7 @@ export default function MemoryGamePage() {
 
     // Create memory cards (each word creates 2 cards: arabic and english)
     const memoryCards: MemoryCard[] = [];
-    
+
     gameWords.forEach((word) => {
       // Arabic card
       memoryCards.push({
@@ -57,7 +56,7 @@ export default function MemoryGamePage() {
         isFlipped: false,
         isMatched: false,
       });
-      
+
       // English card
       memoryCards.push({
         id: `${word.id}-english`,
@@ -80,11 +79,11 @@ export default function MemoryGamePage() {
 
   const handleCardClick = (cardId: string) => {
     if (isChecking) return;
-    
-    const card = cards.find(c => c.id === cardId);
+
+    const card = cards.find((c) => c.id === cardId);
     if (!card || card.isFlipped || card.isMatched) return;
 
-    const newCards = cards.map(c => 
+    const newCards = cards.map((c) =>
       c.id === cardId ? { ...c, isFlipped: true } : c
     );
     setCards(newCards);
@@ -100,20 +99,25 @@ export default function MemoryGamePage() {
 
   const checkForMatch = (selected: string[]) => {
     const [firstId, secondId] = selected;
-    const firstCard = cards.find(c => c.id === firstId);
-    const secondCard = cards.find(c => c.id === secondId);
+    const firstCard = cards.find((c) => c.id === firstId);
+    const secondCard = cards.find((c) => c.id === secondId);
 
     if (!firstCard || !secondCard) return;
 
-    setMoves(prev => prev + 1);
+    setMoves((prev) => prev + 1);
 
-    if (firstCard.wordId === secondCard.wordId && firstCard.type !== secondCard.type) {
+    if (
+      firstCard.wordId === secondCard.wordId &&
+      firstCard.type !== secondCard.type
+    ) {
       // Match found!
       setTimeout(() => {
-        setCards(prev => prev.map(c => 
-          c.wordId === firstCard.wordId ? { ...c, isMatched: true } : c
-        ));
-        setMatches(prev => {
+        setCards((prev) =>
+          prev.map((c) =>
+            c.wordId === firstCard.wordId ? { ...c, isMatched: true } : c
+          )
+        );
+        setMatches((prev) => {
           const newMatches = prev + 1;
           if (newMatches === cards.length / 2) {
             setGameComplete(true);
@@ -126,11 +130,13 @@ export default function MemoryGamePage() {
     } else {
       // No match - flip cards back
       setTimeout(() => {
-        setCards(prev => prev.map(c => 
-          c.id === firstId || c.id === secondId 
-            ? { ...c, isFlipped: false } 
-            : c
-        ));
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === firstId || c.id === secondId
+              ? { ...c, isFlipped: false }
+              : c
+          )
+        );
         setSelectedCards([]);
         setIsChecking(false);
       }, 1500);
@@ -141,7 +147,9 @@ export default function MemoryGamePage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="p-6 text-center">
-          <p className="text-muted-foreground">Please log in to play the memory game</p>
+          <p className="text-muted-foreground">
+            Please log in to play the memory game
+          </p>
         </Card>
       </div>
     );
@@ -154,9 +162,7 @@ export default function MemoryGamePage() {
           <p className="text-muted-foreground mb-4">
             You need words in "Learning" status to play the memory game
           </p>
-          <Button onClick={() => router.push("/")}>
-            Browse Words
-          </Button>
+          <Button onClick={() => router.push("/")}>Browse Words</Button>
         </Card>
       </div>
     );
@@ -172,9 +178,7 @@ export default function MemoryGamePage() {
             You completed the game in {moves} moves
           </p>
           <div className="flex gap-3 justify-center">
-            <Button onClick={initializeGame}>
-              Play Again
-            </Button>
+            <Button onClick={initializeGame}>Play Again</Button>
             <Button variant="outline" onClick={() => router.push("/review")}>
               Go to Review
             </Button>
@@ -210,7 +214,9 @@ export default function MemoryGamePage() {
 
         <div className="flex justify-between mb-6 text-sm text-muted-foreground">
           <span>Moves: {moves}</span>
-          <span>Matches: {matches}/{cards.length / 2}</span>
+          <span>
+            Matches: {matches}/{cards.length / 2}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -218,24 +224,32 @@ export default function MemoryGamePage() {
             <Card
               key={card.id}
               className={`aspect-square flex items-center justify-center p-3 cursor-pointer transition-all relative overflow-hidden ${
-                card.isFlipped || card.isMatched 
-                  ? "bg-primary/10" 
-                  : card.type === "arabic" 
-                    ? "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
-                    : "bg-green-50 hover:bg-green-100 dark:bg-green-950/20 dark:hover:bg-green-950/30"
+                card.isFlipped || card.isMatched
+                  ? "bg-primary/10"
+                  : card.type === "arabic"
+                  ? "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
+                  : "bg-green-50 hover:bg-green-100 dark:bg-green-950/20 dark:hover:bg-green-950/30"
               } ${card.isMatched ? "opacity-50" : ""}`}
               onClick={() => handleCardClick(card.id)}
             >
               {!card.isFlipped && !card.isMatched && (
-                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${
-                  card.type === "arabic" 
-                    ? "bg-blue-400 dark:bg-blue-600" 
-                    : "bg-green-400 dark:bg-green-600"
-                }`} />
+                <div
+                  className={`absolute top-2 right-2 w-3 h-3 rounded-full ${
+                    card.type === "arabic"
+                      ? "bg-blue-400 dark:bg-blue-600"
+                      : "bg-green-400 dark:bg-green-600"
+                  }`}
+                />
               )}
               <div className="text-center">
                 {card.isFlipped || card.isMatched ? (
-                  <span className={`${card.type === "arabic" ? "text-2xl font-arabic" : "text-base"} break-words max-w-full px-2`}>
+                  <span
+                    className={`${
+                      card.type === "arabic"
+                        ? "text-2xl font-arabic"
+                        : "text-base"
+                    } break-words max-w-full px-2`}
+                  >
                     {card.content}
                   </span>
                 ) : (
