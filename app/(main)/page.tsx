@@ -37,6 +37,7 @@ function HomeContent() {
         setSearchTerm={setSearchTerm}
         view={view}
         setView={setView}
+        title="All words"
       />
       <div className="p-4">
         <WordGrid

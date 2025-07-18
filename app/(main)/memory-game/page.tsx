@@ -160,7 +160,7 @@ export default function MemoryGamePage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Card className="p-6 text-center">
           <p className="text-muted-foreground mb-4">
-            You need words in "Learning" status to play the memory game
+            There are no words in your learning list yet.
           </p>
           <Button onClick={() => router.push("/")}>Browse Words</Button>
         </Card>
