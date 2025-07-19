@@ -12,6 +12,7 @@ interface MemoryCard {
   id: string;
   wordId: string;
   content: string;
+  transliteration?: string;
   type: "arabic" | "english";
   isFlipped: boolean;
   isMatched: boolean;
@@ -52,6 +53,7 @@ export default function MemoryGamePage() {
         id: `${word.id}-arabic`,
         wordId: word.id!,
         content: word.arabic,
+        transliteration: word.transliteration,
         type: "arabic",
         isFlipped: false,
         isMatched: false,
@@ -236,15 +238,22 @@ export default function MemoryGamePage() {
               )}
               <div className="text-center">
                 {card.isFlipped || card.isMatched ? (
-                  <span
-                    className={`${
-                      card.type === "arabic"
-                        ? "text-2xl font-arabic"
-                        : "text-base"
-                    } break-words max-w-full px-2`}
-                  >
-                    {card.content}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className={`${
+                        card.type === "arabic"
+                          ? "text-2xl font-arabic"
+                          : "text-base"
+                      } break-words max-w-full px-2`}
+                    >
+                      {card.content}
+                    </span>
+                    {card.type === "arabic" && card.transliteration && (
+                      <span className="text-sm text-muted-foreground">
+                        {card.transliteration}
+                      </span>
+                    )}
+                  </div>
                 ) : (
                   <span className="text-3xl text-muted-foreground">?</span>
                 )}
