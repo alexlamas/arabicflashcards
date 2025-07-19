@@ -9,6 +9,7 @@ import InfoButton from "./InfoButton";
 import { useWords } from "../../contexts/WordsContext";
 import { useOfflineSync, offlineHelpers } from "../../hooks/useOfflineSync";
 import { WordDetailModal } from "../WordDetailModal";
+import { motion } from "framer-motion";
 import {
   Star,
   Sparkle,
@@ -130,51 +131,124 @@ export function Review() {
       )}
 
       {isFlipped && (
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2 *:gap-2 *transition-all *:font-semibold">
-          <Button
-            variant="outline"
-            onClick={() => handleRating(0)}
-            className="bg-red-50 hover:bg-red-100 border-red-200 !text-red-700 flex items-center "
+        <motion.div 
+          className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2 *:gap-2 *transition-all *:font-semibold"
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div
+            variants={{
+              hidden: { y: 20, opacity: 0 },
+              show: { 
+                y: 0, 
+                opacity: 1,
+                transition: {
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20
+                }
+              }
+            }}
           >
-            <Ghost className="h-4 w-4" weight="bold" />
-            Forgot
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleRating(1)}
-            className="bg-orange-50 hover:bg-orange-100 border-orange-200 !text-orange-700 flex items-center  "
+            <Button
+              variant="outline"
+              onClick={() => handleRating(0)}
+              className="bg-red-50 hover:bg-red-100 border-red-200 !text-red-700 flex items-center w-full"
+            >
+              <Ghost className="h-4 w-4" weight="bold" />
+              Forgot
+            </Button>
+          </motion.div>
+          <motion.div
+            variants={{
+              hidden: { y: 20, opacity: 0 },
+              show: { 
+                y: 0, 
+                opacity: 1,
+                transition: {
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20
+                }
+              }
+            }}
           >
-            <SmileyNervous weight="bold" className="h-4 w-4" />
-            Struggled
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleRating(2)}
-            className="bg-green-50 hover:bg-green-100 border-green-200 !text-green-700 flex items-center  "
+            <Button
+              variant="outline"
+              onClick={() => handleRating(1)}
+              className="bg-orange-50 hover:bg-orange-100 border-orange-200 !text-orange-700 flex items-center w-full"
+            >
+              <SmileyNervous weight="bold" className="h-4 w-4" />
+              Struggled
+            </Button>
+          </motion.div>
+          <motion.div
+            variants={{
+              hidden: { y: 20, opacity: 0 },
+              show: { 
+                y: 0, 
+                opacity: 1,
+                transition: {
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20
+                }
+              }
+            }}
           >
-            <Balloon weight="bold" className="h-4 w-4" />
-            Remembered
-          </Button>
-          <Button
-            onClick={() => handleRating(3)}
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:scale-105 active:scale-100 flex items-center relative overflow-hidden group shadow-lg hover:shadow-xl border-0 transition-all"
+            <Button
+              variant="outline"
+              onClick={() => handleRating(2)}
+              className="bg-green-50 hover:bg-green-100 border-green-200 !text-green-700 flex items-center w-full"
+            >
+              <Balloon weight="bold" className="h-4 w-4" />
+              Remembered
+            </Button>
+          </motion.div>
+          <motion.div
+            variants={{
+              hidden: { y: 20, opacity: 0 },
+              show: { 
+                y: 0, 
+                opacity: 1,
+                transition: {
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20
+                }
+              }
+            }}
           >
-            <div className="relative">
-              <Star
-                weight="fill"
-                className="h-4 w-4 transition-transform group-hover:scale-0 group-hover:opacity-0 group-hover:rotate-12"
-              />
-              <Sparkle
-                weight="fill"
-                className="h-4 w-4 absolute inset-0 scale-0 opacity-0 transition-transform group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12"
-              />
-            </div>
-            Perfect
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </div>
-          </Button>
-        </div>
+            <Button
+              onClick={() => handleRating(3)}
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:scale-105 active:scale-100 flex items-center relative overflow-hidden group shadow-lg hover:shadow-xl border-0 transition-all w-full"
+            >
+              <div className="relative">
+                <Star
+                  weight="fill"
+                  className="h-4 w-4 transition-transform group-hover:scale-0 group-hover:opacity-0 group-hover:rotate-12"
+                />
+                <Sparkle
+                  weight="fill"
+                  className="h-4 w-4 absolute inset-0 scale-0 opacity-0 transition-transform group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12"
+                />
+              </div>
+              Perfect
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              </div>
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
 
       <WordDetailModal

@@ -70,11 +70,11 @@ export default function InfoButton({ word }: InfoButtonProps) {
       >
         <div className="space-y-3 p-0">
           {hasSavedSentences && currentSentence && (
-            <div className="p-3 bg-white group-hover:bg-neutral-100 transition-all rounded-lg border border-transparent group-hover:border-gray-100 font-medium">
+            <div className="p-3 bg-white group-hover:bg-neutral-100 transition-all rounded-lg border border-transparent group-hover:border-gray-100 font-medium select-none">
               <p className="text-3xl font-arabic text-black/90 mb-2 font-medium">
                 {currentSentence.arabic}
               </p>
-              <p className="text-sm text-black/70">
+              <p className="text-sm text-black/0">
                 {currentSentence.transliteration}
               </p>
               <div className="h-[0.5px] w-full bg-black/10 my-2"></div>
