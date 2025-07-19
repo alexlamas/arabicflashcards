@@ -16,7 +16,9 @@ import {
   Ghost,
   SmileyNervous,
   Balloon,
+  ArrowsOutSimple,
 } from "@phosphor-icons/react";
+import { ArrowRight } from "lucide-react";
 
 export function Review() {
   const { session } = useAuth();
@@ -91,7 +93,7 @@ export function Review() {
   return (
     <div className="max-w-2xl w-full mx-auto px-4">
       <Card
-        className="p-6 cursor-pointer"
+        className="p-6 cursor-pointer shadow-md"
         onClick={() => setIsFlipped(!isFlipped)}
       >
         <CardContent className="min-h-[200px] flex items-center justify-center">
@@ -117,14 +119,14 @@ export function Review() {
           <InfoButton word={currentWord} />
         </div>
       ) : (
-        <div className="w-full pt-4">
+        <div className="w-full flex justify-end pt-4">
           <Button
-            variant="outline"
-            className="w-full flex "
+            variant="ghost"
+            className=" flex group"
             onClick={() => setIsModalOpen(true)}
           >
-            <Eye className="h-4 w-4" />
-            View word details
+            Open
+            <ArrowRight className="group-hover:translate-x-0.5 transition-all group-hover:-rotate-12" />
           </Button>
         </div>
       )}
@@ -169,7 +171,7 @@ export function Review() {
                 className="h-4 w-4 absolute inset-0 scale-0 opacity-0 transition-transform group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12"
               />
             </div>
-            Perfection
+            Perfect
             <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </div>

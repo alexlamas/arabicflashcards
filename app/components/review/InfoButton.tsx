@@ -57,7 +57,7 @@ export default function InfoButton({ word }: InfoButtonProps) {
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-lg group"
+      className="relative w-full overflow-hidden rounded-lg group mt-4"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
@@ -70,11 +70,11 @@ export default function InfoButton({ word }: InfoButtonProps) {
       >
         <div className="space-y-3 p-0">
           {hasSavedSentences && currentSentence && (
-            <div className="p-3 bg-white group-hover:bg-gray-50 transition-all rounded-lg border border-transparent group-hover:border-gray-100 font-medium">
+            <div className="p-3 bg-white group-hover:bg-neutral-100 transition-all rounded-lg border border-transparent group-hover:border-gray-100 font-medium">
               <p className="text-3xl font-arabic text-black/90 mb-2 font-medium">
                 {currentSentence.arabic}
               </p>
-              <p className="text-sm text-black/50">
+              <p className="text-sm text-black/70">
                 {currentSentence.transliteration}
               </p>
               <div className="h-[0.5px] w-full bg-black/10 my-2"></div>
