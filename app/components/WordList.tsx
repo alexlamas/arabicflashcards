@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Trash } from "@phosphor-icons/react";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { WordDetailModal } from "./WordDetailModal";
+import { formatTimeUntilReview } from "../utils/formatReviewTime";
 
 interface WordListProps {
   words: Word[];
@@ -74,6 +75,7 @@ const WordList = ({
             <TableHead>Arabic</TableHead>
             <TableHead>Transliteration</TableHead>
             <TableHead>Type</TableHead>
+            <TableHead>Next Review</TableHead>
             <TableHead className="w-[100px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -92,6 +94,13 @@ const WordList = ({
                 {word.transliteration}
               </TableCell>
               <TableCell>{word.type}</TableCell>
+              <TableCell>
+                {formatTimeUntilReview(word.next_review_date) && (
+                  <span className="text-sm text-gray-500">
+                    {formatTimeUntilReview(word.next_review_date)}
+                  </span>
+                )}
+              </TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-end space-x-1">
                   <Button

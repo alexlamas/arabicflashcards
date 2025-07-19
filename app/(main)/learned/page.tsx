@@ -20,8 +20,17 @@ function LearnedContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("card");
 
-  // Filter for learned (mastered) words only
-  const learnedWords = words.filter(w => w.status === "learned");
+  // Filter for words with next_review_date beyond one month
+  const now = new Date();
+  const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  
+  const learnedWords = words.filter(w => {
+    // Exclude archived words
+    if (w.status === "archived") return false;
+    if (!w.next_review_date) return false;
+    const reviewDate = new Date(w.next_review_date);
+    return reviewDate > oneMonthFromNow;
+  });
   
   const filteredWords = useFilteredWords({
     words: learnedWords,

@@ -92,7 +92,7 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
           <PencilSimple className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Word</DialogTitle>
           <DialogDescription>

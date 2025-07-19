@@ -16,7 +16,8 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalWords, setTotalWords] = useState(0);
-  const [learningCount, setLearningCount] = useState(0);
+  const [weekCount, setWeekCount] = useState(0);
+  const [monthCount, setMonthCount] = useState(0);
   const [learnedCount, setLearnedCount] = useState(0);
   const [archiveCount, setArchiveCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
@@ -64,24 +65,49 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         fetchedWords = OfflineStorage.getWords();
       }
       
-      // Default undefined/null status to "learning"
+      // Default undefined/null status to "archived"
       fetchedWords = fetchedWords.map(word => ({
         ...word,
-        status: word.status || "learning"
+        status: word.status || "archived"
       }));
       
       setWords(fetchedWords);
       setTotalWords(fetchedWords.length);
       
-      // Calculate category counts
-      const learningWords = fetchedWords.filter(w => w.status === "learning" || !w.status);
-      setLearningCount(learningWords.length);
+      // Calculate category counts based on next_review_date
+      const now = new Date();
+      const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       
-      const learnedWords = fetchedWords.filter(w => w.status === "learned");
-      setLearnedCount(learnedWords.length);
-      
+      // First separate archived words
       const archiveWords = fetchedWords.filter(w => w.status === "archived");
       setArchiveCount(archiveWords.length);
+      
+      // Work with non-archived words only
+      const activeWords = fetchedWords.filter(w => w.status !== "archived");
+      
+      // Words without next_review_date, overdue, or due within a week should be included in "this week"
+      const weekWords = activeWords.filter(w => {
+        if (!w.next_review_date) return true; // Include words without review date
+        const reviewDate = new Date(w.next_review_date);
+        // Include overdue words (past dates) and words due within the next week
+        return reviewDate <= oneWeekFromNow;
+      });
+      setWeekCount(weekWords.length);
+      
+      const monthWords = activeWords.filter(w => {
+        if (!w.next_review_date) return false;
+        const reviewDate = new Date(w.next_review_date);
+        return reviewDate > oneWeekFromNow && reviewDate <= oneMonthFromNow;
+      });
+      setMonthCount(monthWords.length);
+      
+      const learnedWords = activeWords.filter(w => {
+        if (!w.next_review_date) return false;
+        const reviewDate = new Date(w.next_review_date);
+        return reviewDate > oneMonthFromNow;
+      });
+      setLearnedCount(learnedWords.length);
       
       fetchReviewCount();
     } catch (err) {
@@ -90,24 +116,49 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       
       let cachedWords = OfflineStorage.getWords();
       if (cachedWords.length > 0) {
-        // Default undefined/null status to "learning" for cached words too
+        // Default undefined/null status to "archived" for cached words too
         cachedWords = cachedWords.map(word => ({
           ...word,
-          status: word.status || "learning"
+          status: word.status || "archived"
         }));
         
         setWords(cachedWords);
         setTotalWords(cachedWords.length);
         
-        // Calculate category counts for cached words
-        const learningWords = cachedWords.filter(w => w.status === "learning" || !w.status);
-        setLearningCount(learningWords.length);
+        // Calculate category counts for cached words based on next_review_date
+        const now = new Date();
+        const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
         
-        const learnedWords = cachedWords.filter(w => w.status === "learned");
-        setLearnedCount(learnedWords.length);
-        
+        // First separate archived words
         const archiveWords = cachedWords.filter(w => w.status === "archived");
         setArchiveCount(archiveWords.length);
+        
+        // Work with non-archived words only
+        const activeWords = cachedWords.filter(w => w.status !== "archived");
+        
+        // Words without next_review_date, overdue, or due within a week should be included in "this week"
+        const weekWords = activeWords.filter(w => {
+          if (!w.next_review_date) return true; // Include words without review date
+          const reviewDate = new Date(w.next_review_date);
+          // Include overdue words (past dates) and words due within the next week
+          return reviewDate <= oneWeekFromNow;
+        });
+        setWeekCount(weekWords.length);
+        
+        const monthWords = activeWords.filter(w => {
+          if (!w.next_review_date) return false;
+          const reviewDate = new Date(w.next_review_date);
+          return reviewDate > oneWeekFromNow && reviewDate <= oneMonthFromNow;
+        });
+        setMonthCount(monthWords.length);
+        
+        const learnedWords = activeWords.filter(w => {
+          if (!w.next_review_date) return false;
+          const reviewDate = new Date(w.next_review_date);
+          return reviewDate > oneMonthFromNow;
+        });
+        setLearnedCount(learnedWords.length);
         
         setError(null);
       }
@@ -170,7 +221,8 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         words,
         setWords,
         totalWords,
-        learningCount,
+        weekCount,
+        monthCount,
         learnedCount,
         archiveCount,
         isLoading,

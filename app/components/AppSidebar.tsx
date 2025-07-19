@@ -15,10 +15,11 @@ import {
 import {
   GraduationCap,
   GridFour,
-  BookOpen,
   Archive,
-  CheckCircle,
   GameController,
+  BabyIcon,
+  ShieldChevronIcon,
+  RocketLaunchIcon,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -41,8 +42,14 @@ interface AppSidebarProps {
 export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
   const { navigate } = useOfflineNavigation();
-  const { reviewCount, totalWords, learningCount, learnedCount, archiveCount } =
-    useWords();
+  const {
+    reviewCount,
+    totalWords,
+    weekCount,
+    monthCount,
+    learnedCount,
+    archiveCount,
+  } = useWords();
   const { session } = useAuth();
   const { setShowAuthDialog, handleLogout } = useAuth();
 
@@ -114,12 +121,22 @@ export function AppSidebar({ children }: AppSidebarProps) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      isActive={pathname === "/learning"}
-                      onClick={() => navigate("/learning")}
+                      isActive={pathname === "/this-week"}
+                      onClick={() => navigate("/this-week")}
                     >
-                      <BookOpen className="h-4 w-4" />
-                      <span>Learning</span>
-                      <SidebarMenuBadge>{learningCount}</SidebarMenuBadge>
+                      <BabyIcon className="h-4 w-4" />
+                      <span>This week</span>
+                      <SidebarMenuBadge>{weekCount}</SidebarMenuBadge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/this-month"}
+                      onClick={() => navigate("/this-month")}
+                    >
+                      <ShieldChevronIcon className="h-4 w-4" />
+                      <span>This month</span>
+                      <SidebarMenuBadge>{monthCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
@@ -127,7 +144,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       isActive={pathname === "/learned"}
                       onClick={() => navigate("/learned")}
                     >
-                      <CheckCircle className="h-4 w-4" />
+                      <RocketLaunchIcon className="h-4 w-4" />
                       <span>Learned</span>
                       <SidebarMenuBadge>{learnedCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
@@ -138,7 +155,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       onClick={() => navigate("/archive")}
                     >
                       <Archive className="h-4 w-4" />
-                      <span>Archive</span>
+                      <span>Not Started</span>
                       <SidebarMenuBadge>{archiveCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -8,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Header } from "../../components/Header";
 import { ViewMode } from "../../types/word";
 
-function ArchiveContent() {
+function ThisMonthContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const {
     words,
@@ -20,11 +20,21 @@ function ArchiveContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<ViewMode>("card");
 
-  // Filter for not started (archived) words only
-  const archiveWords = words.filter(w => w.status === "archived");
+  // Filter for words with next_review_date within this month (but beyond this week)
+  const now = new Date();
+  const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  
+  const thisMonthWords = words.filter(w => {
+    // Exclude archived words
+    if (w.status === "archived") return false;
+    if (!w.next_review_date) return false;
+    const reviewDate = new Date(w.next_review_date);
+    return reviewDate > oneWeekFromNow && reviewDate <= oneMonthFromNow;
+  });
   
   const filteredWords = useFilteredWords({
-    words: archiveWords,
+    words: thisMonthWords,
     searchTerm,
   });
 
@@ -40,7 +50,7 @@ function ArchiveContent() {
         setSearchTerm={setSearchTerm}
         view={view}
         setView={setView}
-        title="Not Started"
+        title="This Month"
       />
       <div className="p-4">
         <WordGrid
@@ -54,6 +64,6 @@ function ArchiveContent() {
   );
 }
 
-export default function ArchivePage() {
-  return <ArchiveContent />;
+export default function ThisMonthPage() {
+  return <ThisMonthContent />;
 }

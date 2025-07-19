@@ -25,6 +25,11 @@ export function Review() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [feedbackAnimation, setFeedbackAnimation] = useState<{
+    isPlaying: boolean;
+    text: string;
+    color: string;
+  }>({ isPlaying: false, text: "", color: "" });
   const { fetchReviewCount } = useWords();
   const { handleOfflineAction } = useOfflineSync();
 
@@ -55,6 +60,30 @@ export function Review() {
   const handleRating = async (rating: number) => {
     if (!session?.user || !currentWord) return;
 
+    // Show feedback animation
+    const feedbackText =
+      rating === 0
+        ? "Forgot"
+        : rating === 1
+        ? "Struggled"
+        : rating === 2
+        ? "Remembered"
+        : "Perfect!";
+    const feedbackColor =
+      rating === 0
+        ? "bg-red-500"
+        : rating === 1
+        ? "bg-orange-500"
+        : rating === 2
+        ? "bg-green-500"
+        : "bg-emerald-500";
+
+    setFeedbackAnimation({
+      isPlaying: true,
+      text: feedbackText,
+      color: feedbackColor,
+    });
+
     await handleOfflineAction(
       () =>
         SpacedRepetitionService.processReview(
@@ -72,7 +101,12 @@ export function Review() {
 
     fetchReviewCount();
     window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
-    await loadNextWord();
+
+    // Wait for animation to complete before loading next word
+    setTimeout(async () => {
+      setFeedbackAnimation({ isPlaying: false, text: "", color: "" });
+      await loadNextWord();
+    }, 1800);
   };
 
   if (error) {
@@ -91,27 +125,106 @@ export function Review() {
 
   return (
     <div className="max-w-2xl w-full mx-auto px-4">
-      <Card
-        className="p-6 cursor-pointer shadow-md"
-        onClick={() => setIsFlipped(!isFlipped)}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <CardContent className="min-h-[200px] flex items-center justify-center">
-          {!isFlipped ? (
-            <h3 className="text-2xl font-semibold select-none">
-              {currentWord.english}
-            </h3>
-          ) : (
-            <div className="text-center">
-              <div className="text-3xl font-arabic mb-2 select-none">
-                {currentWord.arabic}
-              </div>
-              <div className="text-sm text-gray-600 select-none">
-                {currentWord.transliteration}
-              </div>
-            </div>
+        <Card
+          className="p-6 cursor-pointer shadow-md relative overflow-hidden"
+          onClick={() => setIsFlipped(!isFlipped)}
+        >
+          <CardContent className="min-h-[200px] flex items-center justify-center relative z-10">
+            <motion.div
+              key={isFlipped ? "back" : "front"}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {!isFlipped ? (
+                <h3 className="text-2xl font-semibold select-none">
+                  {currentWord.english}
+                </h3>
+              ) : (
+                <div className="text-center">
+                  <div className="text-3xl font-arabic mb-2 select-none">
+                    {currentWord.arabic}
+                  </div>
+                  <div className="text-sm text-gray-600 select-none">
+                    {currentWord.transliteration}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </CardContent>
+
+          {/* Feedback animation overlay */}
+          {feedbackAnimation.isPlaying && (
+            <>
+              {/* Background gradient sliding from left */}
+              <motion.div
+                className={`absolute inset-0 ${feedbackAnimation.color} z-20`}
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              >
+                {/* Gradient edge */}
+                <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-black/10" />
+              </motion.div>
+
+              {/* Text and icon */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center z-30"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.2 }}
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    delay: 0.35,
+                    duration: 0.3,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                  }}
+                  className="text-white text-3xl font-bold flex items-center gap-3"
+                >
+                  {feedbackAnimation.text === "Forgot" && (
+                    <Ghost size={40} weight="fill" className="animate-pulse" />
+                  )}
+                  {feedbackAnimation.text === "Struggled" && (
+                    <SmileyNervous
+                      size={40}
+                      weight="fill"
+                      className="animate-pulse"
+                    />
+                  )}
+                  {feedbackAnimation.text === "Remembered" && (
+                    <Balloon
+                      size={40}
+                      weight="fill"
+                      className="animate-bounce"
+                    />
+                  )}
+                  {feedbackAnimation.text === "Perfect!" && (
+                    <div className="relative">
+                      <Star size={40} weight="fill" className="animate-pulse" />
+                      <Sparkle
+                        size={20}
+                        weight="fill"
+                        className="absolute -top-2 -right-2 animate-ping"
+                      />
+                    </div>
+                  )}
+                  {feedbackAnimation.text}
+                </motion.div>
+              </motion.div>
+            </>
           )}
-        </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
 
       {!isFlipped ? (
         <div className="w-full pt-4">
@@ -131,16 +244,16 @@ export function Review() {
       )}
 
       {isFlipped && (
-        <motion.div 
+        <motion.div
           className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2 *:gap-2 *transition-all *:font-semibold"
           variants={{
             hidden: { opacity: 0 },
             show: {
               opacity: 1,
               transition: {
-                staggerChildren: 0.1
-              }
-            }
+                staggerChildren: 0.1,
+              },
+            },
           }}
           initial="hidden"
           animate="show"
@@ -148,15 +261,15 @@ export function Review() {
           <motion.div
             variants={{
               hidden: { y: 20, opacity: 0 },
-              show: { 
-                y: 0, 
+              show: {
+                y: 0,
                 opacity: 1,
                 transition: {
                   type: "spring",
                   stiffness: 260,
-                  damping: 20
-                }
-              }
+                  damping: 20,
+                },
+              },
             }}
           >
             <Button
@@ -171,15 +284,15 @@ export function Review() {
           <motion.div
             variants={{
               hidden: { y: 20, opacity: 0 },
-              show: { 
-                y: 0, 
+              show: {
+                y: 0,
                 opacity: 1,
                 transition: {
                   type: "spring",
                   stiffness: 260,
-                  damping: 20
-                }
-              }
+                  damping: 20,
+                },
+              },
             }}
           >
             <Button
@@ -194,15 +307,15 @@ export function Review() {
           <motion.div
             variants={{
               hidden: { y: 20, opacity: 0 },
-              show: { 
-                y: 0, 
+              show: {
+                y: 0,
                 opacity: 1,
                 transition: {
                   type: "spring",
                   stiffness: 260,
-                  damping: 20
-                }
-              }
+                  damping: 20,
+                },
+              },
             }}
           >
             <Button
@@ -217,15 +330,15 @@ export function Review() {
           <motion.div
             variants={{
               hidden: { y: 20, opacity: 0 },
-              show: { 
-                y: 0, 
+              show: {
+                y: 0,
                 opacity: 1,
                 transition: {
                   type: "spring",
                   stiffness: 260,
-                  damping: 20
-                }
-              }
+                  damping: 20,
+                },
+              },
             }}
           >
             <Button
@@ -256,7 +369,13 @@ export function Review() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onWordUpdate={(updatedWord) => {
-          setCurrentWord(updatedWord);
+          // If word is archived, close modal and load next word
+          if (updatedWord.status === "archived") {
+            setIsModalOpen(false);
+            loadNextWord();
+          } else {
+            setCurrentWord(updatedWord);
+          }
         }}
       />
     </div>
