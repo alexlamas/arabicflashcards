@@ -18,6 +18,8 @@ interface ExampleSentenceManagerProps {
   onChange: (sentences: ExampleSentence[]) => void;
   wordArabic: string;
   wordEnglish: string;
+  wordType?: string;
+  wordNotes?: string;
   onUnsavedChanges?: (hasUnsaved: boolean) => void;
 }
 
@@ -25,6 +27,9 @@ export function ExampleSentenceManager({
   sentences,
   onChange,
   wordArabic,
+  wordEnglish,
+  wordType,
+  wordNotes,
   onUnsavedChanges,
 }: ExampleSentenceManagerProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -95,11 +100,16 @@ export function ExampleSentenceManager({
         },
         body: JSON.stringify({
           word: wordArabic,
+          english: wordEnglish,
+          type: wordType,
+          notes: wordNotes,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate sentence");
+        const errorData = await response.json().catch(() => null);
+        console.error("API Error:", response.status, errorData);
+        throw new Error(errorData?.error || `API Error: ${response.status}`);
       }
 
       const data = await response.json();

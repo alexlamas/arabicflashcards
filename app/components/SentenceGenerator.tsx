@@ -18,6 +18,8 @@ interface SentenceGeneratorProps {
   word: {
     english: string;
     arabic: string;
+    type?: string;
+    notes?: string;
   };
 }
 
@@ -46,6 +48,9 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
           },
           body: JSON.stringify({
             word: word.arabic,
+            english: word.english,
+            type: word.type,
+            notes: word.notes,
           }),
         });
 

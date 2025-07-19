@@ -87,7 +87,7 @@ export class SpacedRepetitionService {
         .from("word_progress")
         .select("word_english, next_review_date")
         .eq("user_id", userId)
-        .eq("status", "learning")
+        .in("status", ["learning", "learned"])
         .lte("next_review_date", now)
         .order("next_review_date")
         .limit(limit);
@@ -137,7 +137,7 @@ export class SpacedRepetitionService {
         .from("word_progress")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId)
-        .eq("status", "learning")
+        .in("status", ["learning", "learned"])
         .lte("next_review_date", now);
 
       if (error) throw error;

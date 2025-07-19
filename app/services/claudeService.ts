@@ -8,12 +8,21 @@ const MODEL = "claude-3-opus-20240229";
 
 export class ClaudeService {
   private static async createMessage(prompt: string, temperature = 0.7) {
+    if (!process.env.CLAUDE_API_KEY) {
+      throw new Error("CLAUDE_API_KEY is not configured");
+    }
+    
     const message = await anthropic.messages.create({
       model: MODEL,
       max_tokens: 1000,
       messages: [{ role: "user", content: prompt }],
       temperature,
     });
+    
+    if (!message.content || message.content.length === 0) {
+      throw new Error("No content in Claude response");
+    }
+    
     return message.content[0].type === "text" ? message.content[0].text : "";
   }
 
@@ -26,39 +35,67 @@ export class ClaudeService {
     }
   }
 
-  static async generateSentence(word: string): Promise<{
+  static async generateSentence(
+    word: string,
+    english?: string,
+    type?: string,
+    notes?: string
+  ): Promise<{
     english: string;
     arabic: string;
     transliteration: string;
   }> {
     try {
-      const prompt = `You are an AI assistant specialized in Lebanese Arabic language education. Your task is to generate an example sentence using a given Arabic word, suitable for a language learning application.
-                      Here is the Arabic word you will use in your example sentence: "${word}"
-                      Your goal is to create a simple, clear example sentence in Lebanese Arabic that incorporates this word. The sentence should be natural, conversational, and helpful for learners of Lebanese Arabic.
+      const contextInfo = [];
+      if (english) contextInfo.push(`English meaning: "${english}"`);
+      if (type) contextInfo.push(`Word type: ${type}`);
+      if (notes) contextInfo.push(`Additional notes: ${notes}`);
+      
+      const contextSection = contextInfo.length > 0 
+        ? `\nContext information about the word:\n${contextInfo.join('\n')}\n` 
+        : '';
 
-                      Provide ONLY a JSON object with the following structure:
-                      {
-                        "arabic": "The sentence in Arabic script",
-                        "transliteration": "The Lebanese Arabic pronunciation using English letters",
-                        "english": "The English translation"
-                      }
+      const prompt = `You are an AI assistant specialized in Lebanese Arabic language education. Your task is to generate an example sentence using a given Arabic word.
 
-                      Ensure that your response adheres to these guidelines:
-                      1. Keep the sentence relatively short and simple (around 5-10 words).
-                      2. Use common, everyday vocabulary that a language learner might encounter.
-                      3. Ensure the sentence sounds natural and conversational.
-                      4. If the word has multiple meanings, choose the most common usage.
-                      5. If applicable, incorporate some aspect of Lebanese culture or daily life.
-                      6. Be culturally sensitive and appropriate. Avoid controversial topics, offensive language, or content that might be considered inappropriate for a general audience.
-                      7. Use numbers in the transliteration to represent Arabic sounds not present in English (e.g., "3" for ع).
+Arabic word: "${word}"${contextSection}
 
-                      Remember, your final output should be ONLY the JSON object, with no additional text or explanations.`;
+Create a simple, clear example sentence in Lebanese Arabic that uses this word naturally.
 
-      const response = await this.createMessage(prompt, 1);
-      return JSON.parse(response);
+Guidelines:
+- Keep the sentence short and simple (5-10 words)
+- Use ONLY common, everyday vocabulary (water, food, house, go, come, want, have, good, bad, big, small, etc.)
+- Ensure the sentence is grammatically correct and natural in Lebanese Arabic
+- Use the context provided to choose the correct meaning if the word has multiple meanings
+- Be culturally appropriate
+- Use numbers in transliteration for Arabic sounds (e.g., "3" for ع)
+- Vary sentence structures for creativity
+
+Return ONLY a JSON object with this exact structure:
+{
+  "arabic": "The sentence in Arabic script",
+  "transliteration": "The Lebanese Arabic pronunciation",
+  "english": "The English translation"
+}
+
+No additional text or explanations. Just the JSON.`;
+
+      const response = await this.createMessage(prompt, 1.0);
+      
+      try {
+        const parsed = JSON.parse(response);
+        return parsed;
+      } catch (parseError) {
+        console.error("Failed to parse Claude response:", response);
+        console.error("Parse error:", parseError);
+        throw new Error("Invalid response format from Claude");
+      }
     } catch (error) {
-      console.error("Error generating sentence:", error);
-      throw new Error("Failed to generate sentence");
+      console.error("Error generating sentence - full error:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      throw error;
     }
   }
 }

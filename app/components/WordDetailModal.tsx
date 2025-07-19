@@ -7,7 +7,14 @@ import {
 } from "@/components/ui/dialog";
 import { Word } from "../types/word";
 import { WordNotes } from "./WordNotes";
-import { X, Archive, Plus, Trash } from "@phosphor-icons/react";
+import {
+  X,
+  Archive,
+  Plus,
+  Trash,
+  NoteBlankIcon,
+  NotePencil,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { EditWord } from "./EditWord";
 import { useAuth } from "../contexts/AuthContext";
@@ -40,6 +47,7 @@ export function WordDetailModal({
   const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const { handleOfflineAction } = useOfflineSync();
   const { handleWordDeleted } = useWords();
 
@@ -175,7 +183,20 @@ export function WordDetailModal({
               ))}
             {isAdmin && (
               <>
-                <EditWord word={word} onWordUpdate={handleWordUpdate} />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditOpen(true)}
+                  title="Edit word"
+                >
+                  <NotePencil className="h-4 w-4" />
+                </Button>
+                <EditWord
+                  word={word}
+                  onWordUpdate={handleWordUpdate}
+                  open={isEditOpen}
+                  onOpenChange={setIsEditOpen}
+                />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -244,10 +265,29 @@ export function WordDetailModal({
 
           {/* Empty state */}
           {!hasSentences && !hasNotes && (
-            <div className="text-center py-8 text-gray-500">
-              <p className="text-lg">No example sentences or notes available</p>
+            <div
+              className="relative text-center py-8 text-gray-500 hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
+              onClick={() => isAdmin && setIsEditOpen(true)}
+            >
+              <NoteBlankIcon
+                size={24}
+                weight="fill"
+                className="mx-auto mb-2 -rotate-6 text-gray-300 group-hover:text-yellow-500 group-hover:rotate-[16px] transition-all"
+              />
+              <NoteBlankIcon
+                size={24}
+                weight="duotone"
+                className="absolute left-0 group-hover:left-[1rem] group-hover:text-yellow-500 right-1 top-[2.1rem] mx-auto mb-2 -rotate-6 group-hover:rotate-[18px] transition-all opacity-0 group-hover:opacity-20"
+              />
+              <NoteBlankIcon
+                size={24}
+                weight="duotone"
+                className="absolute left-0 group-hover:left-[0.6rem] group-hover:text-yellow-500 right-1 top-[2.03rem] mx-auto mb-2 -rotate-6 group-hover:rotate-[24px] transition-all opacity-0 group-hover:opacity-20"
+              />
               <p className="text-sm mt-1">
-                Edit this word to add examples and notes
+                {isAdmin
+                  ? "Click to add examples and notes"
+                  : "Add examples and notes"}
               </p>
             </div>
           )}

@@ -27,11 +27,17 @@ import { ExampleSentenceManager } from "./ExampleSentenceManager";
 interface EditWordProps {
   word: Word;
   onWordUpdate: (updatedWord: Word) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function EditWord({ word, onWordUpdate }: EditWordProps) {
+export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChange }: EditWordProps) {
   const { handleOfflineAction } = useOfflineSync();
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  
+  // Use controlled or uncontrolled pattern
+  const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
+  const setOpen = onOpenChange || setUncontrolledOpen;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasUnsavedSentences, setHasUnsavedSentences] = useState(false);
@@ -87,11 +93,13 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <PencilSimple className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <PencilSimple className="w-4 h-4" />
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Word</DialogTitle>
@@ -171,6 +179,8 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
               }
               wordArabic={formData.arabic || word.arabic}
               wordEnglish={formData.english || word.english}
+              wordType={formData.type || word.type}
+              wordNotes={formData.notes || word.notes}
               onUnsavedChanges={setHasUnsavedSentences}
             />
           </div>

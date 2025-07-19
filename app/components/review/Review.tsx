@@ -128,7 +128,6 @@ export function Review() {
       }
     }
 
-    // Update animation with next review text
     setFeedbackAnimation({
       isPlaying: true,
       text: feedbackText,
@@ -139,11 +138,15 @@ export function Review() {
     fetchReviewCount();
     window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
 
-    // Wait for animation to complete before loading next word
-    setTimeout(async () => {
+    // Keep the animation visible a bit longer
+    setTimeout(() => {
       setFeedbackAnimation({ isPlaying: false, text: "", color: "" });
-      await loadNextWord();
     }, 1800);
+
+    // Load next word slightly earlier to overlap with fade-out
+    setTimeout(async () => {
+      await loadNextWord();
+    }, 1750);
   };
 
   if (error) {
@@ -195,15 +198,17 @@ export function Review() {
             </motion.div>
           </CardContent>
 
-          {/* Feedback animation overlay */}
           {feedbackAnimation.isPlaying && (
             <>
-              {/* Background gradient sliding from left */}
               <motion.div
                 className={`absolute inset-0 ${feedbackAnimation.color} z-20`}
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
-                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.23, 1, 0.32, 1],
+                }}
               >
                 {/* Gradient edge */}
                 <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-black/10" />
@@ -214,7 +219,10 @@ export function Review() {
                 className="absolute inset-0 flex items-center justify-center z-30"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.2 }}
+                transition={{
+                  delay: 0.3,
+                  duration: 0.2,
+                }}
               >
                 <div className="flex flex-col items-center gap-2">
                   <motion.div
