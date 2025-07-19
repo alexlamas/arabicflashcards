@@ -3,8 +3,10 @@ import WordList from "./WordList";
 import { Word, ViewMode } from "../types/word";
 import { WordDetailModal } from "./WordDetailModal";
 import { formatTimeUntilReview } from "../utils/formatReviewTime";
-import { offlineHelpers } from "../hooks/useOfflineSync";
+import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { CalendarDotsIcon, Plus } from "@phosphor-icons/react";
+import { useAuth } from "../contexts/AuthContext";
+import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 
 const StatusBadge = ({
   word,
@@ -141,6 +143,8 @@ export function WordGrid({
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { session } = useAuth();
+  const { handleOfflineAction } = useOfflineSync();
 
   const handleFlip = (english: string) => {
     setFlipped((prev) => ({ ...prev, [english]: !prev[english] }));
@@ -152,19 +156,28 @@ export function WordGrid({
   };
 
   const handleStartLearning = async (word: Word) => {
+    if (!session?.user) return;
+
     const updatedWord = {
       ...word,
       status: "learning" as const,
       next_review_date: new Date().toISOString(),
     };
 
-    // For offline support, we just update the word locally
-    if (word.id) {
-      offlineHelpers.updateWord(word.id, {
-        status: "learning",
-        next_review_date: new Date().toISOString(),
-      });
-    }
+    // Use the same logic as the modal - call SpacedRepetitionService.startLearning
+    await handleOfflineAction(
+      async () => {
+        const { count } = await SpacedRepetitionService.startLearning(
+          session.user.id,
+          word.english
+        );
+        window.dispatchEvent(
+          new CustomEvent("wordProgressUpdated", { detail: { count } })
+        );
+        return count;
+      },
+      () => offlineHelpers.startLearning(session.user.id, word.english)
+    );
 
     onWordUpdate(updatedWord);
   };

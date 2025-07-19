@@ -48,7 +48,6 @@ export function ExampleSentenceManager({
 
   const handleAddNew = () => {
     const newSentence: ExampleSentence = {
-      arabic: "",
       transliteration: "",
       english: "",
     };
@@ -114,7 +113,7 @@ export function ExampleSentenceManager({
 
       const data = await response.json();
       setEditFormData({
-        arabic: data.arabic,
+        ...(data.arabic && { arabic: data.arabic }),
         transliteration: data.transliteration,
         english: data.english,
       });
@@ -224,7 +223,7 @@ export function ExampleSentenceManager({
                   variant="ghost"
                   size="sm"
                   onClick={handleSave}
-                  disabled={!editFormData?.arabic || !editFormData?.english}
+                  disabled={!editFormData?.transliteration || !editFormData?.english}
                 >
                   <Check className="w-4 h-4" />
                 </Button>
@@ -233,7 +232,9 @@ export function ExampleSentenceManager({
           ) : (
             <>
               <div className="space-y-1">
-                <p className="font-arabic text-lg">{sentence.arabic}</p>
+                {sentence.arabic && (
+                  <p className="font-arabic text-lg">{sentence.arabic}</p>
+                )}
                 <p className="text-sm text-gray-500">
                   {sentence.transliteration}
                 </p>

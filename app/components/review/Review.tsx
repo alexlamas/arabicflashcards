@@ -146,7 +146,7 @@ export function Review() {
     // Load next word slightly earlier to overlap with fade-out
     setTimeout(async () => {
       await loadNextWord();
-    }, 1750);
+    }, 1600);
   };
 
   if (error) {
@@ -262,23 +262,23 @@ export function Review() {
                       <Star size={40} weight="fill" className="animate-pulse" />
                     )}
                     {feedbackAnimation.text}
+                    {feedbackAnimation.nextReviewText && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{
+                          delay: 0.45,
+                          duration: 0.3,
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                        }}
+                        className="text-white/90 text-sm font-medium mt-2 translate-y-px"
+                      >
+                        {feedbackAnimation.nextReviewText}
+                      </motion.div>
+                    )}
                   </motion.div>
-                  {feedbackAnimation.nextReviewText && (
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{
-                        delay: 0.45,
-                        duration: 0.3,
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                      }}
-                      className="text-white/90 text-sm font-medium"
-                    >
-                      {feedbackAnimation.nextReviewText}
-                    </motion.div>
-                  )}
                 </div>
               </motion.div>
             </>

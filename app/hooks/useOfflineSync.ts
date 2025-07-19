@@ -106,23 +106,22 @@ export const offlineHelpers = {
   },
 
   updateWord: (wordId: string, updates: Partial<Word>) => {
-    OfflineStorage.updateWord(wordId, updates);
-    OfflineStorage.addAction(OfflineQueue.createUpdateAction(wordId, updates));
+    // Filter out undefined values to prevent sync issues
+    const cleanUpdates = Object.entries(updates).reduce<Partial<Word>>((acc, [key, value]) => {
+      if (value !== undefined && key in updates) {
+        return { ...acc, [key]: value };
+      }
+      return acc;
+    }, {});
+    
+    if (Object.keys(cleanUpdates).length > 0) {
+      OfflineStorage.updateWord(wordId, cleanUpdates);
+      OfflineStorage.addAction(OfflineQueue.createUpdateAction(wordId, cleanUpdates));
+    }
   },
 
   startLearning: (userId: string, wordEnglish: string) => {
-    const words = OfflineStorage.getWords();
-    const wordIndex = words.findIndex(w => w.english === wordEnglish);
-    
-    if (wordIndex !== -1) {
-      const updatedWord = {
-        ...words[wordIndex],
-        status: "learning" as const,
-        next_review_date: new Date().toISOString(),
-      };
-      OfflineStorage.updateWord(words[wordIndex].id!, updatedWord);
-    }
-    
+    // Queue the START_LEARNING action for sync
     OfflineStorage.addAction(OfflineQueue.createStartLearningAction(userId, wordEnglish));
   },
 

@@ -32,6 +32,7 @@ export default function ReviewTimeline() {
         .from("word_progress")
         .select("id, next_review_date, word_english")
         .eq("user_id", session.user.id)
+        .in("status", ["learning", "learned"])
         .lte("next_review_date", now.toISOString())
         .order("next_review_date", { ascending: false });
 
@@ -42,6 +43,7 @@ export default function ReviewTimeline() {
         .from("word_progress")
         .select("id, next_review_date, word_english")
         .eq("user_id", session.user.id)
+        .in("status", ["learning", "learned"])
         .gt("next_review_date", now.toISOString())
         .lte("next_review_date", nextWeek.toISOString())
         .order("next_review_date");

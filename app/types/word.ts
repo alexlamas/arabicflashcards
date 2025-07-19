@@ -1,7 +1,7 @@
 export type WordType = "noun" | "verb" | "adjective" | "phrase";
 
 export interface ExampleSentence {
-  arabic: string;
+  arabic?: string;
   transliteration: string;
   english: string;
 }

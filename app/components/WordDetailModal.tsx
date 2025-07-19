@@ -239,9 +239,11 @@ export function WordDetailModal({
                     className="bg-violet-50 rounded-lg p-5 border border-violet-100"
                   >
                     <div className="space-y-2">
-                      <p className="text-2xl font-arabic text-black">
-                        {sentence.arabic}
-                      </p>
+                      {sentence.arabic && (
+                        <p className="text-2xl font-arabic text-black">
+                          {sentence.arabic}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-600">
                         {sentence.transliteration}
                       </p>

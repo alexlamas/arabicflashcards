@@ -55,7 +55,16 @@ export class SyncService {
         if (!this.isUpdateWordPayload(action.payload)) {
           throw new Error("Invalid UPDATE_WORD payload");
         }
-        await WordService.updateWord(action.payload.id, action.payload.updates);
+        try {
+          await WordService.updateWord(action.payload.id, action.payload.updates);
+        } catch (error) {
+          // If word doesn't exist, skip the update instead of failing
+          if (error instanceof Error && error.message.includes("not found")) {
+            console.warn(`Word ${action.payload.id} not found, skipping update`);
+          } else {
+            throw error;
+          }
+        }
         break;
       }
       
