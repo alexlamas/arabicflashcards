@@ -10,6 +10,7 @@ import { useWords } from "../../contexts/WordsContext";
 import { useOfflineSync, offlineHelpers } from "../../hooks/useOfflineSync";
 import { WordDetailModal } from "../WordDetailModal";
 import { motion } from "framer-motion";
+import { formatTimeUntilReview } from "../../utils/formatReviewTime";
 import {
   Star,
   Sparkle,
@@ -29,6 +30,7 @@ export function Review() {
     isPlaying: boolean;
     text: string;
     color: string;
+    nextReviewText?: string;
   }>({ isPlaying: false, text: "", color: "" });
   const { fetchReviewCount } = useWords();
   const { handleOfflineAction } = useOfflineSync();
@@ -84,7 +86,7 @@ export function Review() {
       color: feedbackColor,
     });
 
-    await handleOfflineAction(
+    const result = await handleOfflineAction(
       () =>
         SpacedRepetitionService.processReview(
           session.user.id,
@@ -98,6 +100,41 @@ export function Review() {
           rating
         )
     );
+
+    // Calculate next review time text
+    let nextReviewText = "";
+    if (result && result.nextReview) {
+      const formattedTime = formatTimeUntilReview(
+        result.nextReview.toISOString()
+      );
+      if (formattedTime) {
+        if (formattedTime === "Today") {
+          nextReviewText = "Later today";
+        } else if (formattedTime === "Tomorrow") {
+          nextReviewText = "Tomorrow";
+        } else if (formattedTime === "Next week") {
+          nextReviewText = "In a week";
+        } else if (formattedTime === "Next month") {
+          nextReviewText = "In a month";
+        } else if (formattedTime.includes("days")) {
+          nextReviewText = `In ${formattedTime}`;
+        } else if (formattedTime.includes("weeks")) {
+          nextReviewText = `In ${formattedTime}`;
+        } else if (formattedTime.includes("months")) {
+          nextReviewText = `In ${formattedTime}`;
+        } else {
+          nextReviewText = formattedTime;
+        }
+      }
+    }
+
+    // Update animation with next review text
+    setFeedbackAnimation({
+      isPlaying: true,
+      text: feedbackText,
+      color: feedbackColor,
+      nextReviewText: nextReviewText,
+    });
 
     fetchReviewCount();
     window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
@@ -179,47 +216,62 @@ export function Review() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.2 }}
               >
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{
-                    delay: 0.35,
-                    duration: 0.3,
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 25,
-                  }}
-                  className="text-white text-3xl font-bold flex items-center gap-3"
-                >
-                  {feedbackAnimation.text === "Forgot" && (
-                    <Ghost size={40} weight="fill" className="animate-pulse" />
-                  )}
-                  {feedbackAnimation.text === "Struggled" && (
-                    <SmileyNervous
-                      size={40}
-                      weight="fill"
-                      className="animate-pulse"
-                    />
-                  )}
-                  {feedbackAnimation.text === "Remembered" && (
-                    <Balloon
-                      size={40}
-                      weight="fill"
-                      className="animate-bounce"
-                    />
-                  )}
-                  {feedbackAnimation.text === "Perfect!" && (
-                    <div className="relative">
-                      <Star size={40} weight="fill" className="animate-pulse" />
-                      <Sparkle
-                        size={20}
+                <div className="flex flex-col items-center gap-2">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: 0.35,
+                      duration: 0.3,
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    }}
+                    className="text-white text-3xl font-bold flex items-center gap-3"
+                  >
+                    {feedbackAnimation.text === "Forgot" && (
+                      <Ghost
+                        size={40}
                         weight="fill"
-                        className="absolute -top-2 -right-2 animate-ping"
+                        className="animate-pulse"
                       />
-                    </div>
+                    )}
+                    {feedbackAnimation.text === "Struggled" && (
+                      <SmileyNervous
+                        size={40}
+                        weight="fill"
+                        className="animate-pulse"
+                      />
+                    )}
+                    {feedbackAnimation.text === "Remembered" && (
+                      <Balloon
+                        size={40}
+                        weight="fill"
+                        className="animate-bounce"
+                      />
+                    )}
+                    {feedbackAnimation.text === "Perfect!" && (
+                      <Star size={40} weight="fill" className="animate-pulse" />
+                    )}
+                    {feedbackAnimation.text}
+                  </motion.div>
+                  {feedbackAnimation.nextReviewText && (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{
+                        delay: 0.45,
+                        duration: 0.3,
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 25,
+                      }}
+                      className="text-white/90 text-sm font-medium"
+                    >
+                      {feedbackAnimation.nextReviewText}
+                    </motion.div>
                   )}
-                  {feedbackAnimation.text}
-                </motion.div>
+                </div>
               </motion.div>
             </>
           )}
