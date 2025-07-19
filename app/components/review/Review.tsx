@@ -10,13 +10,11 @@ import { useWords } from "../../contexts/WordsContext";
 import { useOfflineSync, offlineHelpers } from "../../hooks/useOfflineSync";
 import { WordDetailModal } from "../WordDetailModal";
 import {
-  Eye,
   Star,
   Sparkle,
   Ghost,
   SmileyNervous,
   Balloon,
-  ArrowsOutSimple,
 } from "@phosphor-icons/react";
 import { ArrowRight } from "lucide-react";
 
