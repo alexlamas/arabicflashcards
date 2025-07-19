@@ -102,6 +102,11 @@ export function ExampleSentenceManager({
           english: wordEnglish,
           type: wordType,
           notes: wordNotes,
+          existingData: {
+            arabic: editFormData?.arabic || "",
+            transliteration: editFormData?.transliteration || "",
+            english: editFormData?.english || "",
+          },
         }),
       });
 

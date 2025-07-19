@@ -39,7 +39,12 @@ export class ClaudeService {
     word: string,
     english?: string,
     type?: string,
-    notes?: string
+    notes?: string,
+    existingData?: {
+      arabic?: string;
+      transliteration?: string;
+      english?: string;
+    }
   ): Promise<{
     english: string;
     arabic: string;
@@ -47,7 +52,6 @@ export class ClaudeService {
   }> {
     try {
       const contextInfo = [];
-      if (english) contextInfo.push(`English meaning: "${english}"`);
       if (type) contextInfo.push(`Word type: ${type}`);
       if (notes) contextInfo.push(`Additional notes: ${notes}`);
       
@@ -55,9 +59,58 @@ export class ClaudeService {
         ? `\nContext information about the word:\n${contextInfo.join('\n')}\n` 
         : '';
 
-      const prompt = `You are an AI assistant specialized in Lebanese Arabic language education. Your task is to generate an example sentence using a given Arabic word.
+      // Check what existing data we have
+      const hasExistingEnglish = existingData?.english && existingData.english.trim().length > 0;
+      const hasExistingTransliteration = existingData?.transliteration && existingData.transliteration.trim().length > 0;
+      const hasExistingArabic = existingData?.arabic && existingData.arabic.trim().length > 0;
+      
+      let prompt;
+      
+      // Build prompt based on what's already provided
+      const existingFields = [];
+      if (hasExistingEnglish) existingFields.push(`English: "${existingData.english}"`);
+      if (hasExistingTransliteration) existingFields.push(`Transliteration: "${existingData.transliteration}"`);
+      if (hasExistingArabic) existingFields.push(`Arabic: "${existingData.arabic}"`);
+      
+      const existingSection = existingFields.length > 0 
+        ? `\nProvided sentence parts:\n${existingFields.join('\n')}\n` 
+        : '';
 
-Arabic word: "${word}"${contextSection}
+      if (existingFields.length > 0) {
+        // Some fields are already filled - complete/correct them
+        prompt = `You are an AI assistant specialized in Lebanese Arabic language education. Your task is to complete or gently correct an example sentence.
+
+Word to include: "${word}"${contextSection}${existingSection}
+
+Your task:
+1. If all three fields are provided, make only minimal corrections if there are obvious errors
+2. If some fields are missing, generate them based on the provided ones
+3. Ensure the word "${word}" appears naturally in the sentence
+4. Keep as close as possible to the provided content - only change what's necessary
+
+Guidelines:
+- Preserve the original meaning and structure when possible
+- Only correct clear grammatical errors or unnatural phrasing
+- Ensure consistency between all three versions (Arabic, transliteration, English)
+- Use numbers in transliteration for Arabic sounds (e.g., "3" for ع)
+- Be culturally appropriate
+
+Return ONLY a JSON object with this exact structure:
+{
+  "arabic": "${hasExistingArabic ? existingData.arabic : 'The sentence in Arabic script'}",
+  "transliteration": "${hasExistingTransliteration ? existingData.transliteration : 'The Lebanese Arabic pronunciation'}",
+  "english": "${hasExistingEnglish ? existingData.english : 'The English translation'}"
+}
+
+Fill in any missing fields and make minimal corrections to existing ones if needed.
+No additional text or explanations. Just the JSON.`;
+      } else {
+        // No existing fields - generate new sentence
+        const meaningContext = english ? `\nEnglish meaning: "${english}"` : '';
+        
+        prompt = `You are an AI assistant specialized in Lebanese Arabic language education. Your task is to generate an example sentence using a given Arabic word.
+
+Arabic word: "${word}"${meaningContext}${contextSection}
 
 Create a simple, clear example sentence in Lebanese Arabic that uses this word naturally.
 
@@ -78,6 +131,7 @@ Return ONLY a JSON object with this exact structure:
 }
 
 No additional text or explanations. Just the JSON.`;
+      }
 
       const response = await this.createMessage(prompt, 1.0);
       

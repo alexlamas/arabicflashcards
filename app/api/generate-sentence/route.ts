@@ -7,6 +7,11 @@ type SentenceRequest = {
   english?: string;
   type?: string;
   notes?: string;
+  existingData?: {
+    arabic?: string;
+    transliteration?: string;
+    english?: string;
+  };
 };
 
 export async function POST(req: Request) {
@@ -20,9 +25,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const { word, english, type, notes } = data;
+    const { word, english, type, notes, existingData } = data;
     
-    const sentence = await ClaudeService.generateSentence(word, english, type, notes);
+    const sentence = await ClaudeService.generateSentence(word, english, type, notes, existingData);
     
     return NextResponse.json(sentence);
   } catch (error) {
