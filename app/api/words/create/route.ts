@@ -26,16 +26,6 @@ export async function POST(req: Request) {
         type: word.type as WordType,
       };
       
-      // Include simple_present fields if it's a verb
-      if (word.type === "verb") {
-        if (word.simple_present) {
-          wordToInsert.simple_present = word.simple_present;
-        }
-        if (word.simple_present_transliteration) {
-          wordToInsert.simple_present_transliteration = word.simple_present_transliteration;
-        }
-      }
-      
       const { data: wordData, error: wordError } = await supabase
         .from("words")
         .insert([wordToInsert])
@@ -104,18 +94,10 @@ export async function POST(req: Request) {
     Make sure to provide the response as a JSON object with these fields:
     {
       "english": "the English word/phrase",
-      "arabic": "the Arabic word/phrase in Arabic script (for verbs, provide the 3rd person past tense 'he did' form)",
+      "arabic": "the Arabic word/phrase in Arabic script",
       "transliteration": "Arabic pronunciation using English letters and numbers for Arabic sounds (e.g. 3 for ع)",
-      "type": "one of: noun, verb, adjective, phrase",
-      "simple_present": "ONLY for verbs: the 3rd person plural present 'we do' form in Arabic script",
-      "simple_present_transliteration": "ONLY for verbs: transliteration of the simple_present form"
+      "type": "one of: noun, verb, adjective, phrase"
     }
-    
-    For verbs, ALWAYS provide ALL forms:
-    - "arabic" should contain the 3rd person past tense (he did)
-    - "transliteration" should contain the transliteration of the past tense
-    - "simple_present" should contain the 3rd person plural present tense (we do)
-    - "simple_present_transliteration" should contain the transliteration of the present tense
     
     Do not provide any additional text or explanations.`;
 
@@ -129,16 +111,6 @@ export async function POST(req: Request) {
         transliteration: wordData.transliteration,
         type: wordData.type as WordType,
       };
-      
-      // Include simple_present fields if it's a verb
-      if (wordData.type === "verb") {
-        if (wordData.simple_present) {
-          response.simple_present = wordData.simple_present;
-        }
-        if (wordData.simple_present_transliteration) {
-          response.simple_present_transliteration = wordData.simple_present_transliteration;
-        }
-      }
       
       return NextResponse.json(response);
     } catch (parseError) {

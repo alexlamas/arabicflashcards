@@ -42,8 +42,6 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
     type: word.type,
     notes: word.notes || "",
     example_sentences: word.example_sentences || [],
-    simple_present: word.simple_present || "",
-    simple_present_transliteration: word.simple_present_transliteration || "",
   });
 
   const wordTypes: WordType[] = ["noun", "verb", "adjective", "phrase"];
@@ -56,8 +54,6 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
       formData.transliteration !== word.transliteration ||
       formData.type !== word.type ||
       formData.notes !== (word.notes || "") ||
-      formData.simple_present !== (word.simple_present || "") ||
-      formData.simple_present_transliteration !== (word.simple_present_transliteration || "") ||
       JSON.stringify(formData.example_sentences) !== JSON.stringify(word.example_sentences || []) ||
       hasUnsavedSentences
     );
@@ -152,28 +148,6 @@ export function EditWord({ word, onWordUpdate }: EditWordProps) {
                 </SelectContent>
               </Select>
             </div>
-
-            {formData.type === "verb" && (
-              <>
-                <Input
-                  placeholder="Simple present (we do) - 3rd person plural - optional"
-                  value={formData.simple_present || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, simple_present: e.target.value }))
-                  }
-                  dir="rtl"
-                  className="font-arabic text-lg"
-                />
-                <Input
-                  placeholder="Simple present transliteration - optional"
-                  value={formData.simple_present_transliteration || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, simple_present_transliteration: e.target.value }))
-                  }
-                  className="text-lg"
-                />
-              </>
-            )}
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Notes</label>

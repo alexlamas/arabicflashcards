@@ -27,23 +27,8 @@ const ListCard = ({
       <TypeBadge type={word.type} />
     </div>
 
-    {word.type === "verb" && word.simple_present ? (
-      <div className="mt-4 mb-3 space-y-3">
-        <div>
-          <div className="text-3xl font-arabic">{word.arabic}</div>
-          <div className="text-sm text-gray-400">{word.transliteration}</div>
-        </div>
-        <div>
-          <div className="text-2xl font-arabic">{word.simple_present}</div>
-          <div className="text-sm text-gray-400">{word.simple_present_transliteration}</div>
-        </div>
-      </div>
-    ) : (
-      <>
-        <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
-        <div className="text-sm text-gray-400">{word.transliteration}</div>
-      </>
-    )}
+    <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
+    <div className="text-sm text-gray-400">{word.transliteration}</div>
   </div>
 );
 
@@ -86,14 +71,7 @@ const FlashCard = ({
       >
         <div className="flex justify-between items-start">
           <div className="text-3xl font-arabic">
-            {word.type === "verb" && word.simple_present ? (
-              <div className="space-y-2">
-                <div>{word.arabic}</div>
-                <div className="text-2xl">{word.simple_present}</div>
-              </div>
-            ) : (
-              word.arabic
-            )}
+            {word.arabic}
           </div>
           <TypeBadge type={word.type} />
         </div>

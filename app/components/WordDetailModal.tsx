@@ -198,31 +198,10 @@ export function WordDetailModal({
         <div className="space-y-6 mt-4">
           {/* Arabic and transliteration */}
           <div className="bg-gray-50 rounded-lg p-6 text-center">
-            {word.type === "verb" && word.simple_present ? (
-              <div className="flex gap-12 w-full justify-center items-center">
-                <div>
-                  <div className="text-4xl font-arabic">{word.arabic}</div>
-                  <div className="text-lg text-gray-600 mt-1">
-                    {word.transliteration}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-4xl font-arabic">
-                    {word.simple_present}
-                  </div>
-                  <div className="text-lg text-gray-600 mt-1">
-                    {word.simple_present_transliteration}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="text-4xl font-arabic mb-3">{word.arabic}</div>
-                <div className="text-lg text-gray-600">
-                  {word.transliteration}
-                </div>
-              </>
-            )}
+            <div className="text-4xl font-arabic mb-3">{word.arabic}</div>
+            <div className="text-lg text-gray-600">
+              {word.transliteration}
+            </div>
           </div>
 
           {/* Example Sentences */}
