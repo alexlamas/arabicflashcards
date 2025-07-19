@@ -97,7 +97,7 @@ export class SpacedRepetitionService {
 
       const { data: words, error: wordsError } = await supabase
         .from("words")
-        .select("id, english, arabic, transliteration, type")
+        .select("id, english, arabic, transliteration, type, example_sentences, notes")
         .in(
           "english",
           data.map((p) => p.word_english)

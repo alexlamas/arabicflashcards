@@ -42,19 +42,19 @@ export function Header({
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
         </>
       )}
-      {isAdmin && setWords && (
-        <AddWordDialog
-          onWordAdded={(word: Word) => {
-            setWords((prevWords) => [...prevWords, word]);
-          }}
-        />
-      )}
 
       {view && setView && isAdmin && (
         <div className="inline-flex gap-2 items-center ml-auto">
           <TooltipProvider>
             <ViewToggle current={view} onChange={setView} isAdmin={isAdmin} />
           </TooltipProvider>
+          {isAdmin && setWords && (
+            <AddWordDialog
+              onWordAdded={(word: Word) => {
+                setWords((prevWords) => [...prevWords, word]);
+              }}
+            />
+          )}
         </div>
       )}
     </header>

@@ -50,7 +50,7 @@ export function ViewToggle({
       <div className="md:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-2">
+            <Button variant="outline" size="sm" className="h-8 gap-2">
               {(() => {
                 const currentView = views.find((v) => v.value === current);
                 const Icon = currentView?.icon || Eye;

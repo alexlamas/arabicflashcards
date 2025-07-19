@@ -18,12 +18,14 @@ interface ExampleSentenceManagerProps {
   onChange: (sentences: ExampleSentence[]) => void;
   wordArabic: string;
   wordEnglish: string;
+  onUnsavedChanges?: (hasUnsaved: boolean) => void;
 }
 
 export function ExampleSentenceManager({
   sentences,
   onChange,
   wordArabic,
+  onUnsavedChanges,
 }: ExampleSentenceManagerProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<ExampleSentence | null>(
@@ -31,6 +33,13 @@ export function ExampleSentenceManager({
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Notify parent when there are unsaved changes
+  React.useEffect(() => {
+    if (onUnsavedChanges) {
+      onUnsavedChanges(editingIndex !== null);
+    }
+  }, [editingIndex, onUnsavedChanges]);
 
   const handleAddNew = () => {
     const newSentence: ExampleSentence = {

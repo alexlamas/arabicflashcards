@@ -102,7 +102,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Plus />
-          Add Word
+          <span className="hidden sm:block">Add Word</span>
         </Button>
       </DialogTrigger>
       <DialogContent>

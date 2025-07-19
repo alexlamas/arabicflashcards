@@ -7,13 +7,15 @@ import {
 } from "@/components/ui/dialog";
 import { Word } from "../types/word";
 import { WordNotes } from "./WordNotes";
-import { X, Archive, Plus } from "@phosphor-icons/react";
+import { X, Archive, Plus, Trash } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { EditWord } from "./EditWord";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { WordService } from "../services/wordService";
+import { useWords } from "../contexts/WordsContext";
 
 interface WordDetailModalProps {
   word: Word | null;
@@ -37,7 +39,9 @@ export function WordDetailModal({
   const { session } = useAuth();
   const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { handleOfflineAction } = useOfflineSync();
+  const { handleWordDeleted } = useWords();
 
   if (!word) return null;
 
@@ -113,6 +117,25 @@ export function WordDetailModal({
     }
   };
 
+  const handleDelete = async () => {
+    if (!word.id) return;
+
+    setIsDeleting(true);
+    try {
+      await handleOfflineAction(
+        () => WordService.deleteWord(word.id!),
+        () => offlineHelpers.deleteWord(word.id!)
+      );
+
+      await handleWordDeleted(word.id);
+      onClose();
+    } catch (err) {
+      console.error("Failed to delete word:", err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -135,6 +158,7 @@ export function WordDetailModal({
                   size="icon"
                   onClick={handleUnarchive}
                   disabled={isLoading}
+                  title="Unarchive word"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -144,12 +168,24 @@ export function WordDetailModal({
                   size="icon"
                   onClick={handleArchive}
                   disabled={isLoading}
+                  title="Archive word"
                 >
                   <Archive className="h-4 w-4" />
                 </Button>
               ))}
             {isAdmin && (
-              <EditWord word={word} onWordUpdate={handleWordUpdate} />
+              <>
+                <EditWord word={word} onWordUpdate={handleWordUpdate} />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  title="Delete word"
+                >
+                  <Trash className="h-4 w-4 text-red-500" />
+                </Button>
+              </>
             )}
             <DialogClose>
               <Button variant="ghost" size="icon" onClick={onClose}>
@@ -162,8 +198,31 @@ export function WordDetailModal({
         <div className="space-y-6 mt-4">
           {/* Arabic and transliteration */}
           <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <div className="text-4xl font-arabic mb-3">{word.arabic}</div>
-            <div className="text-lg text-gray-600">{word.transliteration}</div>
+            {word.type === "verb" && word.simple_present ? (
+              <div className="flex gap-12 w-full justify-center items-center">
+                <div>
+                  <div className="text-4xl font-arabic">{word.arabic}</div>
+                  <div className="text-lg text-gray-600 mt-1">
+                    {word.transliteration}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-4xl font-arabic">
+                    {word.simple_present}
+                  </div>
+                  <div className="text-lg text-gray-600 mt-1">
+                    {word.simple_present_transliteration}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="text-4xl font-arabic mb-3">{word.arabic}</div>
+                <div className="text-lg text-gray-600">
+                  {word.transliteration}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Example Sentences */}
