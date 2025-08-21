@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
-import { BookOpen, Users, Sparkles, Package, LogIn, ArrowRight, Globe, Brain, Coffee, Eye } from "lucide-react";
+import { LogIn, ArrowRight, Brain, Globe, Sparkles } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { PackPreviewModal } from "./PackPreviewModal";
+import { PackCard } from "./PackCard";
 
 export function LandingPage() {
   const [packs, setPacks] = useState<StarterPack[]>([]);
@@ -29,32 +29,10 @@ export function LandingPage() {
     loadPacks();
   }, []);
 
-  function getLevelIcon(level: string | null) {
-    switch (level) {
-      case "beginner":
-        return <BookOpen className="h-5 w-5" />;
-      case "intermediate":
-        return <Users className="h-5 w-5" />;
-      case "advanced":
-        return <Sparkles className="h-5 w-5" />;
-      default:
-        return <Package className="h-5 w-5" />;
-    }
-  }
-
-  function getPackIcon(name: string) {
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes("travel") || lowerName.includes("tourist")) {
-      return <Globe className="h-8 w-8 text-blue-500" />;
-    }
-    if (lowerName.includes("essential") || lowerName.includes("basic")) {
-      return <Brain className="h-8 w-8 text-green-500" />;
-    }
-    if (lowerName.includes("food") || lowerName.includes("restaurant")) {
-      return <Coffee className="h-8 w-8 text-orange-500" />;
-    }
-    return <Package className="h-8 w-8 text-purple-500" />;
-  }
+  const handlePackPreview = (pack: StarterPack) => {
+    setSelectedPack(pack);
+    setShowPreview(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
@@ -109,55 +87,18 @@ export function LandingPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-12 w-12 bg-gray-200 rounded-lg mb-4" />
-                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-gray-200 rounded w-full" />
-                </CardHeader>
-              </Card>
+              <div key={i} className="h-64 rounded-lg bg-gray-100 animate-pulse" />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {packs.map((pack) => (
-              <Card 
-                key={pack.id} 
-                className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 border-2 hover:border-blue-200 group"
-                onClick={() => {
-                  setSelectedPack(pack);
-                  setShowPreview(true);
-                }}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      {getPackIcon(pack.name)}
-                    </div>
-                    {pack.level && (
-                      <div className="flex items-center gap-1 text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                        {getLevelIcon(pack.level)}
-                        <span className="capitalize">{pack.level}</span>
-                      </div>
-                    )}
-                  </div>
-                  <CardTitle className="text-xl">{pack.name}</CardTitle>
-                  {pack.description && (
-                    <CardDescription className="mt-2">
-                      {pack.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      Click to preview
-                    </span>
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                </CardContent>
-              </Card>
+              <PackCard 
+                key={pack.id}
+                pack={pack}
+                onPreview={handlePackPreview}
+                showImportButton={false}
+              />
             ))}
           </div>
         )}
