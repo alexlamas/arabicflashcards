@@ -1,9 +1,15 @@
 // app/services/wordService.ts
-import { supabase } from "../supabase";
+import { createClient } from "@/utils/supabase/client";
 import type { Word } from "../types/word";
 
 export class WordService {
   static async getAllWords(): Promise<Word[]> {
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("words")
       .select(
@@ -15,6 +21,7 @@ export class WordService {
         )
       `
       )
+      .eq("user_id", user.id)
       .order("english");
 
     if (error) throw error;
@@ -37,11 +44,15 @@ export class WordService {
   }
 
   static async createWord(
-    word: Omit<Word, "id" | "created_at" | "updated_at">
+    word: Omit<Word, "id" | "created_at" | "updated_at" | "user_id">
   ): Promise<Word> {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("words")
-      .insert([word])
+      .insert([{ ...word, user_id: user.id }])
       .select()
       .single();
 
@@ -60,12 +71,8 @@ export class WordService {
     if (word.notes !== undefined) updatePayload.notes = word.notes;
     if (word.example_sentences !== undefined) updatePayload.example_sentences = word.example_sentences;
 
-    console.log("Update payload:", updatePayload);
-    console.log("Word ID:", id);
-
     // If there's nothing to update, just fetch the current word
     if (Object.keys(updatePayload).length === 0) {
-      console.log("No fields to update, fetching current word");
       const { data: currentWord, error: fetchError } = await supabase
         .from("words")
         .select(
@@ -81,7 +88,6 @@ export class WordService {
         .single();
       
       if (fetchError) {
-        console.error("Error fetching word:", fetchError);
         throw fetchError;
       }
       
@@ -111,7 +117,6 @@ export class WordService {
       );
 
     if (error) {
-      console.error("Error updating word:", error);
       throw error;
     }
 

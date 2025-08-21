@@ -46,7 +46,8 @@ export function WordDetailModal({
   onWordUpdate,
 }: WordDetailModalProps) {
   const { session } = useAuth();
-  const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
+  // All users can edit their own words
+  const canEdit = !!session?.user;
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -202,7 +203,7 @@ export function WordDetailModal({
                   <ArchiveIcon weight="bold" />
                 </Button>
               ))}
-            {isAdmin && (
+            {canEdit && (
               <>
                 <Button
                   variant="ghost"
@@ -325,7 +326,7 @@ export function WordDetailModal({
           {!hasPhrases && !hasSentences && !hasNotes && (
             <div
               className="relative text-center py-8 text-gray-500 hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
-              onClick={() => isAdmin && setIsEditOpen(true)}
+              onClick={() => canEdit && setIsEditOpen(true)}
             >
               <NoteBlankIcon
                 size={24}
@@ -343,7 +344,7 @@ export function WordDetailModal({
                 className="absolute left-0 group-hover:left-[0.6rem] group-hover:text-yellow-500 right-1 top-[2.03rem] mx-auto mb-2 -rotate-6 group-hover:rotate-[24px] transition-all opacity-0 group-hover:opacity-20"
               />
               <p className="text-sm mt-1">
-                {isAdmin
+                {canEdit
                   ? "Click to add examples and notes"
                   : "Add examples and notes"}
               </p>

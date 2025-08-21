@@ -9,6 +9,7 @@ import { ViewToggle } from "./ViewToggle";
 import { Word } from "../types/word";
 import ReviewTimeline from "./review/ReviewTimeline";
 import { useWords } from "../contexts/WordsContext";
+// import { useUserRoles } from "../hooks/useUserRoles"; // No longer needed - all users can manage their words
 
 export function Header({
   variant = "default",
@@ -27,7 +28,7 @@ export function Header({
   hideArabic?: boolean;
   setHideArabic?: (value: boolean) => void;
 }) {
-  const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
+  // Remove admin checks - all users can manage their own words
   const showSearch = typeof setSearchTerm === "function";
   const { setWords } = useWords();
 
@@ -43,12 +44,14 @@ export function Header({
         </>
       )}
 
-      {setHideArabic && isAdmin && (
+      {(setHideArabic || setWords) && (
         <div className="inline-flex gap-2 items-center ml-auto">
-          <TooltipProvider>
-            <ViewToggle hideArabic={hideArabic} onChange={setHideArabic} />
-          </TooltipProvider>
-          {isAdmin && setWords && (
+          {setHideArabic && (
+            <TooltipProvider>
+              <ViewToggle hideArabic={hideArabic} onChange={setHideArabic} />
+            </TooltipProvider>
+          )}
+          {setWords && session && (
             <AddWordDialog
               onWordAdded={(word: Word) => {
                 setWords((prevWords) => [...prevWords, word]);

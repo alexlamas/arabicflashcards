@@ -5,6 +5,7 @@ import { AuthProvider } from "../providers/AuthProvider";
 import { WordsProvider } from "../providers/WordsProvider";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import { OnboardingModal } from "../components/OnboardingModal";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       <ServiceWorkerRegistration />
       <AppSidebar>{children}</AppSidebar>
       <OfflineIndicator />
+      <OnboardingModal />
     </>
   );
 }

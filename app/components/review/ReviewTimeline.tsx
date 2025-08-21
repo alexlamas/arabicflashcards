@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { supabase } from "@/app/supabase";
+import { createClient } from "@/utils/supabase/client";
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +23,7 @@ export default function ReviewTimeline() {
     if (!session?.user) return;
 
     try {
+      const supabase = createClient();
       const now = new Date();
       const nextWeek = new Date(now);
       nextWeek.setDate(now.getDate() + 7);
@@ -78,6 +79,7 @@ export default function ReviewTimeline() {
     // Subscribe to realtime updates as backup
     let channel: RealtimeChannel;
     if (session?.user) {
+      const supabase = createClient();
       channel = supabase
         .channel("word_progress_changes")
         .on(
@@ -101,6 +103,7 @@ export default function ReviewTimeline() {
         handleWordProgressUpdate
       );
       if (channel) {
+        const supabase = createClient();
         supabase.removeChannel(channel);
       }
     };

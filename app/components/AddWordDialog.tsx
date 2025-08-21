@@ -42,6 +42,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "same-origin", // Include cookies for authentication
         body: JSON.stringify({
           text: inputText,
         }),
@@ -63,29 +64,46 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const handleSave = async () => {
     if (!previewWord) return;
 
+    console.log("🔵 CLIENT: Starting save process");
+    console.log("🔵 CLIENT: Preview word:", previewWord);
+
     try {
+      const requestBody = {
+        text: previewWord.english,
+        confirmed: true,
+        word: previewWord,
+      };
+      
+      console.log("🔵 CLIENT: Sending request to /api/words/create");
+      console.log("🔵 CLIENT: Request body:", requestBody);
+
       const response = await fetch("/api/words/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          text: previewWord.english,
-          confirmed: true,
-          word: previewWord,
-        }),
+        credentials: "same-origin", // Include cookies for authentication
+        body: JSON.stringify(requestBody),
       });
 
+      console.log("🔵 CLIENT: Response status:", response.status);
+      console.log("🔵 CLIENT: Response ok:", response.ok);
+
       if (!response.ok) {
-        throw new Error("Failed to save word");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("🔴 CLIENT: Error response:", errorData);
+        throw new Error(errorData.error || "Failed to save word");
       }
 
       const savedWord = await response.json();
+      console.log("🟢 CLIENT: Word saved successfully:", savedWord);
+      
       onWordAdded(savedWord); // The complete word data is already here
       setOpen(false);
       setInputText("");
       setPreviewWord(null);
     } catch (err) {
+      console.error("🔴 CLIENT: Catch block error:", err);
       setError("Error saving: " + err);
     }
   };
