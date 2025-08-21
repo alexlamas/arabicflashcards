@@ -33,6 +33,7 @@ export class WordService {
   }
 
   static async getWordByEnglish(english: string): Promise<Word | null> {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from("words")
       .select("*")
@@ -46,6 +47,8 @@ export class WordService {
   static async createWord(
     word: Omit<Word, "id" | "created_at" | "updated_at" | "user_id">
   ): Promise<Word> {
+    const supabase = createClient();
+    
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
@@ -61,6 +64,8 @@ export class WordService {
   }
 
   static async updateWord(id: string, word: Partial<Word>): Promise<Word> {
+    const supabase = createClient();
+    
     // Build update payload, filtering out undefined values
     const updatePayload: Partial<Word> = {};
     
@@ -134,6 +139,7 @@ export class WordService {
   }
 
   static async deleteWord(id: string): Promise<void> {
+    const supabase = createClient();
     const { error } = await supabase.from("words").delete().eq("id", id);
 
     if (error) throw error;

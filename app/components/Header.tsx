@@ -44,14 +44,14 @@ export function Header({
         </>
       )}
 
-      {(setHideArabic || setWords) && (
+      {(setHideArabic || session) && (
         <div className="inline-flex gap-2 items-center ml-auto">
           {setHideArabic && (
             <TooltipProvider>
               <ViewToggle hideArabic={hideArabic} onChange={setHideArabic} />
             </TooltipProvider>
           )}
-          {setWords && session && (
+          {session && (
             <AddWordDialog
               onWordAdded={(word: Word) => {
                 setWords((prevWords) => [...prevWords, word]);

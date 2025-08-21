@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = await createClient(cookieStore);
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
