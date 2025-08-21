@@ -64,12 +64,12 @@ export function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Learn Lebanese Arabic
-              <span className="block text-blue-600 mt-2">The Fun Way</span>
+              Yalla! Let&apos;s Learn
+              <span className="block text-blue-600 mt-2">Lebanese Arabic</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Master Lebanese Arabic with our spaced repetition flashcards. 
-              Start with curated word collections and track your progress.
+              Master Lebanese Arabic with smart flashcards that adapt to your learning pace. 
+              Build confidence in real conversations, one word at a time.
             </p>
             <div className="flex gap-4 justify-center">
               <Button 
@@ -77,7 +77,7 @@ export function LandingPage() {
                 onClick={() => setShowAuthDialog(true)}
                 className="gap-2"
               >
-                Get Started Free
+                Start Learning - It&apos;s Free!
                 <ArrowRight className="h-4 w-4" />
               </Button>
               <Button 
@@ -87,7 +87,7 @@ export function LandingPage() {
                 className="gap-2"
               >
                 <LogIn className="h-4 w-4" />
-                Log In
+                I&apos;m Back for More!
               </Button>
             </div>
           </div>
@@ -98,10 +98,11 @@ export function LandingPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Choose Your Learning Path
+            Pick Your Starter Pack
           </h2>
           <p className="text-lg text-gray-600">
-            Start with one of our curated word collections. You can always add more later!
+            Browse our curated word collections organized by theme and difficulty. 
+            <span className="block mt-2 text-base">Preview any pack before signing up to see if it matches your learning goals.</span>
           </p>
         </div>
 
@@ -167,27 +168,27 @@ export function LandingPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
               <Brain className="h-8 w-8 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Spaced Repetition</h3>
+            <h3 className="text-lg font-semibold mb-2">Smart Spaced Repetition</h3>
             <p className="text-gray-600">
-              Our smart algorithm shows you words right when you&apos;re about to forget them
+              Our algorithm schedules reviews at optimal intervals, helping you remember words with less effort and better retention.
             </p>
           </div>
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
               <Globe className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Offline Support</h3>
+            <h3 className="text-lg font-semibold mb-2">Works in Airplane Mode</h3>
             <p className="text-gray-600">
-              Practice anywhere, anytime. Your progress syncs when you&apos;re back online
+              Continue learning without an internet connection. Your progress automatically syncs when you reconnect.
             </p>
           </div>
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
               <Sparkles className="h-8 w-8 text-purple-600" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Track Progress</h3>
+            <h3 className="text-lg font-semibold mb-2">Track Your Progress</h3>
             <p className="text-gray-600">
-              See your learning stats and celebrate milestones as you master new words
+              Monitor your learning journey with detailed statistics, streaks, and milestones that keep you motivated.
             </p>
           </div>
         </div>
@@ -200,7 +201,7 @@ export function LandingPage() {
             Ready to Start Learning?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join hundreds of learners mastering Lebanese Arabic
+            Join thousands of learners mastering Lebanese Arabic with our proven method.
           </p>
           <Button 
             size="lg" 
@@ -208,7 +209,7 @@ export function LandingPage() {
             onClick={() => setShowAuthDialog(true)}
             className="gap-2"
           >
-            Sign Up Free
+            Yalla, Let&apos;s Go!
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

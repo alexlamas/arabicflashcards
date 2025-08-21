@@ -20,10 +20,10 @@ export function AuthDialog() {
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white hidden sm:flex flex-col justify-between">
             <div>
               <h2 className="text-3xl font-bold mb-2">
-                Start Learning Lebanese Arabic Today
+                Start Your Journey
               </h2>
               <p className="text-blue-100 mb-8">
-                Join thousands of learners mastering Lebanese Arabic with our proven spaced repetition system.
+                Join thousands learning Lebanese Arabic with our scientifically-proven spaced repetition method.
               </p>
               
               <div className="space-y-4">
@@ -34,7 +34,7 @@ export function AuthDialog() {
                   <div>
                     <h3 className="font-semibold mb-1">Smart Learning</h3>
                     <p className="text-sm text-blue-100">
-                      Our algorithm shows you words exactly when you need to review them
+                      Reviews scheduled at scientifically optimal intervals for maximum retention
                     </p>
                   </div>
                 </div>
@@ -44,9 +44,9 @@ export function AuthDialog() {
                     <TrendingUp className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Track Progress</h3>
+                    <h3 className="font-semibold mb-1">Detailed Analytics</h3>
                     <p className="text-sm text-blue-100">
-                      See your improvement with detailed statistics and milestones
+                      Track your progress with comprehensive statistics and learning insights
                     </p>
                   </div>
                 </div>
@@ -56,9 +56,9 @@ export function AuthDialog() {
                     <Globe className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Learn Anywhere</h3>
+                    <h3 className="font-semibold mb-1">Offline Support</h3>
                     <p className="text-sm text-blue-100">
-                      Practice offline and sync your progress when you reconnect
+                      Continue learning anywhere, with automatic sync when reconnected
                     </p>
                   </div>
                 </div>
@@ -77,10 +77,10 @@ export function AuthDialog() {
           <div className="p-8">
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome back
+                Welcome
               </h3>
               <p className="text-gray-600">
-                Sign in to your account or create a new one to get started
+                Sign in to continue learning, or create an account to get started
               </p>
             </div>
             

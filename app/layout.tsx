@@ -19,24 +19,27 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://yourdomain.com"),
   title: {
-    default: "Learn Lebanese Arabic",
-    template: "%s | Learn Lebanese Arabic",
+    default: "Yalla! Learn Lebanese Arabic - Fun Flashcards That Actually Work",
+    template: "%s | Yalla! Lebanese Arabic",
   },
   description:
-    "Learn Lebanese Arabic with our interactive spaced repetition system. Master vocabulary, pronunciation, and everyday phrases.",
+    "Finally, a fun way to learn Lebanese Arabic! Smart flashcards that know when you're about to forget. From 'Kifak' to fluent - start your journey today!",
   keywords: [
     "Lebanese Arabic",
     "language learning",
     "Arabic vocabulary",
     "spaced repetition",
     "Arabic pronunciation",
+    "Levantine Arabic",
+    "Lebanon language",
+    "Arabic flashcards",
   ],
   openGraph: {
-    title: "Learn Lebanese Arabic",
+    title: "Yalla! Learn Lebanese Arabic - The Fun Way",
     description:
-      "Master Lebanese Arabic with our interactive learning platform",
+      "Smart flashcards that make learning Lebanese Arabic addictively fun. Your brain will thank you (in Arabic)!",
     url: "https://yourdomain.com",
-    siteName: "Learn Lebanese Arabic",
+    siteName: "Yalla! Lebanese Arabic",
     locale: "en_US",
     type: "website",
   },
