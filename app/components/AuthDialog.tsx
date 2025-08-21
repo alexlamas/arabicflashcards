@@ -7,11 +7,13 @@ import {
 } from "@/components/ui/dialog";
 import { Auth } from "@supabase/auth-ui-react";
 import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../supabase";
+import { createClient } from "@/utils/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 
 export function AuthDialog() {
   const { showAuthDialog, setShowAuthDialog } = useAuth();
+  const supabase = createClient();
+  
   return (
     <div className="animate-in fade-in duration-500">
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>

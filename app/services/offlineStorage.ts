@@ -18,6 +18,7 @@ const STORAGE_LIMITS = {
 
 export class OfflineStorage {
   private static memoryFallback: OfflineState = { ...DEFAULT_STATE };
+  private static currentUserId: string | null = null;
   
   private static isStorageAvailable(): boolean {
     try {
@@ -30,6 +31,20 @@ export class OfflineStorage {
     }
   }
 
+  static setUserId(userId: string | null) {
+    this.currentUserId = userId;
+    // Clear memory fallback when user changes
+    this.memoryFallback = { ...DEFAULT_STATE };
+  }
+
+  private static getStorageKey(): string {
+    // Use user-specific key if user is logged in
+    if (this.currentUserId) {
+      return `${OFFLINE_CONSTANTS.STORAGE_KEY}_${this.currentUserId}`;
+    }
+    return OFFLINE_CONSTANTS.STORAGE_KEY;
+  }
+
   static getState(): OfflineState {
     if (!this.isStorageAvailable()) {
       console.warn("LocalStorage not available, using memory fallback");
@@ -37,7 +52,7 @@ export class OfflineStorage {
     }
 
     try {
-      const stored = localStorage.getItem(OFFLINE_CONSTANTS.STORAGE_KEY);
+      const stored = localStorage.getItem(this.getStorageKey());
       if (!stored) {
         return { ...DEFAULT_STATE };
       }
@@ -63,7 +78,7 @@ export class OfflineStorage {
     const limitedState = this.applyLimits(state);
 
     try {
-      localStorage.setItem(OFFLINE_CONSTANTS.STORAGE_KEY, JSON.stringify(limitedState));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(limitedState));
       return true;
     } catch (error) {
       console.error("Failed to save offline state:", error);
@@ -72,7 +87,7 @@ export class OfflineStorage {
         this.clearOldData();
         // Try again with cleared data
         try {
-          localStorage.setItem(OFFLINE_CONSTANTS.STORAGE_KEY, JSON.stringify(limitedState));
+          localStorage.setItem(this.getStorageKey(), JSON.stringify(limitedState));
           return true;
         } catch {
           return false;

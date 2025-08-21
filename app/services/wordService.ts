@@ -1,9 +1,15 @@
 // app/services/wordService.ts
-import { supabase } from "../supabase";
+import { createClient } from "@/utils/supabase/client";
 import type { Word } from "../types/word";
 
 export class WordService {
   static async getAllWords(): Promise<Word[]> {
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("words")
       .select(
@@ -15,6 +21,7 @@ export class WordService {
         )
       `
       )
+      .eq("user_id", user.id)
       .order("english");
 
     if (error) throw error;
@@ -26,6 +33,7 @@ export class WordService {
   }
 
   static async getWordByEnglish(english: string): Promise<Word | null> {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from("words")
       .select("*")
@@ -37,11 +45,17 @@ export class WordService {
   }
 
   static async createWord(
-    word: Omit<Word, "id" | "created_at" | "updated_at">
+    word: Omit<Word, "id" | "created_at" | "updated_at" | "user_id">
   ): Promise<Word> {
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("words")
-      .insert([word])
+      .insert([{ ...word, user_id: user.id }])
       .select()
       .single();
 
@@ -50,6 +64,8 @@ export class WordService {
   }
 
   static async updateWord(id: string, word: Partial<Word>): Promise<Word> {
+    const supabase = createClient();
+    
     // Build update payload, filtering out undefined values
     const updatePayload: Partial<Word> = {};
     
@@ -60,12 +76,8 @@ export class WordService {
     if (word.notes !== undefined) updatePayload.notes = word.notes;
     if (word.example_sentences !== undefined) updatePayload.example_sentences = word.example_sentences;
 
-    console.log("Update payload:", updatePayload);
-    console.log("Word ID:", id);
-
     // If there's nothing to update, just fetch the current word
     if (Object.keys(updatePayload).length === 0) {
-      console.log("No fields to update, fetching current word");
       const { data: currentWord, error: fetchError } = await supabase
         .from("words")
         .select(
@@ -81,7 +93,6 @@ export class WordService {
         .single();
       
       if (fetchError) {
-        console.error("Error fetching word:", fetchError);
         throw fetchError;
       }
       
@@ -111,7 +122,6 @@ export class WordService {
       );
 
     if (error) {
-      console.error("Error updating word:", error);
       throw error;
     }
 
@@ -129,6 +139,7 @@ export class WordService {
   }
 
   static async deleteWord(id: string): Promise<void> {
+    const supabase = createClient();
     const { error } = await supabase.from("words").delete().eq("id", id);
 
     if (error) throw error;

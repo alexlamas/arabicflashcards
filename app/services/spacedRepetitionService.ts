@@ -1,10 +1,11 @@
-import { supabase } from "../supabase";
+import { createClient } from "@/utils/supabase/client";
 import { getOnlineStatus } from "../utils/connectivity";
 import { OfflineStorage } from "./offlineStorage";
 import { calculateDueWords, countDueWords } from "../utils/dueWordsCalculator";
 
 export class SpacedRepetitionService {
   static async startLearning(userId: string, wordEnglish: string) {
+    const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
@@ -25,11 +26,8 @@ export class SpacedRepetitionService {
         }
       );
 
-      console.log("Word progress updated:"); // Debug log
-
       if (error) throw error;
       const count = await this.getDueWordsCount(userId);
-      console.log("Count:", count); // Debug log
       return {
         success: true,
         count,
@@ -41,6 +39,7 @@ export class SpacedRepetitionService {
   }
 
   static async markAsArchived(userId: string, wordEnglish: string) {
+    const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
@@ -80,6 +79,7 @@ export class SpacedRepetitionService {
       }));
     }
 
+    const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
@@ -130,6 +130,7 @@ export class SpacedRepetitionService {
       return countDueWords(cachedWords);
     }
 
+    const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
@@ -155,6 +156,7 @@ export class SpacedRepetitionService {
     wordEnglish: string,
     rating: number
   ) {
+    const supabase = createClient();
     try {
       const { data: currentProgress, error: fetchError } = await supabase
         .from("word_progress")

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "../supabase";
+import { useEffect, useState, useMemo } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { Session } from "@supabase/supabase-js";
 
 import { AuthContext } from "../contexts/AuthContext";
@@ -10,6 +10,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  
+  // Create supabase client once
+  const supabase = useMemo(() => createClient(), []);
 
   const refreshSession = async () => {
     const {
@@ -29,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogout = async () => {

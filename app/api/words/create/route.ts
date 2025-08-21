@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ClaudeService } from "@/app/services/claudeService";
@@ -6,8 +6,14 @@ import { WordType } from "@/app/types/word";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createRouteHandlerClient({ cookies });
     const { text, confirmed, word } = await req.json();
+
+    if (!text) {
+      return NextResponse.json({ error: "Text is required" }, { status: 400 });
+    }
+
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
@@ -15,26 +21,59 @@ export async function POST(req: Request) {
 
     // If this is a confirmed word save with edited details
     if (confirmed && word) {
-      // Get the current user to create the word with learning status
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // First insert the word
-      const wordToInsert: Record<string, string> = {
+      // Check authentication for saving
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        // Try getting user another way
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          return NextResponse.json(
+            { error: "Authentication required to save words" },
+            { status: 401 }
+          );
+        }
+
+      }
+
+      // Get user from session or from the getUser call
+      const user = session?.user || (await supabase.auth.getUser()).data.user;
+
+      if (!user) {
+        return NextResponse.json(
+          { error: "Authentication required" },
+          { status: 401 }
+        );
+      }
+
+      // First insert the word with user_id
+      const wordToInsert = {
         english: word.english,
         arabic: word.arabic,
         transliteration: word.transliteration,
         type: word.type as WordType,
+        user_id: user.id, // Add user_id to associate word with user
       };
-      
+
       const { data: wordData, error: wordError } = await supabase
         .from("words")
         .insert([wordToInsert])
         .select()
         .single();
-      
+
       if (wordError) {
-        console.error("Word insert error:", wordError);
-        throw wordError;
+        return NextResponse.json(
+          {
+            error: "Failed to save word",
+            details: wordError.message,
+            hint: wordError.hint,
+          },
+          { status: 500 }
+        );
       }
 
       // Then create word_progress entry to mark it as learning by default
@@ -52,7 +91,7 @@ export async function POST(req: Request) {
               next_review_date: new Date().toISOString(),
             },
           ]);
-        
+
         if (progressError) {
           console.error("Progress insert error:", progressError);
         }
@@ -70,7 +109,7 @@ export async function POST(req: Request) {
           )
         `
         )
-        .eq('id', wordData.id)
+        .eq("id", wordData.id)
         .single();
 
       if (error) {
@@ -111,7 +150,7 @@ export async function POST(req: Request) {
         transliteration: wordData.transliteration,
         type: wordData.type as WordType,
       };
-      
+
       return NextResponse.json(response);
     } catch (parseError) {
       console.error("JSON Parse error:", parseError);

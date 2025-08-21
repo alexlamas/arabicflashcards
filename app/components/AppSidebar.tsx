@@ -21,6 +21,7 @@ import {
   ShieldChevronIcon,
   RocketLaunchIcon,
   ChatCircleText,
+  Package,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -178,6 +179,15 @@ export function AppSidebar({ children }: AppSidebarProps) {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/packs"}
+                      onClick={() => navigate("/packs")}
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Browse Packs</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/memory-game"}

@@ -1,8 +1,14 @@
-import { supabase } from "../supabase";
+import { createClient } from "@/utils/supabase/client";
 import type { Phrase } from "../types/phrase";
 
 export class PhraseService {
   static async getAllPhrases(): Promise<Phrase[]> {
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("phrases")
       .select(`
@@ -16,6 +22,7 @@ export class PhraseService {
           )
         )
       `)
+      .eq("user_id", user.id)
       .order("english");
 
     if (error) throw error;
@@ -38,6 +45,7 @@ export class PhraseService {
   }
 
   static async getPhraseById(id: string): Promise<Phrase | null> {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from("phrases")
       .select(`
@@ -76,6 +84,7 @@ export class PhraseService {
   }
 
   static async getPhrasesForWord(wordId: string): Promise<Phrase[]> {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from("phrases")
       .select(`
@@ -90,9 +99,15 @@ export class PhraseService {
   }
 
   static async createPhrase(
-    phrase: Omit<Phrase, "id" | "created_at" | "updated_at">,
+    phrase: Omit<Phrase, "id" | "created_at" | "updated_at" | "user_id">,
     wordIds?: string[]
   ): Promise<Phrase> {
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     // Start a transaction
     const { data: phraseData, error: phraseError } = await supabase
       .from("phrases")
@@ -100,7 +115,8 @@ export class PhraseService {
         arabic: phrase.arabic,
         transliteration: phrase.transliteration,
         english: phrase.english,
-        notes: phrase.notes
+        notes: phrase.notes,
+        user_id: user.id
       }])
       .select()
       .single();
@@ -128,6 +144,7 @@ export class PhraseService {
     id: string, 
     phrase: Partial<Phrase>
   ): Promise<Phrase> {
+    const supabase = createClient();
     const updatePayload: Partial<Phrase> = {};
     
     if (phrase.english !== undefined) updatePayload.english = phrase.english;
@@ -147,6 +164,7 @@ export class PhraseService {
   }
 
   static async deletePhrase(id: string): Promise<void> {
+    const supabase = createClient();
     const { error } = await supabase
       .from("phrases")
       .delete()
@@ -156,6 +174,7 @@ export class PhraseService {
   }
 
   static async linkPhraseToWord(phraseId: string, wordId: string): Promise<void> {
+    const supabase = createClient();
     const { error } = await supabase
       .from("word_phrases")
       .insert([{ phrase_id: phraseId, word_id: wordId }]);
@@ -164,6 +183,7 @@ export class PhraseService {
   }
 
   static async unlinkPhraseFromWord(phraseId: string, wordId: string): Promise<void> {
+    const supabase = createClient();
     const { error } = await supabase
       .from("word_phrases")
       .delete()

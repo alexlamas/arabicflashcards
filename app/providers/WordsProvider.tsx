@@ -5,7 +5,7 @@ import { WordsContext } from "../contexts/WordsContext";
 import { Word } from "../types/word";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { supabase } from "../supabase";
+import { createClient } from "@/utils/supabase/client";
 import { SyncService } from "../services/syncService";
 import { OfflineStorage } from "../services/offlineStorage";
 import { getOnlineStatus } from "../utils/connectivity";
@@ -56,6 +56,12 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const refreshWords = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    
+    // Set user ID for offline storage
+    if (session?.user?.id) {
+      OfflineStorage.setUserId(session.user.id);
+    }
+    
     try {
       let fetchedWords: Word[];
       
@@ -165,9 +171,17 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchReviewCount]);
 
   useEffect(() => {
+    // Set user ID for offline storage when session changes
+    if (session?.user?.id) {
+      OfflineStorage.setUserId(session.user.id);
+    } else {
+      OfflineStorage.setUserId(null);
+    }
+    
     refreshWords();
 
     if (!session?.user) return;
@@ -176,6 +190,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     const cleanupConnectivity = SyncService.setupConnectivityListeners();
 
     // Set up realtime subscription
+    const supabase = createClient();
     const channel = supabase
       .channel("word-changes")
       .on(

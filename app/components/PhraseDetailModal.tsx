@@ -49,7 +49,8 @@ export function PhraseDetailModal({
   onDelete,
 }: PhraseDetailModalProps) {
   const { session } = useAuth();
-  const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
+  // All users can edit their own phrases
+  const canEdit = !!session?.user;
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -59,7 +60,7 @@ export function PhraseDetailModal({
   const hasNotes = !!phrase.notes;
 
   const handleDelete = async () => {
-    if (!isAdmin || !phrase.id) return;
+    if (!canEdit || !phrase.id) return;
 
     setIsDeleting(true);
     try {
@@ -87,7 +88,7 @@ export function PhraseDetailModal({
                 Phrase Details
               </DialogTitle>
               <div className="flex items-center">
-                {isAdmin && (
+                {canEdit && (
                   <>
                     <Button
                       variant="ghost"

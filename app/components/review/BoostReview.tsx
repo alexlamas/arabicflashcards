@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "../../supabase";
+import { createClient } from "@/utils/supabase/client";
 
 interface BoostReviewProps {
   userId: string;
@@ -26,6 +26,7 @@ export default function BoostReview({
     setError(null);
 
     try {
+      const supabase = createClient();
       const { data: words } = await supabase
         .from("word_progress")
         .select("id, word_english")
