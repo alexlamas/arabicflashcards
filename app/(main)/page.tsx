@@ -6,19 +6,17 @@ import { useWords } from "../contexts/WordsContext";
 import WordGrid from "../components/WordGrid";
 import { useAuth } from "../contexts/AuthContext";
 import { Header } from "../components/Header";
-import { ViewMode } from "../types/word";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const {
     words,
     isLoading: isWordsLoading,
-    handleWordDeleted,
     handleWordUpdate,
   } = useWords();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState<ViewMode>("card");
+  const [hideArabic, setHideArabic] = useState<boolean>(false);
 
   const filteredWords = useFilteredWords({
     words,
@@ -35,15 +33,14 @@ function HomeContent() {
         session={session}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        view={view}
-        setView={setView}
+        hideArabic={hideArabic}
+        setHideArabic={setHideArabic}
         title="All words"
       />
       <div className="p-4">
         <WordGrid
           words={filteredWords}
-          view={view}
-          onWordDeleted={handleWordDeleted}
+          hideArabic={hideArabic}
           onWordUpdate={handleWordUpdate}
         />
       </div>

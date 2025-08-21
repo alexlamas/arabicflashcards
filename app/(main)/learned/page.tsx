@@ -6,19 +6,17 @@ import { useWords } from "../../contexts/WordsContext";
 import WordGrid from "../../components/WordGrid";
 import { useAuth } from "../../contexts/AuthContext";
 import { Header } from "../../components/Header";
-import { ViewMode } from "../../types/word";
 
 function LearnedContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const {
     words,
     isLoading: isWordsLoading,
-    handleWordDeleted,
     handleWordUpdate,
   } = useWords();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState<ViewMode>("card");
+  const [hideArabic, setHideArabic] = useState(false);
 
   // Filter for words with next_review_date beyond one month
   const now = new Date();
@@ -47,15 +45,14 @@ function LearnedContent() {
         session={session}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        view={view}
-        setView={setView}
+        hideArabic={hideArabic}
+        setHideArabic={setHideArabic}
         title="Learned"
       />
       <div className="p-4">
         <WordGrid
           words={filteredWords}
-          view={view}
-          onWordDeleted={handleWordDeleted}
+          hideArabic={hideArabic}
           onWordUpdate={handleWordUpdate}
         />
       </div>

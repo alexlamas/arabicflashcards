@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CircleNotch, Plus } from "@phosphor-icons/react";
+import { CircleNotchIcon, PlusIcon } from "@phosphor-icons/react";
 import { Word, WordType } from "../types/word";
 
 interface AddWordDialogProps {
@@ -101,8 +101,8 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Plus />
-          <span className="hidden sm:block">Add Word</span>
+          <PlusIcon weight="bold" />
+          <span className="hidden text-sm sm:block">New word</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -146,7 +146,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
               >
                 {isGenerating ? (
                   <>
-                    <CircleNotch className="mr-2 h-4 w-4 animate-spin" />
+                    <CircleNotchIcon className="mr-2 h-4 w-4 animate-spin" />
                     Translating...
                   </>
                 ) : (

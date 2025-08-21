@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { Phrase } from "../types/phrase";
-import { ViewMode } from "../types/word";
 import { PhraseDetailModal } from "./PhraseDetailModal";
 
 const PhraseCard = ({
   phrase,
   onShowDetails,
-  arabicHidden = false,
+  hideArabic = false,
 }: {
   phrase: Phrase;
   onShowDetails: () => void;
-  arabicHidden?: boolean;
+  hideArabic?: boolean;
 }) => {
   const hasLinkedWords = phrase.linked_words && phrase.linked_words.length > 0;
 
@@ -23,21 +22,24 @@ const PhraseCard = ({
         <div className="text-2xl font-medium text-gray-900 leading-snug">
           {phrase.english}
         </div>
-        {!arabicHidden && (
-          <div className="text-sm text-gray-500">{phrase.transliteration}</div>
-        )}
-
-        {hasLinkedWords && (
-          <div className="flex flex-wrap gap-1 pt-2">
-            {phrase.linked_words?.map((word) => (
-              <span
-                key={word.id}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
-              >
-                {word.english}
-              </span>
-            ))}
-          </div>
+        {!hideArabic && (
+          <>
+            <div className="text-sm text-gray-500">
+              {phrase.transliteration}
+            </div>
+            {hasLinkedWords && (
+              <div className="flex flex-wrap gap-1 pt-2">
+                {phrase.linked_words?.map((word) => (
+                  <span
+                    key={word.id}
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+                  >
+                    {word.english}
+                  </span>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -46,12 +48,12 @@ const PhraseCard = ({
 
 export default function PhraseGrid({
   phrases,
-  view,
+  hideArabic = false,
   onPhraseDeleted,
   onPhraseUpdate,
 }: {
   phrases: Phrase[];
-  view: ViewMode;
+  hideArabic?: boolean;
   onPhraseDeleted: (phraseId: string) => void;
   onPhraseUpdate: (phraseId: string, updates: Partial<Phrase>) => void;
 }) {
@@ -82,31 +84,15 @@ export default function PhraseGrid({
     }
   };
 
-  // Add styles for 3D transforms and masonry layout
-  const style = (
-    <style jsx>{`
-      .preserve-3d {
-        transform-style: preserve-3d;
-      }
-      .backface-hidden {
-        backface-visibility: hidden;
-      }
-      .break-inside-avoid {
-        break-inside: avoid;
-      }
-    `}</style>
-  );
-
   return (
     <>
-      {style}
-      <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-4">
+      <div className="columns-2 sm:columns-3 xl:columns-4 gap-4">
         {phrases.map((phrase) => (
           <PhraseCard
             key={phrase.id}
             phrase={phrase}
             onShowDetails={() => handleShowDetails(phrase)}
-            arabicHidden={view === "flashcard"}
+            hideArabic={hideArabic}
           />
         ))}
       </div>

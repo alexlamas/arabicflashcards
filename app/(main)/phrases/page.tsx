@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Header } from "../../components/Header";
-import { ViewMode } from "../../types/word";
 import { Phrase } from "../../types/phrase";
 import { PhraseService } from "../../services/phraseService";
 import PhraseGrid from "../../components/PhraseGrid";
@@ -13,7 +12,7 @@ function PhrasesContent() {
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState<ViewMode>("card");
+  const [hideArabic, setHideArabic] = useState(false);
 
   useEffect(() => {
     loadPhrases();
@@ -68,14 +67,14 @@ function PhrasesContent() {
         session={session}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        view={view}
-        setView={setView}
+        hideArabic={hideArabic}
+        setHideArabic={setHideArabic}
         title="All Phrases"
       />
       <div className="p-4">
         <PhraseGrid
           phrases={filteredPhrases}
-          view={view}
+          hideArabic={hideArabic}
           onPhraseDeleted={handlePhraseDeleted}
           onPhraseUpdate={handlePhraseUpdate}
         />

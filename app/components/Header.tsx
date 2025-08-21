@@ -6,7 +6,7 @@ import React from "react";
 import { Session } from "@supabase/supabase-js";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ViewToggle } from "./ViewToggle";
-import { ViewMode, Word } from "../types/word";
+import { Word } from "../types/word";
 import ReviewTimeline from "./review/ReviewTimeline";
 import { useWords } from "../contexts/WordsContext";
 
@@ -16,16 +16,16 @@ export function Header({
   searchTerm = "",
   setSearchTerm,
   title,
-  view,
-  setView,
+  hideArabic = false,
+  setHideArabic,
 }: {
   variant?: "default" | "review";
   session?: Session | null;
   searchTerm?: string;
   setSearchTerm?: (value: string) => void;
   title?: string;
-  view?: ViewMode;
-  setView?: (ViewMode: ViewMode) => void;
+  hideArabic?: boolean;
+  setHideArabic?: (value: boolean) => void;
 }) {
   const isAdmin = session?.user.email === "lamanoujaim@gmail.com";
   const showSearch = typeof setSearchTerm === "function";
@@ -43,10 +43,10 @@ export function Header({
         </>
       )}
 
-      {view && setView && isAdmin && (
+      {setHideArabic && isAdmin && (
         <div className="inline-flex gap-2 items-center ml-auto">
           <TooltipProvider>
-            <ViewToggle current={view} onChange={setView} />
+            <ViewToggle hideArabic={hideArabic} onChange={setHideArabic} />
           </TooltipProvider>
           {isAdmin && setWords && (
             <AddWordDialog
