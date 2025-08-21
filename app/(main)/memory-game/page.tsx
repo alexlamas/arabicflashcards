@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useWords } from "@/app/contexts/WordsContext";
 import { Button } from "@/components/ui/button";
@@ -32,13 +32,7 @@ export default function MemoryGamePage() {
   // Get learning words
   const learningWords = words.filter((word) => word.status === "learning");
 
-  useEffect(() => {
-    if (learningWords.length > 0) {
-      initializeGame();
-    }
-  }, [learningWords.length]);
-
-  const initializeGame = () => {
+  const initializeGame = useCallback(() => {
     // Take up to 6 random learning words for the game
     const gameWords = learningWords
       .sort(() => Math.random() - 0.5)
@@ -77,13 +71,21 @@ export default function MemoryGamePage() {
     setMoves(0);
     setMatches(0);
     setGameComplete(false);
-  };
+  }, [learningWords]);
+
+  // Initialize game on mount when learning words are available
+  useEffect(() => {
+    if (learningWords.length > 0 && cards.length === 0) {
+      initializeGame();
+    }
+  }, [learningWords, cards.length, initializeGame]);
 
   const handleCardClick = (cardId: string) => {
     if (isChecking) return;
 
     const card = cards.find((c) => c.id === cardId);
-    if (!card || card.isFlipped || card.isMatched) return;
+    if (!card || card.isFlipped || card.isMatched || selectedCards.length >= 2)
+      return;
 
     const newCards = cards.map((c) =>
       c.id === cardId ? { ...c, isFlipped: true } : c

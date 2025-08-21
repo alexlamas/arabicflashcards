@@ -12,14 +12,9 @@ import { ViewMode } from "../types/word";
 interface ViewToggleProps {
   current: ViewMode;
   onChange: (view: ViewMode) => void;
-  isAdmin?: boolean;
 }
 
-export function ViewToggle({
-  current,
-  onChange,
-  isAdmin = false,
-}: ViewToggleProps) {
+export function ViewToggle({ current, onChange }: ViewToggleProps) {
   const views = [
     { value: "card" as const, icon: Eye, label: "Cards" },
     { value: "flashcard" as const, icon: EyeClosed, label: "Flashcards" },
