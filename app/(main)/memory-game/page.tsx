@@ -5,7 +5,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useWords } from "@/app/contexts/WordsContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shuffle, Trophy } from "@phosphor-icons/react";
+import { ShuffleIcon, TrophyIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 interface MemoryCard {
@@ -176,7 +176,7 @@ export default function MemoryGamePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Card className="p-8 text-center max-w-md">
-          <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <TrophyIcon className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Congratulations!</h2>
           <p className="text-muted-foreground mb-4">
             You completed the game in {moves} moves
@@ -205,7 +205,7 @@ export default function MemoryGamePage() {
             onClick={initializeGame}
             title="Restart game"
           >
-            <Shuffle className="h-5 w-5" />
+            <ShuffleIcon className="h-5 w-5" />
           </Button>
         </div>
 
