@@ -5,7 +5,6 @@ import { AuthProvider } from "../providers/AuthProvider";
 import { WordsProvider } from "../providers/WordsProvider";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
-import { OnboardingModal } from "../components/OnboardingModal";
 import { AuthDialog } from "../components/AuthDialog";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -29,7 +28,6 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
       <ServiceWorkerRegistration />
       <AppSidebar>{children}</AppSidebar>
       <OfflineIndicator />
-      <OnboardingModal />
     </>
   );
 }
