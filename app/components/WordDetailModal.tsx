@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,14 +6,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Word } from "../types/word";
+import { Phrase } from "../types/phrase";
 import { WordNotes } from "./WordNotes";
 import {
-  X,
-  Archive,
-  Plus,
-  Trash,
   NoteBlankIcon,
-  NotePencil,
+  PencilSimpleIcon,
+  ArchiveIcon,
+  PlusIcon,
+  TrashSimpleIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { EditWord } from "./EditWord";
@@ -22,6 +23,7 @@ import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { WordService } from "../services/wordService";
+import { PhraseService } from "../services/phraseService";
 import { useWords } from "../contexts/WordsContext";
 
 interface WordDetailModalProps {
@@ -48,11 +50,30 @@ export function WordDetailModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [linkedPhrases, setLinkedPhrases] = useState<Phrase[]>([]);
   const { handleOfflineAction } = useOfflineSync();
   const { handleWordDeleted } = useWords();
 
+  useEffect(() => {
+    if (word?.id && isOpen) {
+      loadLinkedPhrases();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [word?.id, isOpen]);
+
+  const loadLinkedPhrases = async () => {
+    if (!word?.id) return;
+    try {
+      const phrases = await PhraseService.getPhrasesForWord(word.id);
+      setLinkedPhrases(phrases);
+    } catch (error) {
+      console.error("Error loading linked phrases:", error);
+    }
+  };
+
   if (!word) return null;
 
+  const hasPhrases = linkedPhrases.length > 0;
   const hasSentences =
     word.example_sentences && word.example_sentences.length > 0;
   const hasNotes = !!word.notes;
@@ -158,7 +179,7 @@ export function WordDetailModal({
               <TypeBadge type={word.type} />
             </DialogTitle>
           </div>
-          <div className="absolute right-4 top-4 flex gap-1">
+          <div className="absolute right-4 top-4 flex">
             {session &&
               (isArchived ? (
                 <Button
@@ -168,7 +189,7 @@ export function WordDetailModal({
                   disabled={isLoading}
                   title="Unarchive word"
                 >
-                  <Plus className="h-4 w-4" />
+                  <PlusIcon weight="bold" />
                 </Button>
               ) : (
                 <Button
@@ -178,7 +199,7 @@ export function WordDetailModal({
                   disabled={isLoading}
                   title="Archive word"
                 >
-                  <Archive className="h-4 w-4" />
+                  <ArchiveIcon weight="bold" />
                 </Button>
               ))}
             {isAdmin && (
@@ -189,7 +210,7 @@ export function WordDetailModal({
                   onClick={() => setIsEditOpen(true)}
                   title="Edit word"
                 >
-                  <NotePencil className="h-4 w-4" />
+                  <PencilSimpleIcon weight="bold" />
                 </Button>
                 <EditWord
                   word={word}
@@ -203,14 +224,15 @@ export function WordDetailModal({
                   onClick={handleDelete}
                   disabled={isDeleting}
                   title="Delete word"
+                  className="hover:bg-red-50 hover:text-red-600"
                 >
-                  <Trash className="h-4 w-4 text-red-500" />
+                  <TrashSimpleIcon weight="bold" />
                 </Button>
               </>
             )}
             <DialogClose>
               <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
+                <XIcon weight="bold" />
               </Button>
             </DialogClose>
           </div>
@@ -223,8 +245,42 @@ export function WordDetailModal({
             <div className="text-lg text-gray-600">{word.transliteration}</div>
           </div>
 
-          {/* Example Sentences */}
-          {hasSentences && (
+          {/* Linked Phrases */}
+          {hasPhrases && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                Example Phrases
+                <span className="text-sm font-normal bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+                  {linkedPhrases.length}
+                </span>
+              </h3>
+              <div className="space-y-4">
+                {linkedPhrases.map((phrase) => (
+                  <div
+                    key={phrase.id}
+                    className="bg-violet-50 rounded-lg p-5 border border-violet-100"
+                  >
+                    <div className="space-y-2">
+                      {phrase.arabic && (
+                        <p className="text-2xl font-arabic text-black">
+                          {phrase.arabic}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-600">
+                        {phrase.transliteration}
+                      </p>
+                      <p className="text-base text-black mt-2">
+                        {phrase.english}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Legacy Example Sentences (for backwards compatibility) */}
+          {!hasPhrases && hasSentences && (
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 Example Sentences
@@ -266,7 +322,7 @@ export function WordDetailModal({
           )}
 
           {/* Empty state */}
-          {!hasSentences && !hasNotes && (
+          {!hasPhrases && !hasSentences && !hasNotes && (
             <div
               className="relative text-center py-8 text-gray-500 hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
               onClick={() => isAdmin && setIsEditOpen(true)}

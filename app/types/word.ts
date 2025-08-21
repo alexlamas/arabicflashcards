@@ -17,7 +17,7 @@ export interface Word {
   example_sentences?: ExampleSentence[];
   notes?: string;
 }
-export type ViewMode = "list" | "card" | "flashcard";
+export type ViewMode = "card" | "flashcard";
 export type ProgressState = "learned" | "learning" | "new" | "archived";
 export type ProgressMap = Record<string, ProgressState>;
 

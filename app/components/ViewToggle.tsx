@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Eye, EyeClosed, List } from "@phosphor-icons/react";
+import { Check, Eye, EyeClosed } from "@phosphor-icons/react";
 import { ViewMode } from "../types/word";
 
 interface ViewToggleProps {
@@ -20,13 +20,10 @@ export function ViewToggle({
   onChange,
   isAdmin = false,
 }: ViewToggleProps) {
-  const baseViews = [
+  const views = [
     { value: "card" as const, icon: Eye, label: "Cards" },
     { value: "flashcard" as const, icon: EyeClosed, label: "Flashcards" },
   ];
-
-  const adminView = { value: "list" as const, icon: List, label: "List" };
-  const views = isAdmin ? [...baseViews, adminView] : baseViews;
 
   const handleValueChange = (value: string) => {
     onChange(value as ViewMode);

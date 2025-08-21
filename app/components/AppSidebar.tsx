@@ -20,6 +20,7 @@ import {
   BabyIcon,
   ShieldChevronIcon,
   RocketLaunchIcon,
+  ChatCircleText,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -157,6 +158,15 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       <Archive className="h-4 w-4" />
                       <span>Not Started</span>
                       <SidebarMenuBadge>{archiveCount}</SidebarMenuBadge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={pathname === "/phrases"}
+                      onClick={() => navigate("/phrases")}
+                    >
+                      <ChatCircleText className="h-4 w-4" />
+                      <span>Phrases</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
