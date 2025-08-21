@@ -86,7 +86,7 @@ export default function PhraseGrid({
 
   return (
     <>
-      <div className="columns-2 sm:columns-3 xl:columns-4 gap-4">
+      <div className="columns-1 sm:columns-3 xl:columns-4 gap-4">
         {phrases.map((phrase) => (
           <PhraseCard
             key={phrase.id}
