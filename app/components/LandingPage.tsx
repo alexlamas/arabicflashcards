@@ -4,12 +4,15 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
-import { BookOpen, Users, Sparkles, Package, LogIn, ArrowRight, Globe, Brain, Coffee } from "lucide-react";
+import { BookOpen, Users, Sparkles, Package, LogIn, ArrowRight, Globe, Brain, Coffee, Eye } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { PackPreviewModal } from "./PackPreviewModal";
 
 export function LandingPage() {
   const [packs, setPacks] = useState<StarterPack[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const { setShowAuthDialog } = useAuth();
 
   useEffect(() => {
@@ -119,8 +122,11 @@ export function LandingPage() {
             {packs.map((pack) => (
               <Card 
                 key={pack.id} 
-                className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 border-2 hover:border-blue-200"
-                onClick={() => setShowAuthDialog(true)}
+                className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 border-2 hover:border-blue-200 group"
+                onClick={() => {
+                  setSelectedPack(pack);
+                  setShowPreview(true);
+                }}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-4">
@@ -142,8 +148,11 @@ export function LandingPage() {
                   )}
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <span>Click to get started</span>
+                  <div className="flex items-center justify-between text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
+                    <span className="flex items-center gap-1">
+                      <Eye className="h-4 w-4" />
+                      Click to preview
+                    </span>
                     <ArrowRight className="h-4 w-4" />
                   </div>
                 </CardContent>
@@ -204,6 +213,16 @@ export function LandingPage() {
           </Button>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      <PackPreviewModal 
+        pack={selectedPack}
+        isOpen={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          setSelectedPack(null);
+        }}
+      />
     </div>
   );
 }
