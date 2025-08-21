@@ -1,19 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../../components/Header";
 import { useAuth } from "../../contexts/AuthContext";
 import { StarterPackSelector } from "../../components/StarterPackSelector";
 import { Package } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function PacksPage() {
-  const { session } = useAuth();
+  const { session, isLoading } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !session) {
+      router.push("/");
+    }
+  }, [isLoading, session, router]);
 
   const handleComplete = () => {
     // Just refresh the component to show updated pack status
     setRefreshKey(prev => prev + 1);
   };
+
+  if (isLoading || !session) {
+    return null;
+  }
 
   return (
     <>

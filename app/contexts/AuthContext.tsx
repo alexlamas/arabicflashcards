@@ -7,7 +7,7 @@ type AuthContextType = {
   refreshSession: () => Promise<void>;
   showAuthDialog: boolean;
   handleLogout: () => Promise<void>;
-  setShowAuthDialog?: (value: boolean) => void;
+  setShowAuthDialog: (value: boolean) => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({

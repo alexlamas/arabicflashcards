@@ -34,8 +34,12 @@ export function Header({
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30 ">
-      <SidebarTrigger />
-      <Separator orientation="vertical" className="mr-2 h-4" />
+      {session && (
+        <>
+          <SidebarTrigger />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+        </>
+      )}
       {title && <h1 className="font-semibold hidden text-lg mr-4">{title}</h1>}
       {variant === "review" && <ReviewTimeline />}
       {showSearch && (

@@ -6,6 +6,7 @@ import { useWords } from "../contexts/WordsContext";
 import WordGrid from "../components/WordGrid";
 import { useAuth } from "../contexts/AuthContext";
 import { Header } from "../components/Header";
+import { LandingPage } from "../components/LandingPage";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -23,7 +24,17 @@ function HomeContent() {
     searchTerm,
   });
 
-  if (isAuthLoading || isWordsLoading) {
+  if (isAuthLoading) {
+    return null;
+  }
+
+  // Show landing page for non-authenticated users
+  if (!session) {
+    return <LandingPage />;
+  }
+
+  // Show loading for authenticated users while words are loading
+  if (isWordsLoading) {
     return null;
   }
 

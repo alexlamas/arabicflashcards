@@ -6,8 +6,24 @@ import { WordsProvider } from "../providers/WordsProvider";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 import { OnboardingModal } from "../components/OnboardingModal";
+import { AuthDialog } from "../components/AuthDialog";
+import { useAuth } from "../contexts/AuthContext";
 
-function MainLayoutContent({ children }: { children: React.ReactNode }) {
+function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+  const { session } = useAuth();
+  
+  // Only show sidebar for authenticated users
+  if (!session) {
+    return (
+      <>
+        <ServiceWorkerRegistration />
+        {children}
+        <OfflineIndicator />
+        <AuthDialog />
+      </>
+    );
+  }
+  
   return (
     <>
       <ServiceWorkerRegistration />
@@ -26,7 +42,7 @@ export default function MainLayout({
   return (
     <AuthProvider>
       <WordsProvider>
-        <MainLayoutContent>{children}</MainLayoutContent>
+        <AuthenticatedLayout>{children}</AuthenticatedLayout>
       </WordsProvider>
     </AuthProvider>
   );
