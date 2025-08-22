@@ -225,7 +225,7 @@ export function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
           >
-            Yalla! let&apos;s learn Lebanese arabic
+            Yalla! Let&apos;s learn Lebanese arabic
           </motion.h1>
           <motion.p
             className="font-geist-mono text-sm sm:text-base text-white/90 max-w-xl md:max-w-2xl mx-auto px-4 sm:px-8 md:px-12"
