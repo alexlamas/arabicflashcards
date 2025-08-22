@@ -22,6 +22,7 @@ const config: Config = {
           bg: "#974A27",
           fg: "#E9EE62",
           secondary: "#B1C3D0",
+          accent: "#E6DACD",
         },
         card: {
           DEFAULT: "hsl(var(--card))",

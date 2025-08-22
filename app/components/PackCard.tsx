@@ -29,27 +29,23 @@ export function PackCard({
   return (
     <Card
       onClick={() => onPreview(pack)}
-      className="h-full flex flex-col transition-all bg-black/5 !text-white hover:border-white/10 border border-transparent group p-3 sm:p-4 sm:gap-3 md:cursor-none"
+      className="h-full flex flex-col transition bg-brand-accent !text-black hover:border-white/10 border border-transparent group p-3 sm:p-4 sm:gap-3 md:cursor-none hover:scale-[1.02] "
     >
       <CardHeader className="flex-1 gap-1 p-3 sm:p-6">
         <CardTitle className="text-xl sm:text-2xl md:text-3xl font-pphatton font-bold">
           {pack.name}
         </CardTitle>
         {pack.description && (
-          <CardDescription className="mt-1 sm:mt-2 font-geist-mono text-sm sm:text-base text-white">
+          <CardDescription className="mt-1 sm:mt-2 font-geist-mono text-sm sm:text-base text-black">
             {pack.description}
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent className="pt-0 p-3 sm:p-6">
+      <CardContent className="pt-0 p-3 sm:px-6">
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size={"lg"}
-            className="font-geist-mono rounded-full bg-transparent border-white/20 flex-1 !text-white  !py-5 px-8 group-hover:bg-white/5 hover:scale-105 transition md:cursor-none"
-          >
-            View
-          </Button>
+          <div className="opacity-50 font-geist-mono group-hover:opacity-80 transition">
+            Browse words and phrases
+          </div>
           {showImportButton && onImport && (
             <Button
               className="flex-1"

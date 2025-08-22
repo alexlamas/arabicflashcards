@@ -238,132 +238,12 @@ export function LandingPage() {
           </motion.p>
         </motion.div>
 
-        {/* Pack Carousel */}
-        <motion.div
-          className="mb-6 md:mb-10 min-h-[200px] md:h-64 flex items-center justify-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 1.2, ease: "easeOut" }}
-        >
-          {loading ? (
-            <div className="flex justify-center items-center h-full">
-              <div className="w-72 sm:w-80 h-56 md:h-56 rounded-lg bg-gray-100/10 animate-pulse" />
-            </div>
-          ) : packs.length > 0 ? (
-            <div className="flex items-center justify-center sm:gap-8 gap-2 w-full max-w-2xl">
-              <motion.button
-                onClick={prevPack}
-                className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-fg flex-shrink-0 md:cursor-none hover:scale-110"
-                aria-label="Previous pack"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: 1.4 }}
-                onMouseEnter={() => setIsPointer(true)}
-                onMouseLeave={() => setIsPointer(false)}
-              >
-                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 " />
-              </motion.button>
-
-              <div
-                className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-[30rem] relative overflow-hidden"
-                onMouseEnter={() => {
-                  setIsPaused(true);
-                  setIsPointer(true);
-                }}
-                onMouseLeave={() => {
-                  setIsPaused(false);
-                  setIsPointer(false);
-                }}
-              >
-                <AnimatePresence mode="wait" custom={direction}>
-                  <motion.div
-                    key={currentPackIndex}
-                    custom={direction}
-                    initial={{
-                      opacity: 0,
-                      scale: 0.95,
-                      filter: "blur(10px)",
-                    }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                      filter: "blur(0px)",
-                    }}
-                    exit={{
-                      opacity: 0,
-                      scale: 0.95,
-                      filter: "blur(10px)",
-                    }}
-                    transition={{
-                      duration: 0.3,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    <PackCard
-                      pack={packs[currentPackIndex]}
-                      onPreview={handlePackPreview}
-                      showImportButton={false}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              <motion.button
-                onClick={nextPack}
-                className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-fg flex-shrink-0 md:cursor-none hover:scale-110"
-                aria-label="Next pack"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: 1.4 }}
-                onMouseEnter={() => setIsPointer(true)}
-                onMouseLeave={() => setIsPointer(false)}
-              >
-                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-              </motion.button>
-            </div>
-          ) : null}
-        </motion.div>
-
-        {/* Carousel Indicators */}
-        {packs.length > 1 && !loading && (
-          <motion.div
-            className="flex justify-center gap-1.5 mb-6 md:mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 1.5 }}
-          >
-            {packs.map((_, index) => (
-              <motion.button
-                key={index}
-                onClick={() => {
-                  const diff = index - currentPackIndex;
-                  setDirection(diff > 0 ? 1 : -1);
-                  setCurrentPackIndex(index);
-                  setIsPaused(true);
-                  setTimeout(() => setIsPaused(false), 8000);
-                }}
-                className={`h-1.5 rounded-full transition-all duration-500 ease-in-out md:cursor-none ${
-                  index === currentPackIndex
-                    ? "w-8 bg-brand-fg"
-                    : "w-1.5 bg-brand-fg/30 hover:bg-brand-fg/50"
-                }`}
-                aria-label={`Go to pack ${index + 1}`}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 1.6 + index * 0.05 }}
-                onMouseEnter={() => setIsPointer(true)}
-                onMouseLeave={() => setIsPointer(false)}
-              />
-            ))}
-          </motion.div>
-        )}
-
         {/* CTAs */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0"
+          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0 mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 1.8, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 1.2, ease: "easeOut" }}
         >
           <Button
             size="lg"
@@ -373,10 +253,130 @@ export function LandingPage() {
             onMouseLeave={() => setIsPointer(false)}
           >
             Start learning
-            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition" />
+            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-2 group-hover:-rotate-12 transition" />
           </Button>
         </motion.div>
       </div>
+
+      {/* Pack Carousel */}
+      <motion.div
+        className="mb-4 md:mb-2 min-h-[200px] md:h-64 flex items-center justify-center"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 1.8, ease: "easeOut" }}
+      >
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="w-72 sm:w-80 h-56 md:h-56 rounded-lg bg-gray-100/10 animate-pulse" />
+          </div>
+        ) : packs.length > 0 ? (
+          <div className="flex items-center justify-center sm:gap-8 gap-2 w-full max-w-2xl">
+            <motion.button
+              onClick={prevPack}
+              className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-accent flex-shrink-0 md:cursor-none hover:scale-110"
+              aria-label="Previous pack"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 1.4 }}
+              onMouseEnter={() => setIsPointer(true)}
+              onMouseLeave={() => setIsPointer(false)}
+            >
+              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 " />
+            </motion.button>
+
+            <div
+              className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-[30rem] relative"
+              onMouseEnter={() => {
+                setIsPaused(true);
+                setIsPointer(true);
+              }}
+              onMouseLeave={() => {
+                setIsPaused(false);
+                setIsPointer(false);
+              }}
+            >
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentPackIndex}
+                  custom={direction}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.95,
+                    filter: "blur(10px)",
+                  }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    filter: "blur(0px)",
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.95,
+                    filter: "blur(10px)",
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <PackCard
+                    pack={packs[currentPackIndex]}
+                    onPreview={handlePackPreview}
+                    showImportButton={false}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <motion.button
+              onClick={nextPack}
+              className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-accent flex-shrink-0 md:cursor-none hover:scale-110"
+              aria-label="Next pack"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 2 }}
+              onMouseEnter={() => setIsPointer(true)}
+              onMouseLeave={() => setIsPointer(false)}
+            >
+              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+            </motion.button>
+          </div>
+        ) : null}
+      </motion.div>
+
+      {/* Carousel Indicators */}
+      {packs.length > 1 && !loading && (
+        <motion.div
+          className="flex justify-center gap-1.5"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 1.5 }}
+        >
+          {packs.map((_, index) => (
+            <motion.button
+              key={index}
+              onClick={() => {
+                const diff = index - currentPackIndex;
+                setDirection(diff > 0 ? 1 : -1);
+                setCurrentPackIndex(index);
+                setIsPaused(true);
+                setTimeout(() => setIsPaused(false), 8000);
+              }}
+              className={`h-1.5 rounded-full transition-all duration-500 ease-in-out md:cursor-none ${
+                index === currentPackIndex
+                  ? "w-8 bg-brand-accent"
+                  : "w-1.5 bg-brand-accent/30 hover:bg-brand-fg/50"
+              }`}
+              aria-label={`Go to pack ${index + 1}`}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 1.6 + index * 0.05 }}
+              onMouseEnter={() => setIsPointer(true)}
+              onMouseLeave={() => setIsPointer(false)}
+            />
+          ))}
+        </motion.div>
+      )}
 
       {/* Preview Modal */}
       <PackPreviewModal
