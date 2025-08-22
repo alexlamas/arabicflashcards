@@ -16,6 +16,43 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+// PPHatton custom font
+const ppHatton = localFont({
+  src: [
+    {
+      path: "./fonts/PPHatton-Ultralight.otf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "./fonts/PPHatton-UltralightItalic.otf",
+      weight: "200",
+      style: "italic",
+    },
+    {
+      path: "./fonts/PPHatton-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/PPHatton-MediumItalic.otf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "./fonts/PPHatton-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/PPHatton-BoldItalic.otf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-pphatton",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://yourdomain.com"),
   title: {
@@ -74,7 +111,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} ${ppHatton.variable} antialiased min-h-screen`}
       >
         {children}
         <Analytics />
