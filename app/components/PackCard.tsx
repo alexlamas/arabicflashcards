@@ -29,7 +29,7 @@ export function PackCard({
   return (
     <Card
       onClick={() => onPreview(pack)}
-      className="h-full flex flex-col transition-all bg-brand-fg/5 !text-white hover:border-white/10 border border-transparent group p-3 sm:p-4 sm:gap-3 md:cursor-none"
+      className="h-full flex flex-col transition-all bg-black/5 !text-white hover:border-white/10 border border-transparent group p-3 sm:p-4 sm:gap-3 md:cursor-none"
     >
       <CardHeader className="flex-1 gap-1 p-3 sm:p-6">
         <CardTitle className="text-xl sm:text-2xl md:text-3xl font-pphatton font-bold">

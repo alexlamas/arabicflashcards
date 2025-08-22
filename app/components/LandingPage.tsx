@@ -267,7 +267,7 @@ export function LandingPage() {
           <Button
             size="lg"
             onClick={() => setShowAuthDialog(true)}
-            className="gap-2 px-6 sm:px-8 py-5 sm:py-6 !bg-brand-fg !text-brand-bg font-geist-mono font-medium rounded-full group transition hover:scale-105 text-sm sm:text-base"
+            className="gap-2 px-6 sm:px-8 py-5 sm:py-6 !bg-brand-fg !text-brand-bg font-geist-mono font-medium rounded-full group transition hover:scale-105 text-sm sm:text-base md:cursor-none"
             onMouseEnter={() => setIsPointer(true)}
             onMouseLeave={() => setIsPointer(false)}
           >
