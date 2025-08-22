@@ -102,9 +102,12 @@ export function AuthDialog() {
     setError(null);
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        }
+      );
 
       if (resetError) {
         setError(resetError.message);
@@ -189,35 +192,36 @@ export function AuthDialog() {
           </div>
 
           {/* Right side - Auth form */}
-          <div className="p-8 bg-white">
+          <div className="p-8 bg-white h-full flex flex-col ">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome</h3>
-              <p className="text-gray-600">
+              <h3 className="text-3xl font-pphatton font-bold text-gray-900 mb-2">
+                Welcome
+              </h3>
+              <p className="text-gray-600 font-geist-sans">
                 Sign in to continue learning, or create an account to get
-                started
+                started.
               </p>
             </div>
 
             {step === "email" ? (
               <form
                 onSubmit={handleEmailSubmit}
-                className="space-y-4"
+                className="flex flex-col justify-between h-full"
               >
                 <div className="space-y-2">
                   <Label htmlFor="email">Email address</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="e.g. habibi123@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoFocus
+                    className="py-6 px-4"
                   />
                 </div>
-                {error && (
-                  <p className="text-sm text-red-600">{error}</p>
-                )}
+                {error && <p className="text-sm text-red-600">{error}</p>}
                 <Button
                   type="submit"
                   className="w-full rounded-full h-12 font-geist-mono bg-black hover:bg-gray-800"
@@ -236,22 +240,20 @@ export function AuthDialog() {
             ) : (
               <form
                 onSubmit={handlePasswordSubmit}
-                className="space-y-4"
+                className="h-full flex flex-col justify-between"
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      {email}
-                    </p>
+                  <div className="flex items-center justify-between bg-gray-100 p-4 rounded-md">
+                    <p className="text-sm text-gray-600">{email}</p>
                     <button
                       type="button"
                       onClick={handleChangeEmail}
-                      className="text-sm text-blue-600 hover:underline"
+                      className="text-sm hover:opacity-100 opacity-50 transition"
                     >
                       Change
                     </button>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="password">
                       {isNewUser ? "Create a password" : "Enter your password"}
@@ -259,25 +261,28 @@ export function AuthDialog() {
                     <Input
                       id="password"
                       type="password"
-                      placeholder={isNewUser ? "Choose a secure password" : "Enter your password"}
+                      placeholder={
+                        isNewUser
+                          ? "Choose a secure password"
+                          : "Enter your password"
+                      }
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       autoFocus
                       minLength={6}
+                      className="py-6 px-4"
                     />
                     {isNewUser && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 px-1">
                         Must be at least 6 characters
                       </p>
                     )}
                   </div>
                 </div>
-                
-                {error && (
-                  <p className="text-sm text-red-600">{error}</p>
-                )}
-                
+
+                {error && <p className="text-sm text-red-600">{error}</p>}
+
                 <Button
                   type="submit"
                   className="w-full rounded-full h-12 font-geist-mono bg-black hover:bg-gray-800"
@@ -285,11 +290,13 @@ export function AuthDialog() {
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isNewUser ? (
+                    "Create account"
                   ) : (
-                    isNewUser ? "Create account" : "Sign in"
+                    "Sign in"
                   )}
                 </Button>
-                
+
                 {!isNewUser && (
                   <button
                     type="button"
