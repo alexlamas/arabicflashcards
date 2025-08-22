@@ -209,7 +209,9 @@ export function AuthDialog() {
                 className="flex flex-col justify-between h-full"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email address</Label>
+                  <Label htmlFor="email" className="font-geist-mono">
+                    Email address
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -218,7 +220,7 @@ export function AuthDialog() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoFocus
-                    className="py-6 px-4"
+                    className="py-6 px-4 shadow-none focus:bg-brand-bg/[2%] focus:!ring-3 focus:ring-offset-2 focus:!ring-brand-bg/20 focus:ring-offset-white focus:border-brand-bg placeholder:font-geist-mono"
                   />
                 </div>
                 {error && <p className="text-sm text-red-600">{error}</p>}
@@ -255,7 +257,7 @@ export function AuthDialog() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">
+                    <Label htmlFor="password" className="font-geist-mono">
                       {isNewUser ? "Create a password" : "Enter your password"}
                     </Label>
                     <Input
@@ -271,7 +273,7 @@ export function AuthDialog() {
                       required
                       autoFocus
                       minLength={6}
-                      className="py-6 px-4"
+                      className="py-6 px-4 shadow-none focus:bg-brand-bg/[2%] focus:!ring-3 focus:ring-offset-2 focus:!ring-brand-bg/20 focus:ring-offset-white focus:border-brand-bg placeholder:font-geist-mono"
                     />
                     {isNewUser && (
                       <p className="text-xs text-gray-500 px-1">

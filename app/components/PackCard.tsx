@@ -29,24 +29,24 @@ export function PackCard({
   return (
     <Card
       onClick={() => onPreview(pack)}
-      className="h-full flex flex-col  transition-all bg-brand-fg/5 border-none !text-white cursor-pointer hover:bg-brand-fg/10 group p-4 gap-3"
+      className="h-full flex flex-col transition-all bg-brand-fg/5 !text-white hover:border-white/10 border border-transparent group p-3 sm:p-4 sm:gap-3 md:cursor-none"
     >
-      <CardHeader className="flex-1 gap-1">
-        <CardTitle className="text-3xl font-pphatton font-bold">
+      <CardHeader className="flex-1 gap-1 p-3 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl md:text-3xl font-pphatton font-bold">
           {pack.name}
         </CardTitle>
         {pack.description && (
-          <CardDescription className="mt-2 font-geist-mono text-base text-white">
+          <CardDescription className="mt-1 sm:mt-2 font-geist-mono text-sm sm:text-base text-white">
             {pack.description}
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 p-3 sm:p-6">
         <div className="flex gap-2">
           <Button
             variant="outline"
             size={"lg"}
-            className="font-geist-mono rounded-full bg-transparent border-brand-fg flex-1 !text-brand-fg  !py-5 px-8 group-hover:bg-brand-fg/5 hover:scale-105 transition"
+            className="font-geist-mono rounded-full bg-transparent border-white/20 flex-1 !text-white  !py-5 px-8 group-hover:bg-white/5 hover:scale-105 transition md:cursor-none"
           >
             View
           </Button>
