@@ -20,6 +20,7 @@ import {
 } from "../services/starterPackService";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PackPreviewModalProps {
   pack: StarterPack | null;
@@ -82,11 +83,12 @@ export function PackPreviewModal({
 
         <div className="flex-1 min-h-0">
           {loading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-md h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
+            <Skeleton className="h-full w-full rounded-md bg-brand-bg/5" />
           ) : (
-            <Tabs defaultValue="words" className="h-full flex flex-col gap-2">
+            <Tabs
+              defaultValue="words"
+              className="h-full flex flex-col gap-2 animate-fade-in"
+            >
               {phrases.length > 0 && (
                 <TabsList className="block inline-flex !rounded-md *:rounded-md bg-brand-bg/20 *:p-2 *:px-6 p-2 h-auto w-fit">
                   <TabsTrigger className="text-black font-mono" value="words">
