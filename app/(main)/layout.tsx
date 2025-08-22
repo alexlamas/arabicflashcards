@@ -11,19 +11,19 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+  const { session, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   
   useEffect(() => {
     // Redirect to landing page if not authenticated and not already there
-    if (!loading && !session && pathname !== "/") {
+    if (!isLoading && !session && pathname !== "/") {
       router.push("/");
     }
-  }, [session, loading, pathname, router]);
+  }, [session, isLoading, pathname, router]);
   
   // Show nothing while checking auth
-  if (loading) {
+  if (isLoading) {
     return null;
   }
   
