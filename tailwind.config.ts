@@ -12,6 +12,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         pphatton: ["var(--font-pphatton)"],
+        title: ["var(--font-pphatton)"],
+        mono: ["var(--font-geist-mono)"],
         "geist-sans": ["var(--font-geist-sans)"],
         "geist-mono": ["var(--font-geist-mono)"],
       },
