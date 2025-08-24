@@ -44,7 +44,7 @@ export function PackCard({
       <CardContent className="pt-0 p-3 sm:px-6">
         <div className="flex gap-2">
           <div className="opacity-50 font-geist-mono group-hover:opacity-80 transition">
-            Browse words and phrases
+            Click to browse pack
           </div>
           {showImportButton && onImport && (
             <Button
