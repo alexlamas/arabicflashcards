@@ -62,7 +62,7 @@ const ListCard = ({
 }) => {
   return (
     <div
-      className="p-6 rounded-lg border-[0.5px] border-gray-200 relative group cursor-pointer hover:shadow-md transition-shadow"
+      className="p-6 rounded-lg border-[0.5px] border-gray-200 relative group hover:shadow-md transition-shadow"
       onClick={onShowDetails}
     >
       <div className="flex justify-between items-center">

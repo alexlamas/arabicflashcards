@@ -21,9 +21,6 @@ export function LandingPage() {
   const [currentPackIndex, setCurrentPackIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [direction, setDirection] = useState(0); // Track swipe direction
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isPointer, setIsPointer] = useState(false);
   const { setShowAuthDialog } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -39,16 +36,6 @@ export function LandingPage() {
       }
     }
     loadPacks();
-  }, []);
-
-  // Track mouse position for custom cursor
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   // Auto-rotate carousel
@@ -88,29 +75,7 @@ export function LandingPage() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-brand-bg overflow-y-auto flex flex-col justify-center py-8 md:py-0 md:cursor-none"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
-      {/* Custom Cursor */}
-      <motion.div
-        className="fixed bg-white/10 backdrop-blur-sm rounded-full pointer-events-none z-50 hidden md:block transition"
-        style={{
-          left: cursorPos.x - (isPointer ? 20 : 12),
-          top: cursorPos.y - (isPointer ? 20 : 12),
-          width: isPointer ? 40 : 24,
-          height: isPointer ? 40 : 24,
-        }}
-        animate={{
-          opacity: isHovering ? 1 : 0,
-          scale: isPointer ? 1 : 1,
-        }}
-        transition={{
-          opacity: { duration: 0.2 },
-          scale: { type: "spring", damping: 15, stiffness: 300 },
-        }}
-      />
+    <div className="min-h-screen bg-brand-bg overflow-y-auto flex flex-col justify-center py-8 md:py-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Logo with draw animation */}
         <motion.div
@@ -248,9 +213,7 @@ export function LandingPage() {
           <Button
             size="lg"
             onClick={() => setShowAuthDialog(true)}
-            className="gap-2 px-6 sm:px-8 py-5 sm:py-6 !bg-brand-fg !text-brand-bg font-geist-mono font-medium rounded-full group transition hover:scale-105 text-sm sm:text-base md:cursor-none"
-            onMouseEnter={() => setIsPointer(true)}
-            onMouseLeave={() => setIsPointer(false)}
+            className="gap-2 px-6 sm:px-8 py-5 sm:py-6 !bg-brand-fg !text-brand-bg font-geist-mono font-medium rounded-full group transition hover:scale-105 text-sm sm:text-base"
           >
             Start learning
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-2 group-hover:-rotate-12 transition" />
@@ -273,13 +236,11 @@ export function LandingPage() {
           <div className="flex items-center justify-center sm:gap-8 gap-2 w-full max-w-2xl">
             <motion.button
               onClick={prevPack}
-              className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-accent flex-shrink-0 md:cursor-none hover:scale-110"
+              className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-accent flex-shrink-0 hover:scale-110"
               aria-label="Previous pack"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 1.4 }}
-              onMouseEnter={() => setIsPointer(true)}
-              onMouseLeave={() => setIsPointer(false)}
             >
               <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 " />
             </motion.button>
@@ -288,11 +249,9 @@ export function LandingPage() {
               className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-[30rem] relative"
               onMouseEnter={() => {
                 setIsPaused(true);
-                setIsPointer(true);
               }}
               onMouseLeave={() => {
                 setIsPaused(false);
-                setIsPointer(false);
               }}
             >
               <AnimatePresence mode="wait" custom={direction}>
@@ -330,13 +289,11 @@ export function LandingPage() {
 
             <motion.button
               onClick={nextPack}
-              className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-accent flex-shrink-0 md:cursor-none hover:scale-110"
+              className="p-1.5 sm:p-2 rounded-full bg-brand-fg/10 hover:bg-brand-fg/20 transition text-brand-accent flex-shrink-0 hover:scale-110"
               aria-label="Next pack"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 2 }}
-              onMouseEnter={() => setIsPointer(true)}
-              onMouseLeave={() => setIsPointer(false)}
             >
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </motion.button>
@@ -362,7 +319,7 @@ export function LandingPage() {
                 setIsPaused(true);
                 setTimeout(() => setIsPaused(false), 8000);
               }}
-              className={`h-1.5 rounded-full transition-all duration-500 ease-in-out md:cursor-none ${
+              className={`h-1.5 rounded-full transition-all duration-500 ease-in-out ${
                 index === currentPackIndex
                   ? "w-8 bg-brand-accent"
                   : "w-1.5 bg-brand-accent/30 hover:bg-brand-fg/50"
@@ -371,8 +328,6 @@ export function LandingPage() {
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 1.6 + index * 0.05 }}
-              onMouseEnter={() => setIsPointer(true)}
-              onMouseLeave={() => setIsPointer(false)}
             />
           ))}
         </motion.div>
