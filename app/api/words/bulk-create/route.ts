@@ -1,0 +1,198 @@
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { ClaudeService } from "@/app/services/claudeService";
+import { WordType } from "@/app/types/word";
+
+export async function POST(req: Request) {
+  try {
+    const { words, confirmed } = await req.json();
+
+    if (!words || !Array.isArray(words) || words.length === 0) {
+      return NextResponse.json(
+        { error: "Words array is required" },
+        { status: 400 }
+      );
+    }
+
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    // If this is confirmed, save all words to database
+    if (confirmed) {
+      // Check authentication for saving
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          return NextResponse.json(
+            { error: "Authentication required to save words" },
+            { status: 401 }
+          );
+        }
+      }
+
+      const user = session?.user || (await supabase.auth.getUser()).data.user;
+
+      if (!user) {
+        return NextResponse.json(
+          { error: "Authentication required" },
+          { status: 401 }
+        );
+      }
+
+      // Insert all words
+      const wordsToInsert = words.map((word: any) => ({
+        english: word.english,
+        arabic: word.arabic,
+        transliteration: word.transliteration,
+        type: word.type as WordType,
+        user_id: user.id,
+      }));
+
+      const { data: wordData, error: wordError } = await supabase
+        .from("words")
+        .insert(wordsToInsert)
+        .select();
+
+      if (wordError) {
+        return NextResponse.json(
+          {
+            error: "Failed to save words",
+            details: wordError.message,
+            hint: wordError.hint,
+          },
+          { status: 500 }
+        );
+      }
+
+      // Create word_progress entries for all words
+      const progressEntries = words.map((word: any) => ({
+        user_id: user.id,
+        word_english: word.english,
+        status: "archived",
+        interval: 0,
+        ease_factor: 2.5,
+        review_count: 0,
+        next_review_date: new Date().toISOString(),
+      }));
+
+      const { error: progressError } = await supabase
+        .from("word_progress")
+        .insert(progressEntries);
+
+      if (progressError) {
+        console.error("Progress insert error:", progressError);
+      }
+
+      // Fetch complete data with progress for all words
+      const wordIds = wordData.map((w: any) => w.id);
+      const { data: completeData, error: fetchError } = await supabase
+        .from("words")
+        .select(
+          `
+          *,
+          progress:word_progress(
+            status,
+            next_review_date
+          )
+        `
+        )
+        .in("id", wordIds);
+
+      if (fetchError) {
+        console.error("Fetch error:", fetchError);
+        return NextResponse.json(
+          { error: "Failed to fetch saved words" },
+          { status: 500 }
+        );
+      }
+
+      const result = completeData.map((word: any) => ({
+        ...word,
+        status: word.progress?.[0]?.status || null,
+        next_review_date: word.progress?.[0]?.next_review_date || null,
+      }));
+
+      return NextResponse.json(result);
+    }
+
+    // Otherwise, generate translations for all words
+    const wordsList = words.join(", ");
+    const prompt = `Translate these words to Lebanese Arabic. Words: ${wordsList}
+
+    For each word, provide a JSON object with these fields:
+    {
+      "english": "the English word/phrase",
+      "arabic": "the Arabic word/phrase in Arabic script",
+      "transliteration": "Arabic pronunciation using English letters and numbers for Arabic sounds (e.g. 3 for ع)",
+      "type": "one of: noun, verb, adjective, phrase"
+    }
+
+    Return a JSON array containing one object for each word in the same order they were provided.
+
+    Example format:
+    [
+      {
+        "english": "house",
+        "arabic": "بيت",
+        "transliteration": "bayt",
+        "type": "noun"
+      },
+      {
+        "english": "go",
+        "arabic": "روح",
+        "transliteration": "roo7",
+        "type": "verb"
+      }
+    ]
+
+    Do not provide any additional text or explanations. Only return the JSON array.`;
+
+    const rawResponse = await ClaudeService.chatCompletion(prompt);
+
+    try {
+      // Try to extract JSON from response (in case there's extra text)
+      const jsonMatch = rawResponse.match(/\[[\s\S]*\]/);
+      const jsonString = jsonMatch ? jsonMatch[0] : rawResponse;
+
+      const translatedWords = JSON.parse(jsonString);
+
+      if (!Array.isArray(translatedWords)) {
+        throw new Error("Response is not an array");
+      }
+
+      // Validate each word has required fields
+      const validatedWords = translatedWords.map((word: any) => ({
+        english: word.english || "",
+        arabic: word.arabic || "",
+        transliteration: word.transliteration || "",
+        type: word.type || "noun",
+      }));
+
+      return NextResponse.json(validatedWords);
+    } catch (parseError) {
+      console.error("JSON Parse error:", parseError);
+      console.error("Failed to parse response:", rawResponse);
+      return NextResponse.json(
+        {
+          error: "Invalid response format from translation service",
+        },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error("Error in /api/words/bulk-create:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Failed to process request", message: errorMessage },
+      { status: 500 }
+    );
+  }
+}

@@ -2,6 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchBar } from "./SearchBar";
 import AddWordDialog from "./AddWordDialog";
+import BulkAddWordsDialog from "./BulkAddWordsDialog";
 import React from "react";
 import { Session } from "@supabase/supabase-js";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,11 +57,18 @@ export function Header({
             </TooltipProvider>
           )}
           {session && (
-            <AddWordDialog
-              onWordAdded={(word: Word) => {
-                setWords((prevWords) => [...prevWords, word]);
-              }}
-            />
+            <>
+              <AddWordDialog
+                onWordAdded={(word: Word) => {
+                  setWords((prevWords) => [...prevWords, word]);
+                }}
+              />
+              <BulkAddWordsDialog
+                onWordsAdded={(words: Word[]) => {
+                  setWords((prevWords) => [...prevWords, ...words]);
+                }}
+              />
+            </>
           )}
         </div>
       )}
