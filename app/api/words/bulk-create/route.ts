@@ -4,6 +4,33 @@ import { NextResponse } from "next/server";
 import { ClaudeService } from "@/app/services/claudeService";
 import { WordType } from "@/app/types/word";
 
+interface WordInput {
+  english: string;
+  arabic: string;
+  transliteration: string;
+  type: string;
+}
+
+interface DatabaseWord {
+  id: string;
+  english: string;
+  arabic: string;
+  transliteration: string;
+  type: WordType;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface WordProgress {
+  status: string;
+  next_review_date: string;
+}
+
+interface CompleteWord extends DatabaseWord {
+  progress?: WordProgress[];
+}
+
 export async function POST(req: Request) {
   try {
     const { words, confirmed } = await req.json();
@@ -47,7 +74,7 @@ export async function POST(req: Request) {
       }
 
       // Insert all words
-      const wordsToInsert = words.map((word: any) => ({
+      const wordsToInsert = words.map((word: WordInput) => ({
         english: word.english,
         arabic: word.arabic,
         transliteration: word.transliteration,
@@ -72,7 +99,7 @@ export async function POST(req: Request) {
       }
 
       // Create word_progress entries for all words
-      const progressEntries = words.map((word: any) => ({
+      const progressEntries = words.map((word: WordInput) => ({
         user_id: user.id,
         word_english: word.english,
         status: "archived",
@@ -91,7 +118,7 @@ export async function POST(req: Request) {
       }
 
       // Fetch complete data with progress for all words
-      const wordIds = wordData.map((w: any) => w.id);
+      const wordIds = wordData.map((w: DatabaseWord) => w.id);
       const { data: completeData, error: fetchError } = await supabase
         .from("words")
         .select(
@@ -113,7 +140,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const result = completeData.map((word: any) => ({
+      const result = completeData.map((word: CompleteWord) => ({
         ...word,
         status: word.progress?.[0]?.status || null,
         next_review_date: word.progress?.[0]?.next_review_date || null,
@@ -168,7 +195,7 @@ export async function POST(req: Request) {
       }
 
       // Validate each word has required fields
-      const validatedWords = translatedWords.map((word: any) => ({
+      const validatedWords = translatedWords.map((word: WordInput) => ({
         english: word.english || "",
         arabic: word.arabic || "",
         transliteration: word.transliteration || "",
