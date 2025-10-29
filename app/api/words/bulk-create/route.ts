@@ -151,6 +151,10 @@ export async function POST(req: Request) {
 
     // Otherwise, generate translations for all words
     const wordsList = words.join(", ");
+
+    console.log("Translating words:", wordsList);
+    console.log("Number of words:", words.length);
+
     const prompt = `Translate these words to Lebanese Arabic. Words: ${wordsList}
 
     For each word, provide a JSON object with these fields:
@@ -181,18 +185,36 @@ export async function POST(req: Request) {
 
     Do not provide any additional text or explanations. Only return the JSON array.`;
 
-    const rawResponse = await ClaudeService.chatCompletion(prompt);
+    let rawResponse;
+    try {
+      rawResponse = await ClaudeService.chatCompletion(prompt);
+      console.log("Claude response received, length:", rawResponse.length);
+    } catch (claudeError) {
+      console.error("Claude API error:", claudeError);
+      return NextResponse.json(
+        {
+          error: "Translation service error",
+          details: claudeError instanceof Error ? claudeError.message : "Unknown error",
+        },
+        { status: 500 }
+      );
+    }
 
     try {
       // Try to extract JSON from response (in case there's extra text)
       const jsonMatch = rawResponse.match(/\[[\s\S]*\]/);
       const jsonString = jsonMatch ? jsonMatch[0] : rawResponse;
 
+      console.log("Extracted JSON:", jsonString.substring(0, 200) + "...");
+
       const translatedWords = JSON.parse(jsonString);
 
       if (!Array.isArray(translatedWords)) {
+        console.error("Response is not an array:", translatedWords);
         throw new Error("Response is not an array");
       }
+
+      console.log("Parsed array with", translatedWords.length, "words");
 
       // Validate each word has required fields
       const validatedWords = translatedWords.map((word: WordInput) => ({
@@ -205,10 +227,12 @@ export async function POST(req: Request) {
       return NextResponse.json(validatedWords);
     } catch (parseError) {
       console.error("JSON Parse error:", parseError);
-      console.error("Failed to parse response:", rawResponse);
+      console.error("Failed to parse response:", rawResponse.substring(0, 500));
       return NextResponse.json(
         {
           error: "Invalid response format from translation service",
+          details: parseError instanceof Error ? parseError.message : "Failed to parse JSON",
+          rawResponse: rawResponse.substring(0, 200),
         },
         { status: 500 }
       );

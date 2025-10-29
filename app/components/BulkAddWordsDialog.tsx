@@ -67,13 +67,20 @@ export default function BulkAddWordsDialog({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate translations");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error:", errorData);
+        throw new Error(
+          errorData.details || errorData.error || "Failed to generate translations"
+        );
       }
 
       const words = await response.json();
+      console.log("Received translations:", words);
       setPreviewWords(words);
     } catch (err) {
-      setError("Error: " + err);
+      console.error("Bulk add error:", err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError("Error: " + errorMessage);
     } finally {
       setIsGenerating(false);
     }
