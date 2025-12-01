@@ -89,13 +89,22 @@ export function Footer() {
           className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500"
         >
           <p>&copy; {new Date().getFullYear()} Yalla. All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            Made with{" "}
-            <span className="text-red-500" aria-label="love">
-              &hearts;
-            </span>{" "}
-            for Lebanese Arabic learners
-          </p>
+          <div className="flex items-center gap-2">
+            <span>Try another style:</span>
+            <Link
+              href="/?theme=botanical"
+              className="text-gray-700 hover:text-brand-bg underline underline-offset-2"
+            >
+              Botanical
+            </Link>
+            <span>&middot;</span>
+            <Link
+              href="/?theme=bold"
+              className="text-gray-700 hover:text-brand-bg underline underline-offset-2"
+            >
+              Bold
+            </Link>
+          </div>
         </motion.div>
       </div>
     </footer>

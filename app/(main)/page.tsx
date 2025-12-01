@@ -6,7 +6,7 @@ import { useWords } from "../contexts/WordsContext";
 import WordGrid from "../components/WordGrid";
 import { useAuth } from "../contexts/AuthContext";
 import { Header } from "../components/Header";
-import { NotionLandingPage } from "../components/landing";
+import { LandingPageSwitcher } from "../components/landing";
 
 function HomeContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -30,7 +30,7 @@ function HomeContent() {
 
   // Show landing page for non-authenticated users
   if (!session) {
-    return <NotionLandingPage />;
+    return <LandingPageSwitcher />;
   }
 
   // Show loading for authenticated users while words are loading
