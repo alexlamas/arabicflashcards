@@ -3,87 +3,123 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../contexts/AuthContext";
-import { motion } from "framer-motion";
-import { ArrowRight, Play, Star, Zap, BookOpen } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Flame, Brain, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import {
-  StarterPackService,
-  StarterPack,
-} from "../../services/starterPackService";
-import { PackPreviewModal } from "../PackPreviewModal";
 
 export function BoldLandingPage() {
   const { setShowAuthDialog } = useAuth();
-  const [packs, setPacks] = useState<StarterPack[]>([]);
-  const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
 
-  useEffect(() => {
-    async function loadPacks() {
-      try {
-        const availablePacks = await StarterPackService.getAvailablePacks();
-        setPacks(availablePacks.slice(0, 3));
-      } catch (error) {
-        console.error("Error loading packs:", error);
-      }
-    }
-    loadPacks();
-  }, []);
-
-  const arabicWords = [
+  const flashcards = [
     { arabic: "مرحبا", english: "Hello", transliteration: "marhaba" },
     { arabic: "شكراً", english: "Thank you", transliteration: "shukran" },
-    { arabic: "كيفك", english: "How are you?", transliteration: "kifak" },
-    { arabic: "يلا", english: "Let's go", transliteration: "yalla" },
+    { arabic: "كيفك؟", english: "How are you?", transliteration: "kifak?" },
+    { arabic: "يلا", english: "Let's go!", transliteration: "yalla" },
+    { arabic: "حبيبي", english: "My love", transliteration: "habibi" },
   ];
 
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [currentCard, setCurrentCard] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const streak = 7;
 
+  const handleAnswer = (difficulty: string) => {
+    if (difficulty === "easy" || difficulty === "good") {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 1000);
+    }
+    setIsFlipped(false);
+    setTimeout(() => {
+      setCurrentCard((prev) => (prev + 1) % flashcards.length);
+    }, 300);
+  };
+
+  // Auto-flip demo
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWordIndex((prev) => (prev + 1) % arabicWords.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [arabicWords.length]);
+    const flipInterval = setInterval(() => {
+      setIsFlipped((prev) => !prev);
+    }, 2500);
+
+    const cardInterval = setInterval(() => {
+      setIsFlipped(false);
+      setTimeout(() => {
+        setCurrentCard((prev) => (prev + 1) % flashcards.length);
+      }, 300);
+    }, 5000);
+
+    return () => {
+      clearInterval(flipInterval);
+      clearInterval(cardInterval);
+    };
+  }, [flashcards.length]);
 
   return (
-    <div className="min-h-screen bg-brand-bg overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] overflow-hidden">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Gradient orbs */}
+        <motion.div
+          className="absolute top-1/4 -left-32 w-96 h-96 bg-brand-bg/30 rounded-full blur-[120px]"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 -right-32 w-96 h-96 bg-brand-fg/20 rounded-full blur-[120px]"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Floating Arabic letters */}
+        {["ي", "ل", "ا", "م", "ر", "ح", "ب"].map((letter, i) => (
+          <motion.span
+            key={i}
+            className="absolute text-white/5 font-bold select-none"
+            style={{
+              fontSize: `${60 + Math.random() * 80}px`,
+              left: `${10 + i * 12}%`,
+              top: `${20 + Math.random() * 60}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              rotate: [0, 5, 0],
+            }}
+            transition={{
+              duration: 6 + i,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.5,
+            }}
+          >
+            {letter}
+          </motion.span>
+        ))}
+      </div>
+
       {/* Navigation */}
       <motion.nav
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-center justify-between px-6 sm:px-8 py-6 max-w-7xl mx-auto"
+        transition={{ duration: 0.6 }}
+        className="relative z-10 flex items-center justify-between px-6 sm:px-10 py-6"
       >
-        <Link href="/" className="flex items-center gap-2">
-          <svg
-            width="36"
-            height="36"
-            viewBox="0 0 260 260"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-brand-fg"
-          >
-            <path
-              d="M221.792 73.3274C215.418 108.418 203.652 99.3945 196.298 136.991C190.655 165.843 198.259 201.658 186.493 219.203C174.726 236.748 222.367 175.355 229.636 144.009C235.783 117.5 231.107 104.407 221.792 73.3274Z"
-              fill="currentColor"
+        <Link href="/" className="flex items-center gap-3">
+          <div className="relative">
+            <div className="w-10 h-10 bg-gradient-to-br from-brand-bg to-brand-fg rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">ي</span>
+            </div>
+            <motion.div
+              className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
             />
-            <path
-              d="M63.1188 136.991C55.7648 99.3945 43.9985 108.418 37.6251 73.3274C28.3101 104.407 23.6334 117.5 29.7809 144.009C37.0498 175.355 84.6903 236.748 72.924 219.203C61.1577 201.658 68.7621 165.843 63.1188 136.991Z"
-              fill="currentColor"
-            />
-            <path
-              d="M126.711 220V114.19C126.711 113.086 127.606 112.19 128.711 112.19C129.815 112.19 130.853 113.085 130.853 114.19L130.711 220C130.711 221.104 129.815 222 128.711 222C127.606 222 126.711 221.104 126.711 220Z"
-              fill="currentColor"
-            />
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M148.782 52.2994C151.201 49.6222 154.514 46.2756 157.915 43.5144C160.124 41.7211 162.456 40.1044 164.664 39.0985C166.783 38.1331 169.274 37.5098 171.466 38.5058L172.609 39.0254L172.637 40.28C173.136 63.7272 172.4 78.0833 169.827 87.99C167.2 98.1034 162.664 103.551 155.957 109.225C149.862 114.381 140.071 115.54 130.853 109.393V114.19C130.853 115.293 129.959 116.186 128.857 116.186C128.832 116.186 128.808 116.183 128.783 116.182C128.759 116.183 128.735 116.186 128.71 116.186C127.608 116.186 126.714 115.292 126.714 114.19V109.393C117.496 115.539 107.705 114.381 101.61 109.225C94.9031 103.551 90.3669 98.1032 87.7398 87.99C85.1663 78.0833 84.4311 63.7271 84.93 40.28L84.9573 39.0254L86.1009 38.5058C88.2932 37.5096 90.7841 38.1331 92.903 39.0985C95.1104 40.1043 97.4423 41.7212 99.6515 43.5144C103.053 46.2755 106.366 49.6222 108.785 52.2994C112.17 46.7574 121.223 38.3268 128.711 38.3268C136.198 38.3268 145.766 47.3617 148.782 52.2994Z"
-              fill="currentColor"
-            />
-          </svg>
-          <span className="font-pphatton font-bold text-xl text-brand-fg">
+          </div>
+          <span className="font-pphatton font-bold text-xl text-white">
             Yalla
           </span>
         </Link>
@@ -91,291 +127,303 @@ export function BoldLandingPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowAuthDialog(true)}
-            className="text-brand-accent hover:text-white transition-colors hidden sm:block"
+            className="text-white/70 hover:text-white transition-colors hidden sm:block"
           >
             Log in
           </button>
           <Button
             onClick={() => setShowAuthDialog(true)}
-            className="bg-brand-fg text-brand-bg hover:bg-brand-fg/90 rounded-full px-6"
+            className="bg-white text-[#1a1a2e] hover:bg-white/90 rounded-full px-6 font-semibold"
           >
             Start free
           </Button>
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
-      <section className="px-6 sm:px-8 pt-12 pb-20 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+      {/* Main Content */}
+      <main className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 pt-8 sm:pt-16">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          {/* Left - Hero Content */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-brand-fg text-sm font-medium mb-6">
-              <Zap className="w-4 h-4" />
-              Spaced repetition powered
-            </div>
+            {/* Streak badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm mb-8"
+            >
+              <Flame className="w-4 h-4 text-orange-400" />
+              <span className="text-orange-400 font-medium">{streak} day streak</span>
+              <span className="text-white/50">•</span>
+              <span className="text-white/70">Join 2,000+ learners</span>
+            </motion.div>
 
-            <h1 className="font-pphatton text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-[1.1]">
-              Learn
+            <h1 className="font-pphatton text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-[1.05]">
+              Master
               <br />
-              <span className="text-brand-fg">Lebanese</span>
+              <span className="bg-gradient-to-r from-brand-bg via-brand-fg to-brand-fg bg-clip-text text-transparent">
+                Lebanese Arabic
+              </span>
               <br />
-              Arabic
+              <span className="text-white/90">in minutes a day</span>
             </h1>
 
-            <p className="text-lg text-brand-accent mb-8 max-w-md">
-              The fun, effective way to master Lebanese dialect. Smart
-              flashcards that adapt to how you learn.
+            <p className="text-lg sm:text-xl text-white/60 mb-10 max-w-lg leading-relaxed">
+              Smart flashcards that adapt to your brain. Learn the words that
+              matter, forget the frustration of forgetting.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 onClick={() => setShowAuthDialog(true)}
-                className="bg-brand-fg text-brand-bg hover:bg-brand-fg/90 rounded-full px-8 py-6 text-lg font-semibold group"
+                className="bg-gradient-to-r from-brand-bg to-brand-bg/80 hover:from-brand-bg/90 hover:to-brand-bg/70 text-white rounded-full px-8 py-7 text-lg font-semibold shadow-lg shadow-brand-bg/25 group"
               >
-                Get started free
+                Start learning — it&apos;s free
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => setShowAuthDialog(true)}
-                className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-6 text-lg"
-              >
-                <Play className="mr-2 w-5 h-5" />
-                Watch demo
-              </Button>
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-8 mt-12 pt-8 border-t border-white/10">
-              {[
-                { value: "500+", label: "Words" },
-                { value: "Free", label: "Forever" },
-                { value: "5 min", label: "Daily" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <div className="text-2xl font-bold text-brand-fg">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-brand-accent">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right - Flashcard Preview */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative"
-          >
-            {/* Decorative cards behind */}
-            <div className="absolute -top-4 -left-4 w-full h-full bg-white/5 rounded-3xl transform rotate-3" />
-            <div className="absolute -top-2 -left-2 w-full h-full bg-white/10 rounded-3xl transform rotate-1" />
-
-            {/* Main flashcard */}
-            <div className="relative bg-white rounded-3xl p-8 sm:p-12 shadow-2xl">
-              <div className="text-center">
-                <motion.div
-                  key={currentWordIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <p className="text-6xl sm:text-7xl mb-4 text-gray-900">
-                    {arabicWords[currentWordIndex].arabic}
-                  </p>
-                  <p className="text-xl text-gray-400 mb-2 font-mono">
-                    {arabicWords[currentWordIndex].transliteration}
-                  </p>
-                  <p className="text-2xl text-gray-700 font-medium">
-                    {arabicWords[currentWordIndex].english}
-                  </p>
-                </motion.div>
-
-                {/* Card indicators */}
-                <div className="flex justify-center gap-2 mt-8">
-                  {arabicWords.map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        i === currentWordIndex
-                          ? "bg-brand-bg w-6"
-                          : "bg-gray-200"
-                      }`}
-                    />
+            {/* Social proof */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mt-12 flex items-center gap-6"
+            >
+              <div className="flex -space-x-3">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full border-2 border-[#1a1a2e] bg-gradient-to-br from-brand-bg/80 to-brand-fg/80"
+                  />
+                ))}
+              </div>
+              <div className="text-sm">
+                <div className="flex items-center gap-1 text-yellow-400 mb-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
                   ))}
                 </div>
+                <p className="text-white/50">
+                  &ldquo;Finally, an app that actually works&rdquo;
+                </p>
               </div>
+            </motion.div>
+          </motion.div>
 
-              {/* Action buttons */}
-              <div className="flex gap-3 mt-8">
-                <button className="flex-1 py-3 rounded-xl bg-red-100 text-red-600 font-medium hover:bg-red-200 transition">
-                  Again
-                </button>
-                <button className="flex-1 py-3 rounded-xl bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200 transition">
-                  Hard
-                </button>
-                <button className="flex-1 py-3 rounded-xl bg-green-100 text-green-600 font-medium hover:bg-green-200 transition">
-                  Good
-                </button>
-                <button className="flex-1 py-3 rounded-xl bg-blue-100 text-blue-600 font-medium hover:bg-blue-200 transition">
-                  Easy
-                </button>
-              </div>
+          {/* Right - Interactive Flashcard Demo */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative"
+          >
+            {/* Confetti effect */}
+            <AnimatePresence>
+              {showConfetti && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 pointer-events-none z-20"
+                >
+                  {[...Array(12)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-3 h-3 rounded-full"
+                      style={{
+                        background: i % 2 === 0 ? "#E9EE62" : "#974A27",
+                        left: `${40 + Math.random() * 20}%`,
+                        top: "50%",
+                      }}
+                      initial={{ y: 0, opacity: 1, scale: 1 }}
+                      animate={{
+                        y: -100 - Math.random() * 100,
+                        x: (Math.random() - 0.5) * 200,
+                        opacity: 0,
+                        scale: 0,
+                        rotate: Math.random() * 360,
+                      }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Card stack effect */}
+            <div className="relative mx-auto max-w-sm">
+              {/* Background cards */}
+              <div className="absolute inset-4 bg-white/5 rounded-3xl transform rotate-3 scale-[0.98]" />
+              <div className="absolute inset-2 bg-white/10 rounded-3xl transform -rotate-2 scale-[0.99]" />
+
+              {/* Main flashcard */}
+              <motion.div
+                className="relative bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 shadow-2xl cursor-pointer perspective-1000"
+                onClick={() => setIsFlipped(!isFlipped)}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                {/* Card indicator */}
+                <div className="flex justify-between items-center mb-6">
+                  <span className="text-sm text-gray-400">
+                    {currentCard + 1} / {flashcards.length}
+                  </span>
+                  <span className="text-xs bg-brand-bg/10 text-brand-bg px-3 py-1 rounded-full font-medium">
+                    Tap to flip
+                  </span>
+                </div>
+
+                {/* Card content */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${currentCard}-${isFlipped}`}
+                    initial={{ opacity: 0, rotateY: isFlipped ? -90 : 90 }}
+                    animate={{ opacity: 1, rotateY: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-center py-8"
+                  >
+                    {!isFlipped ? (
+                      <>
+                        <p className="text-6xl sm:text-7xl mb-4 text-gray-900">
+                          {flashcards[currentCard].arabic}
+                        </p>
+                        <p className="text-lg text-gray-400 font-mono">
+                          {flashcards[currentCard].transliteration}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-4xl sm:text-5xl mb-4 text-gray-900 font-medium">
+                          {flashcards[currentCard].english}
+                        </p>
+                        <p className="text-lg text-brand-bg">
+                          {flashcards[currentCard].arabic}
+                        </p>
+                      </>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Spaced repetition buttons - The key feature! */}
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 text-center mb-4">
+                    How well did you know this?
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { label: "Again", color: "bg-red-50 text-red-600 hover:bg-red-100", time: "1m" },
+                      { label: "Hard", color: "bg-orange-50 text-orange-600 hover:bg-orange-100", time: "6m" },
+                      { label: "Good", color: "bg-green-50 text-green-600 hover:bg-green-100", time: "10m" },
+                      { label: "Easy", color: "bg-blue-50 text-blue-600 hover:bg-blue-100", time: "4d" },
+                    ].map((btn) => (
+                      <button
+                        key={btn.label}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAnswer(btn.label.toLowerCase());
+                        }}
+                        className={`${btn.color} py-3 rounded-xl font-medium transition-all hover:scale-105 active:scale-95`}
+                      >
+                        <span className="block text-sm">{btn.label}</span>
+                        <span className="block text-xs opacity-60">{btn.time}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Explanation tooltip */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
+                  className="mt-4 p-3 bg-gray-50 rounded-xl"
+                >
+                  <div className="flex items-start gap-2">
+                    <Brain className="w-4 h-4 text-brand-bg mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-500">
+                      <span className="font-medium text-gray-700">Smart scheduling:</span>{" "}
+                      Words you know well appear less often. Struggling? We&apos;ll show it more.
+                    </p>
+                  </div>
+                </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
-      </section>
 
-      {/* Features Strip */}
-      <section className="bg-brand-fg py-6 overflow-hidden">
+        {/* Feature highlights */}
         <motion.div
-          animate={{ x: [0, -1000] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="flex gap-12 whitespace-nowrap"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-24 mb-16 grid grid-cols-1 sm:grid-cols-3 gap-6"
         >
-          {[...Array(3)].map((_, setIndex) => (
-            <div key={setIndex} className="flex gap-12">
-              {[
-                "Spaced Repetition",
-                "Offline Mode",
-                "AI Examples",
-                "Progress Tracking",
-                "Custom Words",
-                "Smart Review",
-              ].map((feature, i) => (
-                <span
-                  key={`${setIndex}-${i}`}
-                  className="text-brand-bg font-medium flex items-center gap-2"
-                >
-                  <Star className="w-4 h-4" />
-                  {feature}
-                </span>
-              ))}
+          {[
+            {
+              icon: Brain,
+              title: "Spaced Repetition",
+              desc: "Science-backed algorithm that knows when you're about to forget",
+              gradient: "from-purple-500/20 to-blue-500/20",
+            },
+            {
+              icon: TrendingUp,
+              title: "Track Progress",
+              desc: "Watch your vocabulary grow with satisfying streaks and stats",
+              gradient: "from-green-500/20 to-emerald-500/20",
+            },
+            {
+              icon: Flame,
+              title: "Stay Motivated",
+              desc: "Daily goals and streaks keep you coming back for more",
+              gradient: "from-orange-500/20 to-red-500/20",
+            },
+          ].map((feature) => (
+            <div
+              key={feature.title}
+              className={`relative p-6 rounded-2xl bg-gradient-to-br ${feature.gradient} backdrop-blur-sm border border-white/10`}
+            >
+              <feature.icon className="w-8 h-8 text-white mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-white/60 text-sm">{feature.desc}</p>
             </div>
           ))}
         </motion.div>
-      </section>
-
-      {/* Word Packs Section */}
-      {packs.length > 0 && (
-        <section className="px-6 sm:px-8 py-20 max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="font-pphatton text-4xl sm:text-5xl font-bold text-white mb-4">
-              Start with curated packs
-            </h2>
-            <p className="text-brand-accent text-lg">
-              Hand-picked vocabulary to get you speaking fast
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {packs.map((pack, index) => (
-              <motion.div
-                key={pack.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => {
-                  setSelectedPack(pack);
-                  setShowPreview(true);
-                }}
-                className="bg-white/10 backdrop-blur rounded-2xl p-6 cursor-pointer hover:bg-white/20 transition-all group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-brand-fg/20 flex items-center justify-center mb-4 text-2xl">
-                  {pack.icon || "📚"}
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {pack.name}
-                </h3>
-                <p className="text-brand-accent text-sm mb-4 line-clamp-2">
-                  {pack.description}
-                </p>
-                <div className="flex items-center gap-2 text-brand-fg text-sm font-medium group-hover:gap-3 transition-all">
-                  <BookOpen className="w-4 h-4" />
-                  Preview pack
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* CTA Section */}
-      <section className="px-6 sm:px-8 py-20">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto bg-brand-fg rounded-3xl p-8 sm:p-12 text-center"
-        >
-          <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-brand-bg mb-4">
-            Ready to start speaking Lebanese?
-          </h2>
-          <p className="text-brand-bg/70 mb-8 max-w-md mx-auto">
-            Join thousands learning Lebanese Arabic the smart way. Free forever.
-          </p>
-          <Button
-            size="lg"
-            onClick={() => setShowAuthDialog(true)}
-            className="bg-brand-bg text-white hover:bg-brand-bg/90 rounded-full px-10 py-6 text-lg font-semibold"
-          >
-            Get started now
-          </Button>
-        </motion.div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-brand-accent">
-              &copy; {new Date().getFullYear()} Yalla Arabic
-            </p>
-            <div className="flex items-center gap-2 text-sm text-brand-accent">
-              <span>Try another style:</span>
-              <Link
-                href="/?theme=notion"
-                className="text-white hover:text-brand-fg underline underline-offset-2"
-              >
-                Modern
-              </Link>
-              <span>&middot;</span>
-              <Link
-                href="/?theme=botanical"
-                className="text-white hover:text-brand-fg underline underline-offset-2"
-              >
-                Botanical
-              </Link>
-            </div>
+      <footer className="relative z-10 border-t border-white/10 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-white/40">
+            &copy; {new Date().getFullYear()} Yalla Arabic
+          </p>
+          <div className="flex items-center gap-2 text-sm text-white/40">
+            <span>Try another style:</span>
+            <Link
+              href="/?theme=notion"
+              className="text-white/70 hover:text-white underline underline-offset-2"
+            >
+              Modern
+            </Link>
+            <span>&middot;</span>
+            <Link
+              href="/?theme=botanical"
+              className="text-white/70 hover:text-white underline underline-offset-2"
+            >
+              Botanical
+            </Link>
           </div>
         </div>
       </footer>
-
-      {/* Pack Preview Modal */}
-      <PackPreviewModal
-        pack={selectedPack}
-        isOpen={showPreview}
-        onClose={() => {
-          setShowPreview(false);
-          setSelectedPack(null);
-        }}
-      />
     </div>
   );
 }
