@@ -1,31 +1,64 @@
 # Arabic Flashcards - TODO
 
-## High Priority
+Goal: Get the app ready for public launch.
 
-- [ ] Remove AI or make it so you can connect API somehow (just remove for now except for admin)
-- [ ] Fix sign up
-- [ ] Make the packs a bit better
-- [ ] User testing
+---
 
-## User Flow Improvements
+## Launch Blockers
 
-New user experience and cards to review and stats can be improved.
+These must be fixed before going public.
 
-- [ ] Homepage with words for review
+### Authentication
+- [ ] Fix sign up flow
+
+### AI Features
+- [ ] Remove AI features for non-admin users (or hide behind feature flag)
+
+### Starter Packs / Collections
 - [ ] Fix installing collections
-- [ ] Refine collections
-- [ ] Phrases from that book
-- [ ] Saifi stuff
-- [ ] Explain product features
-- [ ] Better logged out page - less branded and more feature-focused
+- [ ] Improve starter pack content and quality
+- [ ] Add phrases from that book
+- [ ] Add Saifi content
 
-## Timeline Improvements
+---
 
-- [ ] Try a progress bar for words to review
-- [ ] Email when words not reviewed for 3 days
+## Pre-Launch Polish
 
-## Future / Premium Features
+Important for a good first impression, but not strictly blocking.
 
-- [ ] Add photo upload
-- [ ] Add AI premium feature
+### Landing Page
+- [ ] Better logged out page - focus on features, less branding
+- [ ] Explain product features clearly
+- [ ] Add screenshots or demo
+
+### New User Experience
+- [ ] Improve onboarding flow after sign up
+- [ ] Homepage shows words ready for review
+- [ ] Clear stats and progress indicators
+
+### Review Experience
+- [ ] Progress bar for daily review session
+- [ ] Better review timeline display
+
+---
+
+## Post-Launch
+
+Features to add after public launch.
+
+### Engagement
+- [ ] Email reminders when words not reviewed for 3 days
+
+### Premium Features
+- [ ] Photo upload for words
+- [ ] AI sentence generation (premium tier)
 - [ ] Payments integration
+
+---
+
+## Testing
+
+- [ ] User testing before launch
+- [ ] Test sign up flow end-to-end
+- [ ] Test starter pack installation
+- [ ] Test review flow on mobile
