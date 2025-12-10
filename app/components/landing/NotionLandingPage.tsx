@@ -4,15 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  ArrowRight,
-  Brain,
-  Sparkles,
-  TrendingUp,
-  Wifi,
-  Plus,
-} from "lucide-react";
+import { Search, ArrowRight, Sparkles, Brain, TrendingUp, Wifi, Plus } from "lucide-react";
 import Link from "next/link";
 import {
   StarterPackService,
@@ -34,17 +26,15 @@ export function NotionLandingPage() {
   const [selectedWord, setSelectedWord] = useState<SearchResult | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Flashcard state
+  // Flashcard demo state
   const flashcards = [
     { arabic: "مرحبا", english: "Hello", transliteration: "marhaba" },
     { arabic: "شكراً", english: "Thank you", transliteration: "shukran" },
     { arabic: "كيفك؟", english: "How are you?", transliteration: "kifak?" },
     { arabic: "يلا", english: "Let's go!", transliteration: "yalla" },
-    { arabic: "حبيبي", english: "My love", transliteration: "habibi" },
   ];
   const [currentCard, setCurrentCard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   // Load words from starter packs
   useEffect(() => {
@@ -82,22 +72,17 @@ export function NotionLandingPage() {
     setSearchResults(results.slice(0, 6));
   }, [searchQuery, allWords]);
 
-  // Handle flashcard answer
-  const handleAnswer = (difficulty: string) => {
-    if (difficulty === "good" || difficulty === "easy") {
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 800);
-    }
+  const nextCard = () => {
     setIsFlipped(false);
     setTimeout(() => {
       setCurrentCard((prev) => (prev + 1) % flashcards.length);
-    }, 300);
+    }, 150);
   };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
@@ -150,38 +135,108 @@ export function NotionLandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section with Search */}
-      <section className="pt-16 pb-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-white pt-16">
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Floating elements */}
+        <motion.div
+          className="absolute top-1/4 left-[10%] w-20 h-20 bg-brand-fg/20 rounded-2xl hidden sm:block"
+          animate={{
+            y: [0, -20, 0],
+            rotate: [0, 5, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-[15%] w-16 h-16 bg-brand-bg/10 rounded-full hidden sm:block"
+          animate={{
+            y: [0, 20, 0],
+            rotate: [0, -5, 0],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/3 left-[20%] w-12 h-12 bg-brand-secondary/20 rounded-xl hidden sm:block"
+          animate={{
+            y: [0, 15, 0],
+            x: [0, 10, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left - Content & Search */}
+            {/* Left - Content */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
+              className="text-center lg:text-left"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-bg/10 text-brand-bg text-sm font-medium mb-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-fg/10 text-brand-bg text-sm font-medium mb-8"
+              >
                 <Sparkles className="w-4 h-4" />
-                Smart spaced repetition
-              </div>
+                <span>Smart spaced repetition</span>
+              </motion.div>
 
-              <h1 className="font-pphatton text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-[1.1]">
-                Learn Lebanese Arabic
-                <span className="text-brand-bg"> the smart way</span>
-              </h1>
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="font-pphatton text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 tracking-tight"
+              >
+                Learn Lebanese
+                <br />
+                <span className="text-brand-bg">the fun way</span>
+              </motion.h1>
 
-              <p className="text-lg text-gray-600 mb-8 max-w-lg">
-                Flashcards that adapt to how you learn. Search words, track
-                progress, and actually remember what you study.
-              </p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-lg sm:text-xl text-gray-600 max-w-lg mx-auto lg:mx-0 mb-8 leading-relaxed"
+              >
+                Master Lebanese Arabic with smart flashcards that adapt to your
+                learning pace.
+              </motion.p>
 
-              {/* Working Search */}
-              <div className="relative mb-6">
+              {/* Search */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="relative mb-6 max-w-md mx-auto lg:mx-0"
+              >
                 <div
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 transition-all bg-white ${
                     isSearching
-                      ? "border-brand-bg bg-white shadow-lg"
-                      : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                      ? "border-brand-bg shadow-lg shadow-brand-bg/10"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <Search
@@ -215,7 +270,7 @@ export function NotionLandingPage() {
                             setSelectedWord(word);
                             setIsSearching(false);
                           }}
-                          className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-b-0"
+                          className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors text-left border-b border-gray-50 last:border-b-0"
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-xl">{word.arabic}</span>
@@ -230,16 +285,22 @@ export function NotionLandingPage() {
                       ))}
                       <button
                         onClick={() => setShowAuthDialog(true)}
-                        className="w-full px-4 py-3 bg-gray-50 text-brand-bg text-sm font-medium hover:bg-gray-100 transition-colors"
+                        className="w-full px-4 py-3 bg-amber-50/50 text-brand-bg text-sm font-medium hover:bg-amber-50 transition-colors"
                       >
                         Sign up to save words →
                       </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-wrap gap-2 mb-8">
+              {/* Quick search tags */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="flex flex-wrap gap-2 justify-center lg:justify-start mb-8"
+              >
                 {["hello", "thank you", "food", "family"].map((term) => (
                   <button
                     key={term}
@@ -247,166 +308,134 @@ export function NotionLandingPage() {
                       setSearchQuery(term);
                       searchInputRef.current?.focus();
                     }}
-                    className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200 transition-colors"
+                    className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-brand-bg hover:text-brand-bg transition-colors"
                   >
                     {term}
                   </button>
                 ))}
-              </div>
+              </motion.div>
 
-              <Button
-                size="lg"
-                onClick={() => setShowAuthDialog(true)}
-                className="bg-brand-bg hover:bg-brand-bg/90 text-white rounded-full px-8 py-6 text-lg group"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
               >
-                Start learning free
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+                <Button
+                  size="lg"
+                  onClick={() => setShowAuthDialog(true)}
+                  className="bg-brand-bg hover:bg-brand-bg/90 text-white rounded-full px-8 py-6 text-lg font-medium group shadow-lg shadow-brand-bg/20 hover:shadow-xl hover:shadow-brand-bg/30 transition-all"
+                >
+                  Start learning for free
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </motion.div>
             </motion.div>
 
-            {/* Right - Interactive Flashcard */}
+            {/* Right - Flashcard Demo */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="relative hidden lg:block"
             >
-              {/* Success indicator */}
-              <AnimatePresence>
-                {showSuccess && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium z-10"
-                  >
-                    Nice! 🎉
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="relative max-w-sm mx-auto perspective-1000">
+                {/* Card stack effect */}
+                <div className="absolute inset-0 bg-brand-bg/5 rounded-3xl transform rotate-3 translate-x-2 translate-y-2" />
+                <div className="absolute inset-0 bg-brand-fg/10 rounded-3xl transform -rotate-2 -translate-x-1" />
 
-              {/* Card stack */}
-              <div className="relative max-w-sm mx-auto">
-                <div className="absolute inset-2 bg-gray-100 rounded-3xl transform rotate-2" />
-                <div className="absolute inset-1 bg-gray-50 rounded-3xl transform -rotate-1" />
-
-                {/* Main card */}
+                {/* Main flashcard */}
                 <div
-                  className="relative bg-white rounded-3xl p-6 shadow-xl border border-gray-100 cursor-pointer"
+                  className="relative bg-white rounded-3xl shadow-2xl shadow-gray-200/50 overflow-hidden cursor-pointer"
                   onClick={() => setIsFlipped(!isFlipped)}
                 >
                   {/* Card header */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="px-6 pt-5 pb-3 border-b border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-brand-bg" />
+                      <span className="text-xs text-gray-400 font-medium">FLASHCARD</span>
+                    </div>
                     <span className="text-xs text-gray-400">
                       {currentCard + 1} / {flashcards.length}
-                    </span>
-                    <span className="text-xs bg-brand-fg/20 text-brand-bg px-2 py-1 rounded-full">
-                      Tap to flip
                     </span>
                   </div>
 
                   {/* Card content */}
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`${currentCard}-${isFlipped}`}
-                      initial={{ opacity: 0, rotateY: 90 }}
-                      animate={{ opacity: 1, rotateY: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-center py-8"
-                    >
-                      {!isFlipped ? (
-                        <>
-                          <p className="text-5xl mb-3">
-                            {flashcards[currentCard].arabic}
-                          </p>
-                          <p className="text-gray-400 font-mono">
-                            {flashcards[currentCard].transliteration}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-3xl font-medium text-gray-900 mb-2">
-                            {flashcards[currentCard].english}
-                          </p>
-                          <p className="text-brand-bg">
-                            {flashcards[currentCard].arabic}
-                          </p>
-                        </>
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-
-                  {/* Spaced repetition buttons */}
-                  <div className="border-t border-gray-100 pt-4 mt-4">
-                    <p className="text-xs text-gray-400 text-center mb-3">
-                      How well did you know this?
-                    </p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[
-                        {
-                          label: "Again",
-                          time: "1m",
-                          color: "bg-red-50 text-red-600 hover:bg-red-100",
-                        },
-                        {
-                          label: "Hard",
-                          time: "6m",
-                          color:
-                            "bg-orange-50 text-orange-600 hover:bg-orange-100",
-                        },
-                        {
-                          label: "Good",
-                          time: "10m",
-                          color:
-                            "bg-green-50 text-green-600 hover:bg-green-100",
-                        },
-                        {
-                          label: "Easy",
-                          time: "4d",
-                          color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
-                        },
-                      ].map((btn) => (
-                        <button
-                          key={btn.label}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAnswer(btn.label.toLowerCase());
-                          }}
-                          className={`${btn.color} py-2 rounded-xl transition-all active:scale-95`}
-                        >
-                          <span className="block text-xs font-medium">
-                            {btn.label}
-                          </span>
-                          <span className="block text-[10px] opacity-60">
-                            {btn.time}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                  <div className="px-6 py-12 min-h-[200px] flex flex-col items-center justify-center">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`${currentCard}-${isFlipped}`}
+                        initial={{ opacity: 0, rotateY: 90 }}
+                        animate={{ opacity: 1, rotateY: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-center"
+                      >
+                        {!isFlipped ? (
+                          <>
+                            <p className="text-6xl mb-4">{flashcards[currentCard].arabic}</p>
+                            <p className="text-gray-400 font-mono text-lg">
+                              {flashcards[currentCard].transliteration}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-3xl font-medium text-gray-900 mb-2">
+                              {flashcards[currentCard].english}
+                            </p>
+                            <p className="text-2xl text-brand-bg">
+                              {flashcards[currentCard].arabic}
+                            </p>
+                          </>
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
 
-                  {/* Brain tip */}
-                  <div className="mt-4 p-3 bg-gray-50 rounded-xl flex items-start gap-2">
-                    <Brain className="w-4 h-4 text-brand-bg mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-gray-500">
-                      <span className="font-medium text-gray-700">
-                        Spaced repetition:
-                      </span>{" "}
-                      Hard words appear more often. Easy words space out to days.
-                    </p>
+                  {/* Tap hint */}
+                  <div className="px-6 pb-4 text-center">
+                    <span className="text-xs text-gray-300">tap to flip</span>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="px-6 pb-6">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); nextCard(); }}
+                        className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        Skip
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); nextCard(); }}
+                        className="flex-1 py-3 rounded-xl bg-brand-bg text-white text-sm font-medium hover:bg-brand-bg/90 transition-colors"
+                      >
+                        Got it!
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Decorative hint */}
+              <motion.div
+                className="absolute -bottom-4 -right-4 bg-brand-fg/20 px-4 py-2 rounded-full text-sm text-brand-bg font-medium"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                Try it! →
+              </motion.div>
             </motion.div>
           </div>
         </div>
+
+        {/* Bottom gradient fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Everything you need to learn
             </h2>
@@ -447,14 +476,14 @@ export function NotionLandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-white p-6 rounded-2xl border border-gray-100 hover:shadow-lg transition-all"
+                className="bg-gray-50 p-6 rounded-2xl hover:shadow-lg hover:bg-white transition-all border border-transparent hover:border-gray-100"
               >
                 <div
-                  className={`w-10 h-10 rounded-xl ${feature.color} flex items-center justify-center mb-4`}
+                  className={`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center mb-4`}
                 >
-                  <feature.icon className="w-5 h-5" />
+                  <feature.icon className="w-6 h-6" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="font-semibold text-gray-900 mb-2">
                   {feature.title}
                 </h3>
                 <p className="text-sm text-gray-500">{feature.desc}</p>
@@ -465,20 +494,19 @@ export function NotionLandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-amber-50/30">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-br from-brand-bg to-brand-bg/80 rounded-3xl p-10 sm:p-14"
+            className="bg-brand-bg rounded-3xl p-12 sm:p-16 shadow-2xl shadow-brand-bg/20"
           >
             <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-white mb-4">
               Ready to start learning?
             </h2>
             <p className="text-white/80 mb-8 max-w-md mx-auto">
-              Join learners mastering Lebanese Arabic with smart flashcards. Free
-              forever.
+              Join learners mastering Lebanese Arabic with smart flashcards. Free forever.
             </p>
             <Button
               size="lg"
@@ -492,7 +520,7 @@ export function NotionLandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <footer className="border-t border-gray-100 py-8 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} Yalla. All rights reserved.</p>
           <div className="flex items-center gap-2">
