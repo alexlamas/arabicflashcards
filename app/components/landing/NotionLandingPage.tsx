@@ -9,10 +9,23 @@ import Link from "next/link";
 import {
   StarterPackService,
   StarterPackWord,
+  StarterPack,
 } from "../../services/starterPackService";
 
 interface SearchResult extends StarterPackWord {
   packName: string;
+}
+
+interface CategoryResult {
+  type: "category";
+  pack: StarterPack;
+  wordCount: number;
+}
+
+type SearchResultItem = SearchResult | CategoryResult;
+
+function isCategory(item: SearchResultItem): item is CategoryResult {
+  return "type" in item && item.type === "category";
 }
 
 export function NotionLandingPage() {
@@ -20,10 +33,13 @@ export function NotionLandingPage() {
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [allWords, setAllWords] = useState<SearchResult[]>([]);
+  const [allPacks, setAllPacks] = useState<StarterPack[]>([]);
+  const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
   const [isSearching, setIsSearching] = useState(false);
   const [selectedWord, setSelectedWord] = useState<SearchResult | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Flashcard demo state
@@ -35,20 +51,25 @@ export function NotionLandingPage() {
   ];
   const [currentCard, setCurrentCard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [slideDirection, setSlideDirection] = useState(1);
 
   // Load words from starter packs
   useEffect(() => {
     async function loadWords() {
       try {
         const packs = await StarterPackService.getAvailablePacks();
+        setAllPacks(packs);
         const wordsWithPacks: SearchResult[] = [];
+        const counts: Record<string, number> = {};
         for (const pack of packs) {
           const { words } = await StarterPackService.getPackContents(pack.id);
+          counts[pack.id] = words.length;
           words.forEach((word) => {
             wordsWithPacks.push({ ...word, packName: pack.name });
           });
         }
         setAllWords(wordsWithPacks);
+        setPackWordCounts(counts);
       } catch (error) {
         console.error("Error loading words:", error);
       }
@@ -56,27 +77,68 @@ export function NotionLandingPage() {
     loadWords();
   }, []);
 
-  // Search functionality
+  // Search functionality - now includes categories
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setSearchResults([]);
       return;
     }
     const query = searchQuery.toLowerCase();
-    const results = allWords.filter(
+
+    // Search categories first
+    const matchingCategories: CategoryResult[] = allPacks
+      .filter((pack) => pack.name.toLowerCase().includes(query))
+      .map((pack) => ({
+        type: "category" as const,
+        pack,
+        wordCount: packWordCounts[pack.id] || 0,
+      }));
+
+    // Then search words
+    const matchingWords = allWords.filter(
       (word) =>
         word.arabic.includes(searchQuery) ||
         word.english.toLowerCase().includes(query) ||
         (word.transliteration?.toLowerCase().includes(query) ?? false)
     );
-    setSearchResults(results.slice(0, 6));
-  }, [searchQuery, allWords]);
+
+    // Combine results: categories first, then words
+    const combined: SearchResultItem[] = [
+      ...matchingCategories.slice(0, 2),
+      ...matchingWords.slice(0, 4),
+    ];
+    setSearchResults(combined.slice(0, 6));
+  }, [searchQuery, allWords, allPacks, packWordCounts]);
+
+  // Filter words by category
+  const categoryWords = selectedCategory
+    ? allWords.filter((w) => w.packName === selectedCategory)
+    : [];
 
   const nextCard = () => {
+    setSlideDirection(1);
     setIsFlipped(false);
     setTimeout(() => {
       setCurrentCard((prev) => (prev + 1) % flashcards.length);
     }, 150);
+  };
+
+  const cardVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0,
+      scale: 0.95,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 100 : -100,
+      opacity: 0,
+      scale: 0.95,
+    }),
   };
 
   return (
@@ -147,7 +209,7 @@ export function NotionLandingPage() {
 
         {/* Floating elements */}
         <motion.div
-          className="absolute top-1/4 left-[10%] w-20 h-20 bg-brand-fg/20 rounded-2xl hidden sm:block"
+          className="absolute top-1/4 left-[10%] w-20 h-20 bg-brand-bg/10 rounded-2xl hidden sm:block"
           animate={{
             y: [0, -20, 0],
             rotate: [0, 5, 0],
@@ -198,7 +260,7 @@ export function NotionLandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-fg/10 text-brand-bg text-sm font-medium mb-8"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-bg/10 text-brand-bg text-sm font-medium mb-8"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Smart spaced repetition</span>
@@ -249,7 +311,7 @@ export function NotionLandingPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsSearching(true)}
                     onBlur={() => setTimeout(() => setIsSearching(false), 200)}
-                    placeholder="Try searching 'hello' or 'marhaba'..."
+                    placeholder="Search words or categories..."
                     className="flex-1 bg-transparent text-gray-900 placeholder:text-gray-400 outline-none"
                   />
                 </div>
@@ -263,26 +325,48 @@ export function NotionLandingPage() {
                       exit={{ opacity: 0, y: -10 }}
                       className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
                     >
-                      {searchResults.map((word) => (
-                        <button
-                          key={word.id}
-                          onClick={() => {
-                            setSelectedWord(word);
-                            setIsSearching(false);
-                          }}
-                          className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors text-left border-b border-gray-50 last:border-b-0"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-xl">{word.arabic}</span>
-                            <span className="text-gray-400 text-sm font-mono">
-                              {word.transliteration}
+                      {searchResults.map((item, idx) =>
+                        isCategory(item) ? (
+                          <button
+                            key={`cat-${item.pack.id}`}
+                            onClick={() => {
+                              setSelectedCategory(item.pack.name);
+                              setIsSearching(false);
+                              setSearchQuery("");
+                            }}
+                            className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors text-left border-b border-gray-50 last:border-b-0 bg-amber-50/30"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-lg">{item.pack.icon}</span>
+                              <span className="font-medium text-gray-900">
+                                {item.pack.name}
+                              </span>
+                            </div>
+                            <span className="text-gray-400 text-sm">
+                              {item.wordCount} words
                             </span>
-                          </div>
-                          <span className="text-gray-600 text-sm">
-                            {word.english}
-                          </span>
-                        </button>
-                      ))}
+                          </button>
+                        ) : (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedWord(item);
+                              setIsSearching(false);
+                            }}
+                            className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors text-left border-b border-gray-50 last:border-b-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{item.arabic}</span>
+                              <span className="text-gray-400 text-sm font-mono">
+                                {item.transliteration}
+                              </span>
+                            </div>
+                            <span className="text-gray-600 text-sm">
+                              {item.english}
+                            </span>
+                          </button>
+                        )
+                      )}
                       <button
                         onClick={() => setShowAuthDialog(true)}
                         className="w-full px-4 py-3 bg-amber-50/50 text-brand-bg text-sm font-medium hover:bg-amber-50 transition-colors"
@@ -294,23 +378,21 @@ export function NotionLandingPage() {
                 </AnimatePresence>
               </motion.div>
 
-              {/* Quick search tags */}
+              {/* Category buttons */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="flex flex-wrap gap-2 justify-center lg:justify-start mb-8"
               >
-                {["hello", "thank you", "food", "family"].map((term) => (
+                {allPacks.slice(0, 4).map((pack) => (
                   <button
-                    key={term}
-                    onClick={() => {
-                      setSearchQuery(term);
-                      searchInputRef.current?.focus();
-                    }}
-                    className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-brand-bg hover:text-brand-bg transition-colors"
+                    key={pack.id}
+                    onClick={() => setSelectedCategory(pack.name)}
+                    className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-brand-bg hover:text-brand-bg transition-colors flex items-center gap-1.5"
                   >
-                    {term}
+                    <span>{pack.icon}</span>
+                    <span>{pack.name}</span>
                   </button>
                 ))}
               </motion.div>
@@ -339,9 +421,9 @@ export function NotionLandingPage() {
               className="relative hidden lg:block"
             >
               <div className="relative max-w-sm mx-auto perspective-1000">
-                {/* Card stack effect */}
-                <div className="absolute inset-0 bg-brand-bg/5 rounded-3xl transform rotate-3 translate-x-2 translate-y-2" />
-                <div className="absolute inset-0 bg-brand-fg/10 rounded-3xl transform -rotate-2 -translate-x-1" />
+                {/* Card stack effect - neutral colors */}
+                <div className="absolute inset-0 bg-gray-100 rounded-3xl transform rotate-3 translate-x-2 translate-y-2" />
+                <div className="absolute inset-0 bg-gray-50 rounded-3xl transform -rotate-2 -translate-x-1" />
 
                 {/* Main flashcard */}
                 <div
@@ -359,15 +441,21 @@ export function NotionLandingPage() {
                     </span>
                   </div>
 
-                  {/* Card content */}
-                  <div className="px-6 py-12 min-h-[200px] flex flex-col items-center justify-center">
-                    <AnimatePresence mode="wait">
+                  {/* Card content with slide animation */}
+                  <div className="px-6 py-12 min-h-[200px] flex flex-col items-center justify-center overflow-hidden">
+                    <AnimatePresence mode="wait" custom={slideDirection}>
                       <motion.div
                         key={`${currentCard}-${isFlipped}`}
-                        initial={{ opacity: 0, rotateY: 90 }}
-                        animate={{ opacity: 1, rotateY: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                        custom={slideDirection}
+                        variants={cardVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{
+                          x: { type: "spring", stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 },
+                          scale: { duration: 0.2 },
+                        }}
                         className="text-center"
                       >
                         {!isFlipped ? (
@@ -416,9 +504,9 @@ export function NotionLandingPage() {
                 </div>
               </div>
 
-              {/* Decorative hint */}
+              {/* Decorative hint - neutral color */}
               <motion.div
-                className="absolute -bottom-4 -right-4 bg-brand-fg/20 px-4 py-2 rounded-full text-sm text-brand-bg font-medium"
+                className="absolute -bottom-4 -right-4 bg-brand-bg/10 px-4 py-2 rounded-full text-sm text-brand-bg font-medium"
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -595,6 +683,78 @@ export function NotionLandingPage() {
                     Save to my words
                   </Button>
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Category Modal */}
+      <AnimatePresence>
+        {selectedCategory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
+            onClick={() => setSelectedCategory(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[80vh] overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {selectedCategory}
+                </h3>
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-gray-500 text-sm mb-4">
+                {categoryWords.length} words in this category
+              </p>
+              <div className="overflow-y-auto flex-1 -mx-6 px-6">
+                {categoryWords.slice(0, 10).map((word) => (
+                  <button
+                    key={word.id}
+                    onClick={() => {
+                      setSelectedWord(word);
+                      setSelectedCategory(null);
+                    }}
+                    className="w-full py-3 flex items-center justify-between hover:bg-gray-50 transition-colors text-left border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{word.arabic}</span>
+                      <span className="text-gray-400 text-sm font-mono">
+                        {word.transliteration}
+                      </span>
+                    </div>
+                    <span className="text-gray-600 text-sm">{word.english}</span>
+                  </button>
+                ))}
+                {categoryWords.length > 10 && (
+                  <p className="text-center text-gray-400 text-sm py-3">
+                    +{categoryWords.length - 10} more words
+                  </p>
+                )}
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setShowAuthDialog(true);
+                  }}
+                  className="w-full bg-brand-bg hover:bg-brand-bg/90 text-white rounded-full"
+                >
+                  Sign up to learn all words
+                </Button>
               </div>
             </motion.div>
           </motion.div>
