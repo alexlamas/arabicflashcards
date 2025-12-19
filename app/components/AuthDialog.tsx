@@ -1,8 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "../contexts/AuthContext";
 import { createClient } from "@/utils/supabase/client";
-import { TrendingUp, Globe, ArrowRight, Loader2 } from "lucide-react";
-import { CalendarCheckIcon } from "@phosphor-icons/react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,81 +122,15 @@ export function AuthDialog() {
 
   return (
     <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-      <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden bg-transparent border-0">
-        <div className="grid sm:grid-cols-2">
-          {/* Left side - Features */}
-          <div className="bg-brand-bg p-8 text-white hidden sm:flex flex-col justify-between !font-geist-sans">
-            <div>
-              <h2 className="text-3xl !font-pphatton font-bold mb-2">
-                Start Your Journey
-              </h2>
-              <p className=" mb-8">
-                Join thousands learning Lebanese Arabic with our
-                scientifically-proven spaced repetition method.
-              </p>
-
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-white/20 rounded-md m-0.5 ml-0">
-                    <CalendarCheckIcon size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1 font-geist-mono">
-                      Smart Learning
-                    </h3>
-                    <p className="text-sm  opacity-80">
-                      Reviews scheduled at scientifically optimal intervals for
-                      maximum retention
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-white/20 rounded-md m-0.5 ml-0">
-                    <TrendingUp size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1 font-geist-mono">
-                      Detailed Analytics
-                    </h3>
-                    <p className="text-sm opacity-80">
-                      Track your progress with comprehensive statistics and
-                      learning insights
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-white/20 rounded-md m-0.5 ml-0">
-                    <Globe size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1 font-geist-mono">
-                      Offline Support
-                    </h3>
-                    <p className="text-sm  opacity-80">
-                      Continue learning anywhere, with automatic sync when
-                      reconnected
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-8 border-t border-white/20">
-              <div className="flex items-center gap-2 text-sm font-geist-mono opacity-50">
-                <span>Free for now • No credit card required</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right side - Auth form */}
-          <div className="p-8 bg-white h-full flex flex-col ">
+      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden bg-transparent border-0">
+        <div>
+          {/* Auth form */}
+          <div className="p-8 bg-white h-full flex flex-col rounded-lg">
             <div className="mb-6">
-              <h3 className="text-3xl font-pphatton font-bold text-gray-900 mb-2">
+              <h3 className="text-2xl font-pphatton font-bold text-gray-900 mb-2">
                 Welcome
               </h3>
-              <p className="text-gray-600 font-geist-sans">
+              <p className="text-gray-600 text-sm leading-relaxed">
                 Sign in to continue learning, or create an account to get
                 started.
               </p>
@@ -206,10 +139,10 @@ export function AuthDialog() {
             {step === "email" ? (
               <form
                 onSubmit={handleEmailSubmit}
-                className="flex flex-col justify-between h-full"
+                className="flex flex-col justify-between h-full gap-8"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="font-geist-mono">
+                  <Label htmlFor="email" className="text-sm font-medium">
                     Email address
                   </Label>
                   <Input
@@ -220,13 +153,13 @@ export function AuthDialog() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoFocus
-                    className="py-6 px-4 shadow-none focus:bg-brand-bg/[2%] focus:!ring-3 focus:ring-offset-2 focus:!ring-brand-bg/20 focus:ring-offset-white focus:border-brand-bg placeholder:font-geist-mono"
+                    className="py-6 px-4 shadow-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900/20 focus:ring-offset-white focus:border-gray-900"
                   />
                 </div>
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <Button
                   type="submit"
-                  className="w-full rounded-full h-12 font-geist-mono bg-black hover:bg-gray-800"
+                  className="w-full rounded-full h-12 text-sm font-medium bg-gray-900 hover:bg-gray-800"
                   disabled={loading}
                 >
                   {loading ? (
@@ -242,22 +175,22 @@ export function AuthDialog() {
             ) : (
               <form
                 onSubmit={handlePasswordSubmit}
-                className="h-full flex flex-col justify-between"
+                className="h-full flex flex-col justify-between gap-8"
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-gray-100 p-4 rounded-md">
+                  <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">{email}</p>
                     <button
                       type="button"
                       onClick={handleChangeEmail}
-                      className="text-sm hover:opacity-100 opacity-50 transition"
+                      className="text-sm text-gray-500 hover:text-gray-900 transition"
                     >
                       Change
                     </button>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="font-geist-mono">
+                    <Label htmlFor="password" className="text-sm font-medium">
                       {isNewUser ? "Create a password" : "Enter your password"}
                     </Label>
                     <Input
@@ -273,10 +206,10 @@ export function AuthDialog() {
                       required
                       autoFocus
                       minLength={6}
-                      className="py-6 px-4 shadow-none focus:bg-brand-bg/[2%] focus:!ring-3 focus:ring-offset-2 focus:!ring-brand-bg/20 focus:ring-offset-white focus:border-brand-bg placeholder:font-geist-mono"
+                      className="py-6 px-4 shadow-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900/20 focus:ring-offset-white focus:border-gray-900"
                     />
                     {isNewUser && (
-                      <p className="text-xs text-gray-500 px-1">
+                      <p className="text-xs text-gray-500">
                         Must be at least 6 characters
                       </p>
                     )}
@@ -287,7 +220,7 @@ export function AuthDialog() {
 
                 <Button
                   type="submit"
-                  className="w-full rounded-full h-12 font-geist-mono bg-black hover:bg-gray-800"
+                  className="w-full rounded-full h-12 text-sm font-medium bg-gray-900 hover:bg-gray-800"
                   disabled={loading}
                 >
                   {loading ? (

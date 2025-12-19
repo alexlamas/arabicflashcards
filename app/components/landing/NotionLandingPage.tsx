@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowRight, Sparkles, Brain, TrendingUp, Wifi, Plus } from "lucide-react";
+import { Search, ArrowRight, Sparkles } from "lucide-react";
+import { Ghost, SmileyNervous, Balloon, Star } from "@phosphor-icons/react";
 import Link from "next/link";
 import {
   StarterPackService,
@@ -15,8 +16,52 @@ interface SearchResult extends StarterPackWord {
   packName: string;
 }
 
+// Helper to generate light version of a color
+function hexToHsl(hex: string): [number, number, number] {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return [h * 360, s * 100, l * 100];
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function generateTheme(primary: string) {
+  const [h, s] = hexToHsl(primary);
+  return {
+    primary,
+    primaryLight: hslToHex(h, Math.min(s, 30), 94),
+    accent: hslToHex(h, s * 0.8, 55),
+  };
+}
+
 export function NotionLandingPage() {
   const { setShowAuthDialog } = useAuth();
+
+  // Theme state
+  const [primaryColor, setPrimaryColor] = useState("#47907d");
+  const theme = generateTheme(primaryColor);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,13 +73,38 @@ export function NotionLandingPage() {
 
   // Flashcard demo state
   const flashcards = [
-    { arabic: "مرحبا", english: "Hello", transliteration: "marhaba" },
-    { arabic: "شكراً", english: "Thank you", transliteration: "shukran" },
-    { arabic: "كيفك؟", english: "How are you?", transliteration: "kifak?" },
-    { arabic: "يلا", english: "Let's go!", transliteration: "yalla" },
+    { arabic: "معصب", english: "Angry", transliteration: "m3assab" },
+    { arabic: "مزعج", english: "Annoying", transliteration: "miz3ij" },
+    { arabic: "غدّار", english: "Backstabber", transliteration: "ghaddar" },
+    { arabic: "اتأخّر", english: "To be late", transliteration: "ita2akhar" },
   ];
   const [currentCard, setCurrentCard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [feedbackAnimation, setFeedbackAnimation] = useState<{
+    isPlaying: boolean;
+    text: string;
+    color: string;
+    nextReview: string;
+    icon: "ghost" | "nervous" | "balloon" | "star" | null;
+  }>({ isPlaying: false, text: "", color: "", nextReview: "", icon: null });
+
+  // Grid card animation - randomly shuffle which word each card shows
+  const [gridWordIndices, setGridWordIndices] = useState<number[]>(
+    Array.from({ length: 16 }, (_, i) => i)
+  );
+
+  useEffect(() => {
+    if (allWords.length === 0) return;
+    const interval = setInterval(() => {
+      setGridWordIndices(prev => {
+        const newIndices = [...prev];
+        const randomCard = Math.floor(Math.random() * 16);
+        newIndices[randomCard] = Math.floor(Math.random() * allWords.length);
+        return newIndices;
+      });
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [allWords.length]);
 
   // Load words from starter packs
   useEffect(() => {
@@ -67,20 +137,45 @@ export function NotionLandingPage() {
       (word) =>
         word.arabic.includes(searchQuery) ||
         word.english.toLowerCase().includes(query) ||
+        word.packName.toLowerCase().includes(query) ||
         (word.transliteration?.toLowerCase().includes(query) ?? false)
     );
-    setSearchResults(results.slice(0, 6));
+    setSearchResults(results.slice(0, 10));
   }, [searchQuery, allWords]);
 
-  const nextCard = () => {
-    setIsFlipped(false);
+  // Focus search input on page load
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+  const handleRating = (rating: number) => {
+    const feedbackText = rating === 0 ? "Forgot" : rating === 1 ? "Struggled" : rating === 2 ? "Remembered" : "Perfect!";
+    const feedbackColor = rating === 0 ? "bg-red-500" : rating === 1 ? "bg-orange-500" : rating === 2 ? "bg-green-500" : "bg-emerald-500";
+    const nextReview = rating === 0 ? "Later today" : rating === 1 ? "Tomorrow" : rating === 2 ? "In 3 days" : "In a week";
+    const feedbackIcon = rating === 0 ? "ghost" : rating === 1 ? "nervous" : rating === 2 ? "balloon" : "star";
+
+    setFeedbackAnimation({ isPlaying: true, text: feedbackText, color: feedbackColor, nextReview, icon: feedbackIcon as "ghost" | "nervous" | "balloon" | "star" });
+
     setTimeout(() => {
-      setCurrentCard((prev) => (prev + 1) % flashcards.length);
-    }, 150);
+      setFeedbackAnimation({ isPlaying: false, text: "", color: "", nextReview: "", icon: null });
+    }, 1800);
+
+    setTimeout(() => {
+      setIsFlipped(false);
+      setTimeout(() => {
+        setCurrentCard((prev) => (prev + 1) % flashcards.length);
+      }, 150);
+    }, 1600);
   };
 
   return (
     <div className="min-h-screen bg-white">
+      <style>{`
+        .search-input::selection {
+          background-color: ${theme.primary};
+          color: white;
+        }
+      `}</style>
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,7 +186,7 @@ export function NotionLandingPage() {
                 height="32"
                 viewBox="0 0 260 260"
                 fill="none"
-                className="text-brand-bg"
+                style={{ color: theme.primary }}
               >
                 <path
                   d="M221.792 73.3274C215.418 108.418 203.652 99.3945 196.298 136.991C190.655 165.843 198.259 201.658 186.493 219.203C174.726 236.748 222.367 175.355 229.636 144.009C235.783 117.5 231.107 104.407 221.792 73.3274Z"
@@ -113,11 +208,11 @@ export function NotionLandingPage() {
                 />
               </svg>
               <span className="font-pphatton font-bold text-xl text-gray-900">
-                Yalla
+                Yalla Flash
               </span>
             </Link>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowAuthDialog(true)}
                 className="text-gray-600 hover:text-gray-900 text-sm font-medium hidden sm:block"
@@ -126,7 +221,8 @@ export function NotionLandingPage() {
               </button>
               <Button
                 onClick={() => setShowAuthDialog(true)}
-                className="bg-brand-bg hover:bg-brand-bg/90 text-white rounded-full px-5"
+                className="text-white rounded-full px-5 text-sm font-medium"
+                style={{ backgroundColor: theme.primary }}
               >
                 Get started free
               </Button>
@@ -136,7 +232,7 @@ export function NotionLandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-white pt-16">
+      <section className="relative min-h-screen flex items-center justify-center bg-white pt-16">
         {/* Subtle grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -147,7 +243,8 @@ export function NotionLandingPage() {
 
         {/* Floating elements */}
         <motion.div
-          className="absolute top-1/4 left-[10%] w-20 h-20 bg-brand-fg/20 rounded-2xl hidden sm:block"
+          className="absolute top-1/4 left-[10%] w-20 h-20 rounded-2xl hidden sm:block"
+          style={{ backgroundColor: `${theme.primary}15` }}
           animate={{
             y: [0, -20, 0],
             rotate: [0, 5, 0],
@@ -159,7 +256,8 @@ export function NotionLandingPage() {
           }}
         />
         <motion.div
-          className="absolute top-1/3 right-[15%] w-16 h-16 bg-brand-bg/10 rounded-full hidden sm:block"
+          className="absolute top-1/3 right-[15%] w-16 h-16 rounded-full hidden sm:block"
+          style={{ backgroundColor: `${theme.primary}20` }}
           animate={{
             y: [0, 20, 0],
             rotate: [0, -5, 0],
@@ -172,7 +270,8 @@ export function NotionLandingPage() {
           }}
         />
         <motion.div
-          className="absolute bottom-1/3 left-[20%] w-12 h-12 bg-brand-secondary/20 rounded-xl hidden sm:block"
+          className="absolute bottom-1/3 left-[20%] w-12 h-12 rounded-xl hidden sm:block"
+          style={{ backgroundColor: `${theme.primary}10` }}
           animate={{
             y: [0, 15, 0],
             x: [0, 10, 0],
@@ -198,7 +297,8 @@ export function NotionLandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-fg/10 text-brand-bg text-sm font-medium mb-8"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8"
+                style={{ backgroundColor: theme.primaryLight, color: theme.primary }}
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Smart spaced repetition</span>
@@ -210,9 +310,11 @@ export function NotionLandingPage() {
                 transition={{ duration: 0.6, delay: 0.1 }}
                 className="font-pphatton text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 tracking-tight"
               >
-                Learn Lebanese
+                Learn
                 <br />
-                <span className="text-brand-bg">the fun way</span>
+                <span style={{ color: theme.primary }}>Lebanese</span>
+                <br />
+                Arabic
               </motion.h1>
 
               <motion.p
@@ -221,8 +323,7 @@ export function NotionLandingPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-lg sm:text-xl text-gray-600 max-w-lg mx-auto lg:mx-0 mb-8 leading-relaxed"
               >
-                Master Lebanese Arabic with smart flashcards that adapt to your
-                learning pace.
+                Smart Lebanese flashcards to help you finally understand what Teta is saying about you.
               </motion.p>
 
               {/* Search */}
@@ -235,12 +336,14 @@ export function NotionLandingPage() {
                 <div
                   className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 transition-all bg-white ${
                     isSearching
-                      ? "border-brand-bg shadow-lg shadow-brand-bg/10"
+                      ? "shadow-lg"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
+                  style={isSearching ? { borderColor: theme.primary, boxShadow: `0 10px 15px -3px ${theme.primary}20` } : {}}
                 >
                   <Search
-                    className={`w-5 h-5 ${isSearching ? "text-brand-bg" : "text-gray-400"}`}
+                    className="w-5 h-5 transition-colors"
+                    style={{ color: isSearching ? theme.primary : "#9ca3af" }}
                   />
                   <input
                     ref={searchInputRef}
@@ -250,7 +353,8 @@ export function NotionLandingPage() {
                     onFocus={() => setIsSearching(true)}
                     onBlur={() => setTimeout(() => setIsSearching(false), 200)}
                     placeholder="Try searching 'hello' or 'marhaba'..."
-                    className="flex-1 bg-transparent text-gray-900 placeholder:text-gray-400 outline-none"
+                    className="search-input flex-1 bg-transparent text-gray-900 placeholder:text-gray-400 outline-none"
+                    style={{ caretColor: theme.primary }}
                   />
                 </div>
 
@@ -285,7 +389,8 @@ export function NotionLandingPage() {
                       ))}
                       <button
                         onClick={() => setShowAuthDialog(true)}
-                        className="w-full px-4 py-3 bg-amber-50/50 text-brand-bg text-sm font-medium hover:bg-amber-50 transition-colors"
+                        className="w-full px-4 py-3 text-sm font-medium transition-colors"
+                        style={{ backgroundColor: theme.primaryLight, color: theme.primary }}
                       >
                         Sign up to save words →
                       </button>
@@ -301,14 +406,23 @@ export function NotionLandingPage() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="flex flex-wrap gap-2 justify-center lg:justify-start mb-8"
               >
-                {["hello", "thank you", "food", "family"].map((term) => (
+                {["greetings", "food", "family", "numbers"].map((term) => (
                   <button
                     key={term}
                     onClick={() => {
                       setSearchQuery(term);
                       searchInputRef.current?.focus();
                     }}
-                    className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-brand-bg hover:text-brand-bg transition-colors"
+                    className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-sm transition-colors hover:border-current"
+                    style={{ "--hover-color": theme.primary } as React.CSSProperties}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = theme.primary;
+                      e.currentTarget.style.color = theme.primary;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "";
+                      e.currentTarget.style.color = "";
+                    }}
                   >
                     {term}
                   </button>
@@ -323,7 +437,8 @@ export function NotionLandingPage() {
                 <Button
                   size="lg"
                   onClick={() => setShowAuthDialog(true)}
-                  className="bg-brand-bg hover:bg-brand-bg/90 text-white rounded-full px-8 py-6 text-lg font-medium group shadow-lg shadow-brand-bg/20 hover:shadow-xl hover:shadow-brand-bg/30 transition-all"
+                  className="text-white rounded-full px-8 py-6 text-base font-medium group transition-all hover:opacity-90"
+                  style={{ backgroundColor: theme.primary, boxShadow: `0 10px 15px -3px ${theme.primary}40` }}
                 >
                   Start learning for free
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -338,52 +453,38 @@ export function NotionLandingPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="relative hidden lg:block"
             >
-              <div className="relative max-w-sm mx-auto perspective-1000">
-                {/* Card stack effect */}
-                <div className="absolute inset-0 bg-brand-bg/5 rounded-3xl transform rotate-3 translate-x-2 translate-y-2" />
-                <div className="absolute inset-0 bg-brand-fg/10 rounded-3xl transform -rotate-2 -translate-x-1" />
+              <div className="relative max-w-md mx-auto">
+                {/* Card stack effect - white cards peeking from top-left */}
+                <div className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-200 transform -translate-y-3 -translate-x-2 rotate-[-3deg] opacity-50" />
+                <div className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-200 transform -translate-y-1.5 -translate-x-1 rotate-[-1.5deg] opacity-75" />
 
                 {/* Main flashcard */}
                 <div
-                  className="relative bg-white rounded-3xl shadow-2xl shadow-gray-200/50 overflow-hidden cursor-pointer"
+                  className="relative bg-white rounded-2xl shadow-md border border-gray-200 cursor-pointer overflow-hidden"
                   onClick={() => setIsFlipped(!isFlipped)}
                 >
-                  {/* Card header */}
-                  <div className="px-6 pt-5 pb-3 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-brand-bg" />
-                      <span className="text-xs text-gray-400 font-medium">FLASHCARD</span>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {currentCard + 1} / {flashcards.length}
-                    </span>
-                  </div>
-
                   {/* Card content */}
-                  <div className="px-6 py-12 min-h-[200px] flex flex-col items-center justify-center">
+                  <div className="min-h-[200px] flex flex-col items-center justify-center p-6">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={`${currentCard}-${isFlipped}`}
-                        initial={{ opacity: 0, rotateY: 90 }}
-                        animate={{ opacity: 1, rotateY: 0 }}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
                         className="text-center"
                       >
                         {!isFlipped ? (
-                          <>
-                            <p className="text-6xl mb-4">{flashcards[currentCard].arabic}</p>
-                            <p className="text-gray-400 font-mono text-lg">
-                              {flashcards[currentCard].transliteration}
-                            </p>
-                          </>
+                          <p className="text-4xl font-semibold text-gray-900 pt-2">
+                            {flashcards[currentCard].english}
+                          </p>
                         ) : (
                           <>
-                            <p className="text-3xl font-medium text-gray-900 mb-2">
-                              {flashcards[currentCard].english}
-                            </p>
-                            <p className="text-2xl text-brand-bg">
+                            <p className="text-4xl font-arabic mb-2">
                               {flashcards[currentCard].arabic}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {flashcards[currentCard].transliteration}
                             </p>
                           </>
                         )}
@@ -391,39 +492,126 @@ export function NotionLandingPage() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Tap hint */}
-                  <div className="px-6 pb-4 text-center">
-                    <span className="text-xs text-gray-300">tap to flip</span>
+                  {/* Card chin - fixed height area for hint or buttons */}
+                  <div className="border-t border-gray-150 p-4 bg-gray-50/40 h-16 flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                      {!isFlipped ? (
+                        <motion.p
+                          key="hint"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="text-center text-xs text-gray-400"
+                        >
+                          click to reveal
+                        </motion.p>
+                      ) : (
+                        <motion.div
+                          key="buttons"
+                          className="grid grid-cols-4 gap-2 w-full"
+                          variants={{
+                            hidden: { opacity: 0 },
+                            show: {
+                              opacity: 1,
+                              transition: { staggerChildren: 0.1 },
+                            },
+                          }}
+                          initial="hidden"
+                          animate="show"
+                          exit={{ opacity: 0 }}
+                        >
+                          <motion.button
+                            variants={{
+                              hidden: { y: 10, opacity: 0 },
+                              show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
+                            }}
+                            onClick={(e) => { e.stopPropagation(); handleRating(0); }}
+                            className="py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors"
+                          >
+                            Forgot
+                          </motion.button>
+                          <motion.button
+                            variants={{
+                              hidden: { y: 10, opacity: 0 },
+                              show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
+                            }}
+                            onClick={(e) => { e.stopPropagation(); handleRating(1); }}
+                            className="py-2 rounded-lg bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold hover:bg-orange-100 transition-colors"
+                          >
+                            Struggled
+                          </motion.button>
+                          <motion.button
+                            variants={{
+                              hidden: { y: 10, opacity: 0 },
+                              show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
+                            }}
+                            onClick={(e) => { e.stopPropagation(); handleRating(2); }}
+                            className="py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-xs font-semibold hover:bg-green-100 transition-colors"
+                          >
+                            Remembered
+                          </motion.button>
+                          <motion.button
+                            variants={{
+                              hidden: { y: 10, opacity: 0 },
+                              show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
+                            }}
+                            onClick={(e) => { e.stopPropagation(); handleRating(3); }}
+                            className="py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold hover:opacity-90 transition-colors shadow-sm"
+                          >
+                            Perfect
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
-                  {/* Action buttons */}
-                  <div className="px-6 pb-6">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); nextCard(); }}
-                        className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors"
+                  {/* Feedback animation overlay - covers entire card */}
+                  {feedbackAnimation.isPlaying && (
+                    <>
+                      <motion.div
+                        className={`absolute inset-0 ${feedbackAnimation.color} z-20 rounded-2xl`}
+                        initial={{ x: "-100%" }}
+                        animate={{ x: 0 }}
+                        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                      />
+                      <motion.div
+                        className="absolute inset-0 flex flex-col items-center justify-center z-30"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3, duration: 0.2 }}
                       >
-                        Skip
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); nextCard(); }}
-                        className="flex-1 py-3 rounded-xl bg-brand-bg text-white text-sm font-medium hover:bg-brand-bg/90 transition-colors"
-                      >
-                        Got it!
-                      </button>
-                    </div>
-                  </div>
+                        <motion.div
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.3, duration: 0.4, type: "spring", stiffness: 300, damping: 20 }}
+                          className="mb-2"
+                        >
+                          {feedbackAnimation.icon === "ghost" && <Ghost className="w-12 h-12 text-white" weight="fill" />}
+                          {feedbackAnimation.icon === "nervous" && <SmileyNervous className="w-12 h-12 text-white" weight="fill" />}
+                          {feedbackAnimation.icon === "balloon" && <Balloon className="w-12 h-12 text-white" weight="fill" />}
+                          {feedbackAnimation.icon === "star" && <Star className="w-12 h-12 text-white" weight="fill" />}
+                        </motion.div>
+                        <motion.span
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.35, duration: 0.3, type: "spring", stiffness: 300, damping: 25 }}
+                          className="text-white text-2xl font-bold"
+                        >
+                          {feedbackAnimation.text}
+                        </motion.span>
+                        <motion.span
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5, duration: 0.2 }}
+                          className="text-white/80 text-sm mt-1"
+                        >
+                          {feedbackAnimation.nextReview}
+                        </motion.span>
+                      </motion.div>
+                    </>
+                  )}
                 </div>
               </div>
-
-              {/* Decorative hint */}
-              <motion.div
-                className="absolute -bottom-4 -right-4 bg-brand-fg/20 px-4 py-2 rounded-full text-sm text-brand-bg font-medium"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                Try it! →
-              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -432,86 +620,114 @@ export function NotionLandingPage() {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* Word Library Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Everything you need to learn
-            </h2>
-            <p className="text-gray-600 max-w-xl mx-auto">
-              Simple tools designed to make learning Lebanese Arabic feel natural.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Brain,
-                title: "Spaced Repetition",
-                desc: "Reviews scheduled at the perfect moment",
-                color: "bg-purple-100 text-purple-600",
-              },
-              {
-                icon: TrendingUp,
-                title: "Track Progress",
-                desc: "Watch your vocabulary grow daily",
-                color: "bg-green-100 text-green-600",
-              },
-              {
-                icon: Wifi,
-                title: "Works Offline",
-                desc: "Learn anywhere, sync when online",
-                color: "bg-blue-100 text-blue-600",
-              },
-              {
-                icon: Plus,
-                title: "Add Your Own",
-                desc: "Build personalized vocabulary",
-                color: "bg-orange-100 text-orange-600",
-              },
-            ].map((feature) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="bg-gray-50 p-6 rounded-2xl hover:shadow-lg hover:bg-white transition-all border border-transparent hover:border-gray-100"
-              >
-                <div
-                  className={`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center mb-4`}
-                >
-                  <feature.icon className="w-6 h-6" />
+          <div className="grid lg:grid-cols-2 gap-16 items-center pb-8">
+            {/* Left - Text */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Hundreds of words.
+                <br />
+                <span style={{ color: theme.primary }}>Add your own.</span>
+              </h2>
+              <p className="text-gray-600 text-base leading-relaxed mb-6">
+                Start with curated packs for greetings, food, family, and more.
+                Then add the words you actually hear — from your teta, the news, or that show everyone's watching.
+              </p>
+              <div className="flex gap-4 text-sm text-gray-500 pb-8">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.primary }} />
+                  <span>{allWords.length}+ words ready</span>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-500">{feature.desc}</p>
-              </motion.div>
-            ))}
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-gray-400" />
+                  <span>Add unlimited</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right - Animated Card Grid */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative h-[400px] perspective-1000 mt-4"
+            >
+              <div
+                className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-3 transform rotate-x-12 rotate-y-[-8deg]"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                {Array.from({ length: 16 }).map((_, i) => {
+                  const wordIndex = gridWordIndices[i] % (allWords.length || 1);
+                  const word = allWords[wordIndex];
+                  const depth = (i % 4) * 10;
+                  const row = Math.floor(i / 4);
+                  const opacity = 1 - (row * 0.2);
+                  return (
+                    <div
+                      key={i}
+                      className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex flex-col items-center justify-center text-center"
+                      style={{ transform: `translateZ(${depth}px)`, opacity }}
+                    >
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={wordIndex}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="flex flex-col items-center"
+                        >
+                          {word ? (
+                            <>
+                              <span className="text-lg font-arabic">{word.arabic}</span>
+                              <span className="text-[10px] text-gray-400 truncate w-full">{word.english}</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-lg font-arabic">كلمة</span>
+                              <span className="text-[10px] text-gray-400">word</span>
+                            </>
+                          )}
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Fade overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-gray-50/50 to-transparent pointer-events-none" />
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-amber-50/30">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-brand-bg rounded-3xl p-12 sm:p-16 shadow-2xl shadow-brand-bg/20"
+            className="rounded-3xl p-12 sm:p-16 shadow-2xl"
+            style={{ backgroundColor: theme.primary, boxShadow: `0 25px 50px -12px ${theme.primary}40` }}
           >
             <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-white mb-4">
               Ready to start learning?
             </h2>
-            <p className="text-white/80 mb-8 max-w-md mx-auto">
+            <p className="text-white/80 text-base leading-relaxed mb-8 max-w-md mx-auto">
               Join learners mastering Lebanese Arabic with smart flashcards. Free forever.
             </p>
             <Button
               size="lg"
               onClick={() => setShowAuthDialog(true)}
-              className="bg-white text-brand-bg hover:bg-white/90 rounded-full px-10 py-6 text-lg font-semibold"
+              className="bg-white hover:bg-white/90 rounded-full px-10 py-6 text-base font-medium"
+              style={{ color: theme.primary }}
             >
               Get started free
             </Button>
@@ -521,24 +737,8 @@ export function NotionLandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-100 py-8 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Yalla. All rights reserved.</p>
-          <div className="flex items-center gap-2">
-            <span>Try another style:</span>
-            <Link
-              href="/?theme=botanical"
-              className="text-gray-700 hover:text-brand-bg underline underline-offset-2"
-            >
-              Botanical
-            </Link>
-            <span>&middot;</span>
-            <Link
-              href="/?theme=bold"
-              className="text-gray-700 hover:text-brand-bg underline underline-offset-2"
-            >
-              Bold
-            </Link>
-          </div>
+        <div className="max-w-6xl mx-auto flex justify-center items-center text-sm text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Yalla Flash. All rights reserved.</p>
         </div>
       </footer>
 
@@ -560,11 +760,11 @@ export function NotionLandingPage() {
               className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
             >
               <div className="text-center">
-                <p className="text-5xl mb-3">{selectedWord.arabic}</p>
-                <p className="text-lg text-gray-400 font-mono mb-2">
+                <p className="text-4xl font-arabic mb-3">{selectedWord.arabic}</p>
+                <p className="text-sm text-gray-400 mb-2">
                   {selectedWord.transliteration}
                 </p>
-                <p className="text-2xl text-gray-900 font-medium mb-4">
+                <p className="text-xl text-gray-900 font-medium mb-4">
                   {selectedWord.english}
                 </p>
                 {selectedWord.notes && (
@@ -573,7 +773,10 @@ export function NotionLandingPage() {
                   </p>
                 )}
                 <div className="flex items-center justify-center gap-2 mb-6">
-                  <span className="text-xs bg-brand-bg/10 text-brand-bg px-3 py-1 rounded-full">
+                  <span
+                    className="text-xs px-3 py-1 rounded-full"
+                    style={{ backgroundColor: theme.primaryLight, color: theme.primary }}
+                  >
                     {selectedWord.packName}
                   </span>
                 </div>
@@ -581,7 +784,7 @@ export function NotionLandingPage() {
                   <Button
                     variant="outline"
                     onClick={() => setSelectedWord(null)}
-                    className="flex-1 rounded-full"
+                    className="flex-1 rounded-full text-sm font-medium"
                   >
                     Close
                   </Button>
@@ -590,7 +793,8 @@ export function NotionLandingPage() {
                       setSelectedWord(null);
                       setShowAuthDialog(true);
                     }}
-                    className="flex-1 bg-brand-bg hover:bg-brand-bg/90 text-white rounded-full"
+                    className="flex-1 text-white rounded-full text-sm font-medium hover:opacity-90"
+                    style={{ backgroundColor: theme.primary }}
                   >
                     Save to my words
                   </Button>
