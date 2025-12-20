@@ -21,6 +21,7 @@ import {
   ShieldChevronIcon,
   RocketLaunchIcon,
   ChatCircleText,
+  GearSix,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
 import { AuthDialog } from "./AuthDialog";
 import { useOfflineNavigation } from "../hooks/useOfflineNavigation";
+import { useUserRoles } from "../hooks/useUserRoles";
 
 interface AppSidebarProps {
   children: React.ReactNode;
@@ -53,6 +55,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
   } = useWords();
   const { session } = useAuth();
   const { setShowAuthDialog, handleLogout } = useAuth();
+  const { isAdmin } = useUserRoles();
 
   const handleLoginClick = (event: Event) => {
     event.preventDefault();
@@ -197,6 +200,17 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       <SidebarMenuBadge>{reviewCount}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  {isAdmin && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={pathname === "/admin"}
+                        onClick={() => navigate("/admin")}
+                      >
+                        <GearSix className="h-4 w-4" />
+                        <span>Admin</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

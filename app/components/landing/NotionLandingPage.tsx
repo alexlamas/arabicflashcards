@@ -56,6 +56,13 @@ function generateTheme(primary: string) {
   };
 }
 
+// Curated rating colors that work with any theme
+const ratingColors = {
+  forgot: { bg: "#fef2f2", border: "#fecaca", text: "#b91c1c" },
+  struggled: { bg: "#fffbeb", border: "#fde68a", text: "#b45309" },
+  remembered: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d" },
+};
+
 export function NotionLandingPage() {
   const { setShowAuthDialog } = useAuth();
 
@@ -150,7 +157,7 @@ export function NotionLandingPage() {
 
   const handleRating = (rating: number) => {
     const feedbackText = rating === 0 ? "Forgot" : rating === 1 ? "Struggled" : rating === 2 ? "Remembered" : "Perfect!";
-    const feedbackColor = rating === 0 ? "bg-red-500" : rating === 1 ? "bg-orange-500" : rating === 2 ? "bg-green-500" : "bg-emerald-500";
+    const feedbackColor = rating === 0 ? ratingColors.forgot.text : rating === 1 ? ratingColors.struggled.text : rating === 2 ? ratingColors.remembered.text : theme.primary;
     const nextReview = rating === 0 ? "Later today" : rating === 1 ? "Tomorrow" : rating === 2 ? "In 3 days" : "In a week";
     const feedbackIcon = rating === 0 ? "ghost" : rating === 1 ? "nervous" : rating === 2 ? "balloon" : "star";
 
@@ -526,7 +533,8 @@ export function NotionLandingPage() {
                               show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
                             }}
                             onClick={(e) => { e.stopPropagation(); handleRating(0); }}
-                            className="py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors"
+                            className="py-2 rounded-lg border text-xs font-semibold transition-colors"
+                            style={{ backgroundColor: ratingColors.forgot.bg, borderColor: ratingColors.forgot.border, color: ratingColors.forgot.text }}
                           >
                             Forgot
                           </motion.button>
@@ -536,7 +544,8 @@ export function NotionLandingPage() {
                               show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
                             }}
                             onClick={(e) => { e.stopPropagation(); handleRating(1); }}
-                            className="py-2 rounded-lg bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold hover:bg-orange-100 transition-colors"
+                            className="py-2 rounded-lg border text-xs font-semibold transition-colors"
+                            style={{ backgroundColor: ratingColors.struggled.bg, borderColor: ratingColors.struggled.border, color: ratingColors.struggled.text }}
                           >
                             Struggled
                           </motion.button>
@@ -546,7 +555,8 @@ export function NotionLandingPage() {
                               show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
                             }}
                             onClick={(e) => { e.stopPropagation(); handleRating(2); }}
-                            className="py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-xs font-semibold hover:bg-green-100 transition-colors"
+                            className="py-2 rounded-lg border text-xs font-semibold transition-colors"
+                            style={{ backgroundColor: ratingColors.remembered.bg, borderColor: ratingColors.remembered.border, color: ratingColors.remembered.text }}
                           >
                             Remembered
                           </motion.button>
@@ -556,7 +566,8 @@ export function NotionLandingPage() {
                               show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
                             }}
                             onClick={(e) => { e.stopPropagation(); handleRating(3); }}
-                            className="py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold hover:opacity-90 transition-colors shadow-sm"
+                            className="py-2 rounded-lg text-white text-xs font-semibold hover:opacity-90 transition-colors shadow-sm"
+                            style={{ backgroundColor: theme.primary }}
                           >
                             Perfect
                           </motion.button>
@@ -569,7 +580,8 @@ export function NotionLandingPage() {
                   {feedbackAnimation.isPlaying && (
                     <>
                       <motion.div
-                        className={`absolute inset-0 ${feedbackAnimation.color} z-20 rounded-2xl`}
+                        className="absolute inset-0 z-20 rounded-2xl"
+                        style={{ backgroundColor: feedbackAnimation.color }}
                         initial={{ x: "-100%" }}
                         animate={{ x: 0 }}
                         transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
