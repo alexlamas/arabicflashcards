@@ -67,7 +67,7 @@ export function NotionLandingPage() {
   const { setShowAuthDialog } = useAuth();
 
   // Theme state
-  const [primaryColor, setPrimaryColor] = useState("#47907d");
+  const [primaryColor] = useState("#47907d");
   const theme = generateTheme(primaryColor);
 
   // Search state
@@ -649,7 +649,7 @@ export function NotionLandingPage() {
               </h2>
               <p className="text-gray-600 text-base leading-relaxed mb-6">
                 Start with curated packs for greetings, food, family, and more.
-                Then add the words you actually hear — from your teta, the news, or that show everyone's watching.
+                Then add the words you actually hear — from your teta, the news, or that show everyone&apos;s watching.
               </p>
               <div className="flex gap-4 text-sm text-gray-500 pb-8">
                 <div className="flex items-center gap-2">

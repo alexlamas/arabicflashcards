@@ -87,6 +87,7 @@ export default function AdminPage() {
     transliteration: "",
     type: "noun",
     notes: "",
+    example_sentences: null as unknown,
     order_index: 0,
   });
   const [phraseForm, setPhraseForm] = useState({
@@ -205,7 +206,7 @@ export default function AdminPage() {
     try {
       await AdminService.addStarterPackWord(expandedPack, wordForm);
       setIsAddingWord(false);
-      setWordForm({ arabic: "", english: "", transliteration: "", type: "noun", notes: "", order_index: 0 });
+      setWordForm({ arabic: "", english: "", transliteration: "", type: "noun", notes: "", example_sentences: null, order_index: 0 });
       loadPackContents(expandedPack);
       loadData();
     } catch (error) {
@@ -463,6 +464,7 @@ export default function AdminPage() {
                                               transliteration: word.transliteration || "",
                                               type: word.type || "noun",
                                               notes: word.notes || "",
+                                              example_sentences: word.example_sentences,
                                               order_index: word.order_index,
                                             });
                                           }}
