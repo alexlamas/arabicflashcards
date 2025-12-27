@@ -5,6 +5,7 @@ export interface AdminUser {
   id: string;
   email: string;
   created_at: string;
+  email_confirmed: boolean;
   word_count: number;
   phrase_count: number;
   last_review_date: string | null;
@@ -26,71 +27,14 @@ export class AdminService {
    * Get all users with their stats
    */
   static async getAllUsers(): Promise<AdminUser[]> {
-    const supabase = createClient();
+    const response = await fetch("/api/admin/users");
 
-    // Get all users from auth.users via the words table (since we can't query auth.users directly)
-    // We'll get unique user_ids from words and phrases
-    const { data: words, error: wordsError } = await supabase
-      .from("words")
-      .select("user_id, created_at");
-
-    if (wordsError) throw wordsError;
-
-    const { data: phrases, error: phrasesError } = await supabase
-      .from("phrases")
-      .select("user_id");
-
-    if (phrasesError) throw phrasesError;
-
-    // Get word progress for last review dates
-    const { data: progress, error: progressError } = await supabase
-      .from("word_progress")
-      .select("user_id, last_review_date")
-      .order("last_review_date", { ascending: false });
-
-    if (progressError) throw progressError;
-
-    // Aggregate by user
-    const userMap = new Map<string, AdminUser>();
-
-    for (const word of words || []) {
-      if (!userMap.has(word.user_id)) {
-        userMap.set(word.user_id, {
-          id: word.user_id,
-          email: word.user_id, // We'll try to get email below
-          created_at: word.created_at,
-          word_count: 0,
-          phrase_count: 0,
-          last_review_date: null
-        });
-      }
-      const user = userMap.get(word.user_id)!;
-      user.word_count++;
-      if (word.created_at < user.created_at) {
-        user.created_at = word.created_at;
-      }
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to fetch users");
     }
 
-    for (const phrase of phrases || []) {
-      if (userMap.has(phrase.user_id)) {
-        userMap.get(phrase.user_id)!.phrase_count++;
-      }
-    }
-
-    // Get last review dates
-    const reviewMap = new Map<string, string>();
-    for (const p of progress || []) {
-      if (p.last_review_date && !reviewMap.has(p.user_id)) {
-        reviewMap.set(p.user_id, p.last_review_date);
-      }
-    }
-    for (const [userId, date] of reviewMap) {
-      if (userMap.has(userId)) {
-        userMap.get(userId)!.last_review_date = date;
-      }
-    }
-
-    return Array.from(userMap.values());
+    return response.json();
   }
 
   /**

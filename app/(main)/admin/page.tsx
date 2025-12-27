@@ -571,17 +571,25 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User ID</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Words</TableHead>
                     <TableHead>Phrases</TableHead>
                     <TableHead>Last Review</TableHead>
-                    <TableHead>First Activity</TableHead>
+                    <TableHead>Joined</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-mono text-xs">{user.id.slice(0, 8)}...</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        {user.email_confirmed ? (
+                          <span className="text-green-600 text-xs">Confirmed</span>
+                        ) : (
+                          <span className="text-amber-600 text-xs">Pending</span>
+                        )}
+                      </TableCell>
                       <TableCell>{user.word_count}</TableCell>
                       <TableCell>{user.phrase_count}</TableCell>
                       <TableCell>

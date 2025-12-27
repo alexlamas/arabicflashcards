@@ -9,7 +9,7 @@ Goal: Get the app ready for public launch.
 These must be fixed before going public.
 
 ### Authentication
-- [ ] Fix sign up flow
+- [x] Fix sign up flow
 
 ### AI Features
 - [ ] Remove AI features for non-admin users (or hide behind feature flag)
