@@ -1,7 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "../contexts/AuthContext";
 import { createClient } from "@/utils/supabase/client";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,42 +12,14 @@ export function AuthDialog() {
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [step, setStep] = useState<"email" | "password">("email");
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [step, setStep] = useState<"email" | "password" | "check-email">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
-
-    try {
-      // Try to sign up first to check if user exists
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password: Math.random().toString(36).slice(-8), // Random password
-      });
-
-      // Check if user already exists using the identities array
-      if (data?.user?.identities?.length === 0) {
-        // User already exists - proceed to sign in
-        setIsNewUser(false);
-        setStep("password");
-      } else if (data?.user) {
-        // New user was created - we need to clean up and let them set password
-        // Note: This creates a user with a random password that will be updated
-        setIsNewUser(true);
-        setStep("password");
-      } else if (signUpError) {
-        // Handle other errors
-        setError(signUpError.message);
-      }
-    } catch {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setStep("password");
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -56,32 +28,44 @@ export function AuthDialog() {
     setError(null);
 
     try {
-      if (isNewUser) {
-        // Sign up new user
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+      // First, try to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (signUpError) {
-          setError(signUpError.message);
-        } else {
-          // Success - the auth context will handle the redirect
-          setShowAuthDialog(false);
-        }
+      if (!signInError) {
+        // Signed in successfully
+        setShowAuthDialog(false);
+        return;
+      }
+
+      // Sign in failed - try sign up (user might be new)
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (signUpError) {
+        // Both failed - show error
+        setError(signUpError.message);
+        return;
+      }
+
+      // Check if user already existed (signUp returns user with empty identities)
+      if (signUpData.user?.identities?.length === 0) {
+        // User exists but password was wrong
+        setError("Invalid password");
+        return;
+      }
+
+      // New user created
+      if (signUpData.session) {
+        // Auto-confirmed, user is signed in
+        setShowAuthDialog(false);
       } else {
-        // Sign in existing user
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) {
-          setError(signInError.message);
-        } else {
-          // Success - the auth context will handle the redirect
-          setShowAuthDialog(false);
-        }
+        // Email confirmation required
+        setStep("check-email");
       }
     } catch {
       setError("An error occurred. Please try again.");
@@ -126,17 +110,42 @@ export function AuthDialog() {
         <div>
           {/* Auth form */}
           <div className="p-8 bg-white h-full flex flex-col rounded-lg">
-            <div className="mb-6">
-              <h3 className="text-2xl font-pphatton font-bold text-gray-900 mb-2">
-                Welcome
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Sign in to continue learning, or create an account to get
-                started.
-              </p>
-            </div>
+            {step === "check-email" ? (
+              <div className="text-center py-4">
+                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <Mail className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-pphatton font-bold text-gray-900 mb-2">
+                  Check your email
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                  We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
+                </p>
+                <Button
+                  onClick={() => {
+                    setStep("email");
+                    setPassword("");
+                  }}
+                  variant="outline"
+                  className="w-full rounded-full h-12"
+                >
+                  Back to sign in
+                </Button>
+              </div>
+            ) : (
+              <div className="mb-6">
+                <h3 className="text-2xl font-pphatton font-bold text-gray-900 mb-2">
+                  Welcome
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {step === "email"
+                    ? "Sign in to continue learning, or create an account to get started."
+                    : "Enter your password to continue."}
+                </p>
+              </div>
+            )}
 
-            {step === "email" ? (
+            {step === "email" && (
               <form
                 onSubmit={handleEmailSubmit}
                 className="flex flex-col justify-between h-full gap-8"
@@ -172,7 +181,9 @@ export function AuthDialog() {
                   )}
                 </Button>
               </form>
-            ) : (
+            )}
+
+            {step === "password" && (
               <form
                 onSubmit={handlePasswordSubmit}
                 className="h-full flex flex-col justify-between gap-8"
@@ -191,16 +202,12 @@ export function AuthDialog() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-sm font-medium">
-                      {isNewUser ? "Create a password" : "Enter your password"}
+                      Password
                     </Label>
                     <Input
                       id="password"
                       type="password"
-                      placeholder={
-                        isNewUser
-                          ? "Choose a secure password"
-                          : "Enter your password"
-                      }
+                      placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -208,11 +215,6 @@ export function AuthDialog() {
                       minLength={6}
                       className="py-6 px-4 shadow-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900/20 focus:ring-offset-white focus:border-gray-900"
                     />
-                    {isNewUser && (
-                      <p className="text-xs text-gray-500">
-                        Must be at least 6 characters
-                      </p>
-                    )}
                   </div>
                 </div>
 
@@ -225,22 +227,18 @@ export function AuthDialog() {
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : isNewUser ? (
-                    "Create account"
                   ) : (
-                    "Sign in"
+                    "Continue"
                   )}
                 </Button>
 
-                {!isNewUser && (
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="w-full text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Forgot password?
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="w-full text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Forgot password?
+                </button>
               </form>
             )}
           </div>
