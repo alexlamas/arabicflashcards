@@ -25,6 +25,7 @@ export function Review() {
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [feedbackAnimation, setFeedbackAnimation] = useState<{
     isPlaying: boolean;
@@ -39,6 +40,7 @@ export function Review() {
     if (!session?.user) return;
 
     setError(null);
+    setIsLoading(true);
     try {
       const words = await SpacedRepetitionService.getDueWords(
         session.user.id,
@@ -50,6 +52,7 @@ export function Review() {
       console.error("Error loading word:", error);
       setError("Failed to load words. Please try again.");
     } finally {
+      setIsLoading(false);
     }
   }, [session]);
 
@@ -158,6 +161,27 @@ export function Review() {
     );
   }
 
+  // Show skeleton while loading
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl w-full mx-auto px-4">
+        <div className="p-6 rounded-lg border shadow-md bg-white">
+          <div className="min-h-[200px] flex items-center justify-center">
+            <div className="space-y-4 w-full max-w-xs">
+              <div className="h-8 bg-gray-200 rounded-md animate-pulse mx-auto w-3/4" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+          <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+          <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+          <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   if (!currentWord) {
     if (!session) return null;
     return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} />;
@@ -166,9 +190,9 @@ export function Review() {
   return (
     <div className="max-w-2xl w-full mx-auto px-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <Card
           className="p-6 cursor-pointer shadow-md relative overflow-hidden"
@@ -177,9 +201,9 @@ export function Review() {
           <CardContent className="min-h-[200px] flex items-center justify-center relative z-10">
             <motion.div
               key={isFlipped ? "back" : "front"}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               {!isFlipped ? (
                 <h3 className="text-2xl font-semibold select-none">
@@ -224,7 +248,7 @@ export function Review() {
                   duration: 0.2,
                 }}
               >
-                <div className="flex flex-col items-center gap-2">
+                <div className="relative flex flex-col items-center">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -262,23 +286,21 @@ export function Review() {
                       <Star size={40} weight="fill" className="animate-pulse" />
                     )}
                     {feedbackAnimation.text}
-                    {feedbackAnimation.nextReviewText && (
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{
-                          delay: 0.45,
-                          duration: 0.3,
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 25,
-                        }}
-                        className="text-white/90 text-sm font-medium mt-2 translate-y-px"
-                      >
-                        {feedbackAnimation.nextReviewText}
-                      </motion.div>
-                    )}
                   </motion.div>
+                  {feedbackAnimation.nextReviewText && (
+                    <motion.div
+                      initial={{ opacity: 0, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, filter: "blur(0px)" }}
+                      transition={{
+                        delay: 0.25,
+                        duration: 0.15,
+                        ease: "easeOut",
+                      }}
+                      className="absolute top-full mt-2 text-white/90 text-sm font-medium"
+                    >
+                      {feedbackAnimation.nextReviewText}
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             </>
@@ -311,7 +333,7 @@ export function Review() {
             show: {
               opacity: 1,
               transition: {
-                staggerChildren: 0.1,
+                staggerChildren: 0.08,
               },
             },
           }}
@@ -320,14 +342,14 @@ export function Review() {
         >
           <motion.div
             variants={{
-              hidden: { y: 20, opacity: 0 },
+              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
               show: {
                 y: 0,
                 opacity: 1,
+                filter: "blur(0px)",
                 transition: {
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
+                  duration: 0.4,
+                  ease: "easeOut",
                 },
               },
             }}
@@ -343,14 +365,14 @@ export function Review() {
           </motion.div>
           <motion.div
             variants={{
-              hidden: { y: 20, opacity: 0 },
+              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
               show: {
                 y: 0,
                 opacity: 1,
+                filter: "blur(0px)",
                 transition: {
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
+                  duration: 0.4,
+                  ease: "easeOut",
                 },
               },
             }}
@@ -366,14 +388,14 @@ export function Review() {
           </motion.div>
           <motion.div
             variants={{
-              hidden: { y: 20, opacity: 0 },
+              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
               show: {
                 y: 0,
                 opacity: 1,
+                filter: "blur(0px)",
                 transition: {
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
+                  duration: 0.4,
+                  ease: "easeOut",
                 },
               },
             }}
@@ -389,14 +411,14 @@ export function Review() {
           </motion.div>
           <motion.div
             variants={{
-              hidden: { y: 20, opacity: 0 },
+              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
               show: {
                 y: 0,
                 opacity: 1,
+                filter: "blur(0px)",
                 transition: {
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
+                  duration: 0.4,
+                  ease: "easeOut",
                 },
               },
             }}

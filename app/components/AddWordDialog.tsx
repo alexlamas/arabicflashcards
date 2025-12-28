@@ -125,7 +125,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Word</DialogTitle>
+          <DialogTitle>Add new word</DialogTitle>
           <DialogDescription>
             {!previewWord
               ? "Enter a word in English or Arabic to get started."
@@ -168,7 +168,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     Translating...
                   </>
                 ) : (
-                  "Generate Translation"
+                  "Generate translation"
                 )}
               </Button>
             </div>
@@ -255,7 +255,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 <Button type="button" variant="outline" onClick={handleClose}>
                   Cancel
                 </Button>
-                <Button type="submit">Save Word</Button>
+                <Button type="submit">Save word</Button>
               </div>
             </div>
           </form>

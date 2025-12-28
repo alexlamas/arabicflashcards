@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -25,36 +25,19 @@ export default function ReviewTimeline() {
     try {
       const supabase = createClient();
       const now = new Date();
-      const nextWeek = new Date(now);
-      nextWeek.setDate(now.getDate() + 7);
 
-      // First fetch current reviews (due now or overdue)
-      const { data: currentReviews, error: currentError } = await supabase
+      // Fetch ALL reviews to calculate 90th percentile
+      const { data: allReviews, error } = await supabase
         .from("word_progress")
         .select("id, next_review_date, word_english")
         .eq("user_id", session.user.id)
         .in("status", ["learning", "learned"])
-        .lte("next_review_date", now.toISOString())
-        .order("next_review_date", { ascending: false });
-
-      if (currentError) throw currentError;
-
-      // Then fetch upcoming reviews
-      const { data: upcomingReviews, error: upcomingError } = await supabase
-        .from("word_progress")
-        .select("id, next_review_date, word_english")
-        .eq("user_id", session.user.id)
-        .in("status", ["learning", "learned"])
-        .gt("next_review_date", now.toISOString())
-        .lte("next_review_date", nextWeek.toISOString())
+        .not("next_review_date", "is", null)
         .order("next_review_date");
 
-      if (upcomingError) throw upcomingError;
+      if (error) throw error;
 
-      const timeline = [
-        ...(currentReviews || []),
-        ...(upcomingReviews || []),
-      ].map((item) => ({
+      const timeline = (allReviews || []).map((item) => ({
         id: item.id,
         word_english: item.word_english,
         next_review_date: new Date(item.next_review_date),
@@ -109,31 +92,86 @@ export default function ReviewTimeline() {
     };
   }, [fetchReviewData, session]);
 
+  // Calculate 90th percentile end date and generate labels
+  const { endDate, timeLabels, filteredData } = useMemo(() => {
+    if (reviewData.length === 0) {
+      return { endDate: new Date(), timeLabels: [], filteredData: [] };
+    }
+
+    const now = new Date();
+    const sortedDates = [...reviewData].sort(
+      (a, b) => a.next_review_date.getTime() - b.next_review_date.getTime()
+    );
+
+    // Find 90th percentile
+    const percentileIndex = Math.floor(sortedDates.length * 0.9);
+    const percentileDate = sortedDates[Math.min(percentileIndex, sortedDates.length - 1)].next_review_date;
+
+    // Ensure at least 1 day range
+    const minEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const endDate = percentileDate > minEnd ? percentileDate : minEnd;
+
+    const totalMs = endDate.getTime() - now.getTime();
+    const totalDays = totalMs / (24 * 60 * 60 * 1000);
+
+    // Generate smart labels based on range
+    const labels: { date: Date; label: string; position: number }[] = [];
+    const maxLabels = 7;
+
+    if (totalDays <= 7) {
+      // Daily labels
+      const step = Math.max(1, Math.ceil(totalDays / maxLabels));
+      for (let i = 0; i <= totalDays && labels.length < maxLabels; i += step) {
+        const date = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+        const label = i === 0 ? "Now" : date.toLocaleDateString(undefined, { weekday: "short" });
+        labels.push({ date, label, position: (i / totalDays) * 100 });
+      }
+    } else if (totalDays <= 60) {
+      // Weekly labels
+      const weeks = Math.ceil(totalDays / 7);
+      const step = Math.max(1, Math.ceil(weeks / maxLabels));
+      for (let i = 0; i <= weeks && labels.length < maxLabels; i += step) {
+        const date = new Date(now.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+        const label = i === 0 ? "Now" : `${i}w`;
+        labels.push({ date, label, position: Math.min((i * 7 / totalDays) * 100, 100) });
+      }
+    } else {
+      // Monthly labels
+      const months = Math.ceil(totalDays / 30);
+      const step = Math.max(1, Math.ceil(months / maxLabels));
+      for (let i = 0; i <= months && labels.length < maxLabels; i += step) {
+        const date = new Date(now.getTime() + i * 30 * 24 * 60 * 60 * 1000);
+        const label = i === 0 ? "Now" : `${i}mo`;
+        labels.push({ date, label, position: Math.min((i * 30 / totalDays) * 100, 100) });
+      }
+    }
+
+    // Filter data to only include items within range
+    const filtered = reviewData.filter(
+      item => item.next_review_date <= endDate
+    );
+
+    return { endDate, timeLabels: labels, filteredData: filtered };
+  }, [reviewData]);
+
   if (!session?.user || reviewData.length === 0) return null;
 
   const now = new Date();
-  const endDate = new Date(now);
-  endDate.setDate(endDate.getDate() + 7);
-
   const totalDuration = endDate.getTime() - now.getTime();
 
-  const dayLabels = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(now);
-    date.setDate(date.getDate() + i);
-    return {
-      date,
-      label:
-        i === 0
-          ? "Now"
-          : date.toLocaleDateString(undefined, { weekday: "short" }),
-    };
-  });
-
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
+    const diffMs = date.getTime() - now.getTime();
+    const diffDays = diffMs / (24 * 60 * 60 * 1000);
+
+    if (diffDays < 1) {
+      return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString(undefined, { weekday: "short", hour: "numeric" });
+    } else if (diffDays < 30) {
+      return `${Math.round(diffDays / 7)}w`;
+    } else {
+      return `${Math.round(diffDays / 30)}mo`;
+    }
   };
 
   return (
@@ -141,12 +179,12 @@ export default function ReviewTimeline() {
       <div className="inline-flex gap-4 items-center w-full">
         <div className="relative w-full mr-8 ml-12">
           <div className="absolute bottom-[0.5px] w-full flex justify-between px-24 pb-2 z-30">
-            {dayLabels.map(({ label }, i) => (
+            {timeLabels.map(({ label, position }, i) => (
               <div
                 key={i}
-                className="absolute text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm first:-ml-6"
+                className="absolute text-xs text-muted-foreground px-1 rounded-full bg-white/80 border border-black/5 shadow-sm"
                 style={{
-                  left: `${(i / 6) * 100}%`,
+                  left: `${position}%`,
                   transform: "translateX(-50%)",
                 }}
               >
@@ -157,12 +195,12 @@ export default function ReviewTimeline() {
 
           <div className="absolute top-1/2 w-full h-0.5 bg-gray-100 rounded" />
 
-          {reviewData.map((item) => {
+          {filteredData.map((item) => {
             const timeSinceStart =
               item.next_review_date.getTime() - now.getTime();
             const position = Math.max(
               0,
-              (timeSinceStart / totalDuration) * 100
+              Math.min((timeSinceStart / totalDuration) * 100, 100)
             );
 
             return (

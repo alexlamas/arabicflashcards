@@ -59,6 +59,25 @@ export class StarterPackService {
   }
 
   /**
+   * Get word counts for all packs
+   */
+  static async getPackWordCounts(): Promise<Record<string, number>> {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("starter_pack_words")
+      .select("pack_id");
+
+    if (error) throw error;
+
+    const counts: Record<string, number> = {};
+    (data || []).forEach(row => {
+      counts[row.pack_id] = (counts[row.pack_id] || 0) + 1;
+    });
+
+    return counts;
+  }
+
+  /**
    * Get a specific starter pack with its words and phrases
    */
   static async getPackContents(packId: string): Promise<{

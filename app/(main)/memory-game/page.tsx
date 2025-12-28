@@ -166,7 +166,7 @@ export default function MemoryGamePage() {
           <p className="text-muted-foreground mb-4">
             There are no words in your learning list yet.
           </p>
-          <Button onClick={() => router.push("/")}>Browse Words</Button>
+          <Button onClick={() => router.push("/")}>Browse words</Button>
         </Card>
       </div>
     );
@@ -182,7 +182,7 @@ export default function MemoryGamePage() {
             You completed the game in {moves} moves
           </p>
           <div className="flex gap-3 justify-center">
-            <Button onClick={initializeGame}>Play Again</Button>
+            <Button onClick={initializeGame}>Play again</Button>
             <Button variant="outline" onClick={() => router.push("/review")}>
               Go to Review
             </Button>
@@ -197,7 +197,7 @@ export default function MemoryGamePage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Memory Game</h1>
+            <h1 className="text-2xl font-bold">Memory game</h1>
           </div>
           <Button
             variant="outline"

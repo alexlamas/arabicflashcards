@@ -102,7 +102,7 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
       )}
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Word</DialogTitle>
+          <DialogTitle>Edit word</DialogTitle>
           <DialogDescription>
             Make changes to the word. Click save when you&apos;re done.
           </DialogDescription>
@@ -197,7 +197,7 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
             </Button>
             <Button type="submit" disabled={loading || !hasChanges()}>
               {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              Save changes
             </Button>
           </div>
         </form>

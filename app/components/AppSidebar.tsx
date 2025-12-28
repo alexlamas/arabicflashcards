@@ -206,7 +206,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       onClick={() => navigate("/memory-game")}
                     >
                       <GameController className="h-4 w-4" />
-                      <span>Memory Game</span>
+                      <span>Memory game</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   {isReviewer && (
@@ -216,7 +216,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
                         onClick={() => navigate("/content-editor")}
                       >
                         <NotePencil className="h-4 w-4" />
-                        <span>Content Editor</span>
+                        <span>Content editor</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}

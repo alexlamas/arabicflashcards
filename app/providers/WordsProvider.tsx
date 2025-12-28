@@ -11,7 +11,7 @@ import { OfflineStorage } from "../services/offlineStorage";
 import { getOnlineStatus } from "../utils/connectivity";
 
 export function WordsProvider({ children }: { children: React.ReactNode }) {
-  const { session } = useAuth();
+  const { session, isLoading: isAuthLoading } = useAuth();
   const [words, setWords] = useState<Word[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +107,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       });
       setLearnedCount(learnedWords.length);
 
-      fetchReviewCount();
+      await fetchReviewCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
       console.error("Error loading words:", err);
@@ -160,6 +160,9 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   }, [fetchReviewCount]);
 
   useEffect(() => {
+    // Don't load words until auth state is determined
+    if (isAuthLoading) return;
+
     // Set user ID for offline storage when session changes
     if (session?.user?.id) {
       OfflineStorage.setUserId(session.user.id);
@@ -213,7 +216,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       supabase.removeChannel(channel);
       cleanupConnectivity();
     };
-  }, [session, refreshWords]);
+  }, [session, refreshWords, isAuthLoading]);
 
   return (
     <WordsContext.Provider

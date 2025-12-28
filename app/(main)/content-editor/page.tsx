@@ -290,7 +290,7 @@ export default function ContentEditorPage() {
                   onClick={() => handleStatusChange(word.id, "needs_review", "words")}
                 >
                   <RotateCcw className="h-4 w-4 mr-1" />
-                  Request Review
+                  Request review
                 </Button>
               )}
             </TableCell>
@@ -339,7 +339,7 @@ export default function ContentEditorPage() {
                   onClick={() => handleStatusChange(phrase.id, "needs_review", "phrases")}
                 >
                   <RotateCcw className="h-4 w-4 mr-1" />
-                  Request Review
+                  Request review
                 </Button>
               )}
             </TableCell>
@@ -354,7 +354,7 @@ export default function ContentEditorPage() {
       <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30">
         <SidebarTrigger />
         <Separator orientation="vertical" className="mr-2 h-4" />
-        <h1 className="font-semibold">Content Editor</h1>
+        <h1 className="font-semibold">Content editor</h1>
 
         <div className="ml-4">
           <Select value={selectedPack || ""} onValueChange={setSelectedPack}>
@@ -402,10 +402,10 @@ export default function ContentEditorPage() {
               </div>
             ) : (
               <>
-                {/* Needs Review Section */}
+                {/* Needs review Section */}
                 <div>
                   <h2 className="text-lg font-medium mb-3 text-amber-600">
-                    Needs Review ({needsReviewWords.length})
+                    Needs review ({needsReviewWords.length})
                   </h2>
                   {needsReviewWords.length === 0 ? (
                     <p className="text-gray-500 text-sm py-4">All words have been reviewed!</p>
@@ -440,10 +440,10 @@ export default function ContentEditorPage() {
               </div>
             ) : (
               <>
-                {/* Needs Review Section */}
+                {/* Needs review Section */}
                 <div>
                   <h2 className="text-lg font-medium mb-3 text-amber-600">
-                    Needs Review ({needsReviewPhrases.length})
+                    Needs review ({needsReviewPhrases.length})
                   </h2>
                   {needsReviewPhrases.length === 0 ? (
                     <p className="text-gray-500 text-sm py-4">All phrases have been reviewed!</p>
