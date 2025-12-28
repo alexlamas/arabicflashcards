@@ -11,15 +11,12 @@ import { WordNotes } from "./WordNotes";
 import {
   NoteBlankIcon,
   PencilSimpleIcon,
-  ArchiveIcon,
-  PlusIcon,
   TrashSimpleIcon,
   XIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { EditWord } from "./EditWord";
 import { useAuth } from "../contexts/AuthContext";
-import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { WordService } from "../services/wordService";
@@ -48,7 +45,6 @@ export function WordDetailModal({
   const { session } = useAuth();
   // All users can edit their own words
   const canEdit = !!session?.user;
-  const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [linkedPhrases, setLinkedPhrases] = useState<Phrase[]>([]);
@@ -78,72 +74,10 @@ export function WordDetailModal({
   const hasSentences =
     word.example_sentences && word.example_sentences.length > 0;
   const hasNotes = !!word.notes;
-  const isArchived = word.status === "archived";
 
   const handleWordUpdate = (updatedWord: Word) => {
     if (onWordUpdate) {
       onWordUpdate(updatedWord);
-    }
-  };
-
-  const handleArchive = async () => {
-    if (!session?.user) return;
-
-    setIsLoading(true);
-    try {
-      const updatedWord = {
-        ...word,
-        status: "archived" as const,
-      };
-
-      await handleOfflineAction(
-        async () => {
-          const { count } = await SpacedRepetitionService.markAsArchived(
-            session.user.id,
-            word.english
-          );
-          window.dispatchEvent(
-            new CustomEvent("wordProgressUpdated", { detail: { count } })
-          );
-          return count;
-        },
-        () => offlineHelpers.markAsArchived(session.user.id, word.english)
-      );
-
-      handleWordUpdate(updatedWord);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUnarchive = async () => {
-    if (!session?.user) return;
-
-    setIsLoading(true);
-    try {
-      const updatedWord = {
-        ...word,
-        status: "learning" as const,
-        next_review_date: new Date().toISOString(),
-      };
-
-      await handleOfflineAction(
-        async () => {
-          const { count } = await SpacedRepetitionService.startLearning(
-            session.user.id,
-            word.english
-          );
-          window.dispatchEvent(
-            new CustomEvent("wordProgressUpdated", { detail: { count } })
-          );
-          return count;
-        },
-        () => offlineHelpers.startLearning(session.user.id, word.english)
-      );
-
-      handleWordUpdate(updatedWord);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -181,28 +115,6 @@ export function WordDetailModal({
             </DialogTitle>
           </div>
           <div className="absolute right-4 top-4 flex">
-            {session &&
-              (isArchived ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleUnarchive}
-                  disabled={isLoading}
-                  title="Unarchive word"
-                >
-                  <PlusIcon weight="bold" />
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleArchive}
-                  disabled={isLoading}
-                  title="Archive word"
-                >
-                  <ArchiveIcon weight="bold" />
-                </Button>
-              ))}
             {canEdit && (
               <>
                 <Button

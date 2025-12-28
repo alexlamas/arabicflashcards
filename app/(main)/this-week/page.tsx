@@ -23,8 +23,6 @@ function ThisWeekContent() {
   const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   
   const thisWeekWords = words.filter(w => {
-    // Exclude archived words
-    if (w.status === "archived") return false;
     // Include words without review date (new/unscheduled words)
     if (!w.next_review_date) return true;
     const reviewDate = new Date(w.next_review_date);

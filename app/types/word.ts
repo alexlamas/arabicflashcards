@@ -16,9 +16,10 @@ export interface Word {
   next_review_date?: string;
   example_sentences?: ExampleSentence[];
   notes?: string;
+  source_pack_id?: string | null;
 }
 
-export type ProgressState = "learned" | "learning" | "new" | "archived";
+export type ProgressState = "learned" | "learning" | "new";
 export type ProgressMap = Record<string, ProgressState>;
 
 export interface WordProgress {

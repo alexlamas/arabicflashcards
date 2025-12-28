@@ -7,6 +7,7 @@ export function useUserRoles() {
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  const [isReviewer, setIsReviewer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export function useUserRoles() {
         setRoles([]);
         setIsAdmin(false);
         setIsModerator(false);
+        setIsReviewer(false);
         setIsLoading(false);
         return;
       }
@@ -24,11 +26,13 @@ export function useUserRoles() {
         setRoles(userRoles);
         setIsAdmin(userRoles.some(r => r.role === 'admin'));
         setIsModerator(userRoles.some(r => r.role === 'moderator' || r.role === 'admin'));
+        setIsReviewer(userRoles.some(r => r.role === 'reviewer' || r.role === 'admin'));
       } catch (error) {
         console.error("Error fetching user roles:", error);
         setRoles([]);
         setIsAdmin(false);
         setIsModerator(false);
+        setIsReviewer(false);
       } finally {
         setIsLoading(false);
       }
@@ -41,7 +45,8 @@ export function useUserRoles() {
     roles,
     isAdmin,
     isModerator,
+    isReviewer,
     isLoading,
-    hasRole: (role: 'user' | 'admin' | 'moderator') => roles.some(r => r.role === role)
+    hasRole: (role: 'user' | 'admin' | 'moderator' | 'reviewer') => roles.some(r => r.role === role)
   };
 }

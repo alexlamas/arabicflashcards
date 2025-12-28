@@ -429,13 +429,7 @@ export function Review() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onWordUpdate={(updatedWord) => {
-          // If word is archived, close modal and load next word
-          if (updatedWord.status === "archived") {
-            setIsModalOpen(false);
-            loadNextWord();
-          } else {
-            setCurrentWord(updatedWord);
-          }
+          setCurrentWord(updatedWord);
         }}
       />
     </div>

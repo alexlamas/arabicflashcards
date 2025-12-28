@@ -19,7 +19,6 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const [weekCount, setWeekCount] = useState(0);
   const [monthCount, setMonthCount] = useState(0);
   const [learnedCount, setLearnedCount] = useState(0);
-  const [archiveCount, setArchiveCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
   const fetchReviewCount = useCallback(async () => {
@@ -56,116 +55,102 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const refreshWords = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     // Set user ID for offline storage
     if (session?.user?.id) {
       OfflineStorage.setUserId(session.user.id);
     }
-    
+
     try {
       let fetchedWords: Word[];
-      
+
       if (getOnlineStatus()) {
         fetchedWords = await SyncService.loadInitialData();
       } else {
         fetchedWords = OfflineStorage.getWords();
       }
-      
-      // Default undefined/null status to "archived"
+
+      // Default undefined/null status to "learning"
       fetchedWords = fetchedWords.map(word => ({
         ...word,
-        status: word.status || "archived"
+        status: word.status || "learning"
       }));
-      
+
       setWords(fetchedWords);
       setTotalWords(fetchedWords.length);
-      
+
       // Calculate category counts based on next_review_date
       const now = new Date();
       const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      
-      // First separate archived words
-      const archiveWords = fetchedWords.filter(w => w.status === "archived");
-      setArchiveCount(archiveWords.length);
-      
-      // Work with non-archived words only
-      const activeWords = fetchedWords.filter(w => w.status !== "archived");
-      
+
       // Words without next_review_date, overdue, or due within a week should be included in "this week"
-      const weekWords = activeWords.filter(w => {
+      const weekWords = fetchedWords.filter(w => {
         if (!w.next_review_date) return true; // Include words without review date
         const reviewDate = new Date(w.next_review_date);
         // Include overdue words (past dates) and words due within the next week
         return reviewDate <= oneWeekFromNow;
       });
       setWeekCount(weekWords.length);
-      
-      const monthWords = activeWords.filter(w => {
+
+      const monthWords = fetchedWords.filter(w => {
         if (!w.next_review_date) return false;
         const reviewDate = new Date(w.next_review_date);
         return reviewDate > oneWeekFromNow && reviewDate <= oneMonthFromNow;
       });
       setMonthCount(monthWords.length);
-      
-      const learnedWords = activeWords.filter(w => {
+
+      const learnedWords = fetchedWords.filter(w => {
         if (!w.next_review_date) return false;
         const reviewDate = new Date(w.next_review_date);
         return reviewDate > oneMonthFromNow;
       });
       setLearnedCount(learnedWords.length);
-      
+
       fetchReviewCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
       console.error("Error loading words:", err);
-      
+
       let cachedWords = OfflineStorage.getWords();
       if (cachedWords.length > 0) {
-        // Default undefined/null status to "archived" for cached words too
+        // Default undefined/null status to "learning" for cached words too
         cachedWords = cachedWords.map(word => ({
           ...word,
-          status: word.status || "archived"
+          status: word.status || "learning"
         }));
-        
+
         setWords(cachedWords);
         setTotalWords(cachedWords.length);
-        
+
         // Calculate category counts for cached words based on next_review_date
         const now = new Date();
         const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        
-        // First separate archived words
-        const archiveWords = cachedWords.filter(w => w.status === "archived");
-        setArchiveCount(archiveWords.length);
-        
-        // Work with non-archived words only
-        const activeWords = cachedWords.filter(w => w.status !== "archived");
-        
+
         // Words without next_review_date, overdue, or due within a week should be included in "this week"
-        const weekWords = activeWords.filter(w => {
+        const weekWords = cachedWords.filter(w => {
           if (!w.next_review_date) return true; // Include words without review date
           const reviewDate = new Date(w.next_review_date);
           // Include overdue words (past dates) and words due within the next week
           return reviewDate <= oneWeekFromNow;
         });
         setWeekCount(weekWords.length);
-        
-        const monthWords = activeWords.filter(w => {
+
+        const monthWords = cachedWords.filter(w => {
           if (!w.next_review_date) return false;
           const reviewDate = new Date(w.next_review_date);
           return reviewDate > oneWeekFromNow && reviewDate <= oneMonthFromNow;
         });
         setMonthCount(monthWords.length);
-        
-        const learnedWords = activeWords.filter(w => {
+
+        const learnedWords = cachedWords.filter(w => {
           if (!w.next_review_date) return false;
           const reviewDate = new Date(w.next_review_date);
           return reviewDate > oneMonthFromNow;
         });
         setLearnedCount(learnedWords.length);
-        
+
         setError(null);
       }
     } finally {
@@ -181,7 +166,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     } else {
       OfflineStorage.setUserId(null);
     }
-    
+
     refreshWords();
 
     if (!session?.user) return;
@@ -239,7 +224,6 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         weekCount,
         monthCount,
         learnedCount,
-        archiveCount,
         isLoading,
         error,
         handleWordDeleted,

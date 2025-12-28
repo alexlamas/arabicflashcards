@@ -12,6 +12,8 @@ export interface StarterPack {
   updated_at: string;
 }
 
+export type ReviewStatus = 'needs_review' | 'approved';
+
 export interface StarterPackWord {
   id: string;
   pack_id: string;
@@ -22,6 +24,7 @@ export interface StarterPackWord {
   notes: string | null;
   example_sentences: unknown | null;
   order_index: number;
+  review_status?: ReviewStatus;
   created_at: string;
 }
 
@@ -34,6 +37,7 @@ export interface StarterPackPhrase {
   notes: string | null;
   linked_word_indices: number[] | null;
   order_index: number;
+  review_status?: ReviewStatus;
   created_at: string;
 }
 
@@ -159,7 +163,8 @@ export class StarterPackService {
           transliteration: packWord.transliteration,
           type: packWord.type,
           notes: packWord.notes,
-          example_sentences: packWord.example_sentences
+          example_sentences: packWord.example_sentences,
+          source_pack_id: packId
         }])
         .select()
         .single();
@@ -172,6 +177,19 @@ export class StarterPackService {
       if (newWord) {
         wordIdMap.set(packWord.order_index, newWord.id);
         wordsImported++;
+
+        // Create word_progress entry with "learning" status
+        await supabase
+          .from("word_progress")
+          .insert([{
+            user_id: user.id,
+            word_english: packWord.english,
+            status: "learning",
+            interval: 0,
+            ease_factor: 2.5,
+            review_count: 0,
+            next_review_date: new Date().toISOString(),
+          }]);
       }
     }
 
@@ -230,6 +248,53 @@ export class StarterPackService {
       wordsImported,
       phrasesImported
     };
+  }
+
+  /**
+   * Uninstall a pack - removes the words and tracking record
+   */
+  static async uninstallPack(packId: string): Promise<void> {
+    const supabase = createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
+    // Get words from this pack to delete their progress too
+    const { data: packWords } = await supabase
+      .from("words")
+      .select("english")
+      .eq("user_id", user.id)
+      .eq("source_pack_id", packId);
+
+    // Delete word progress for these words
+    if (packWords && packWords.length > 0) {
+      const englishWords = packWords.map(w => w.english);
+      await supabase
+        .from("word_progress")
+        .delete()
+        .eq("user_id", user.id)
+        .in("word_english", englishWords);
+    }
+
+    // Delete words from this pack
+    const { error: wordsError } = await supabase
+      .from("words")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("source_pack_id", packId);
+
+    if (wordsError) {
+      console.error("Error deleting pack words:", wordsError);
+    }
+
+    // Remove pack tracking record
+    const { error } = await supabase
+      .from("user_starter_packs")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("pack_id", packId);
+
+    if (error) throw error;
   }
 
   /**

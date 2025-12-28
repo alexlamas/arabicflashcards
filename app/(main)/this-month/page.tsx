@@ -24,8 +24,6 @@ function ThisMonthContent() {
   const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   
   const thisMonthWords = words.filter(w => {
-    // Exclude archived words
-    if (w.status === "archived") return false;
     if (!w.next_review_date) return false;
     const reviewDate = new Date(w.next_review_date);
     return reviewDate > oneWeekFromNow && reviewDate <= oneMonthFromNow;

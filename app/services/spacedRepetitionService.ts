@@ -38,36 +38,6 @@ export class SpacedRepetitionService {
     }
   }
 
-  static async markAsArchived(userId: string, wordEnglish: string) {
-    const supabase = createClient();
-    try {
-      const now = new Date().toISOString();
-
-      // Update word_progress to mark as archived
-      const { error } = await supabase.from("word_progress").upsert(
-        {
-          user_id: userId,
-          word_english: wordEnglish,
-          status: "archived",
-          updated_at: now,
-        },
-        {
-          onConflict: "user_id,word_english",
-        }
-      );
-
-      if (error) throw error;
-      const count = await this.getDueWordsCount(userId);
-      return {
-        success: true,
-        count,
-      };
-    } catch (error) {
-      console.error("Error marking as archived:", error);
-      throw error;
-    }
-  }
-
   static async getDueWords(userId: string, limit: number = 20) {
     // If offline, use cached words
     if (!getOnlineStatus()) {

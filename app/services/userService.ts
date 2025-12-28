@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/client";
 export interface UserRole {
   id: string;
   user_id: string;
-  role: 'user' | 'admin' | 'moderator';
+  role: 'user' | 'admin' | 'moderator' | 'reviewer';
   created_at: string;
   updated_at: string;
 }

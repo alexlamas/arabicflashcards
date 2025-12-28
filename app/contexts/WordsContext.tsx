@@ -9,7 +9,6 @@ type WordsContextType = {
   weekCount: number;
   monthCount: number;
   learnedCount: number;
-  archiveCount: number;
   isLoading: boolean;
   error: string | null;
   handleWordDeleted: (wordId?: string) => Promise<void>;
@@ -26,7 +25,6 @@ export const WordsContext = createContext<WordsContextType>({
   weekCount: 0,
   monthCount: 0,
   learnedCount: 0,
-  archiveCount: 0,
   isLoading: true,
   error: null,
   handleWordDeleted: async () => {},
