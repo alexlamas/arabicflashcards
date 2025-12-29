@@ -24,7 +24,6 @@ export default function ReviewTimeline() {
 
     try {
       const supabase = createClient();
-      const now = new Date();
 
       // Fetch ALL reviews to calculate 90th percentile
       const { data: allReviews, error } = await supabase
