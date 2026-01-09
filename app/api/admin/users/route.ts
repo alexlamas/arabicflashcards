@@ -55,31 +55,25 @@ export async function GET() {
       );
     }
 
-    // Get word counts per user
-    const { data: words } = await supabase
+    // Get word counts per user (custom words only)
+    const { data: words } = await adminClient
       .from("words")
-      .select("user_id");
+      .select("user_id")
+      .not("user_id", "is", null);
 
-    const { data: phrases } = await supabase
-      .from("phrases")
-      .select("user_id");
-
-    const { data: progress } = await supabase
+    const { data: progress } = await adminClient
       .from("word_progress")
       .select("user_id, last_review_date")
       .order("last_review_date", { ascending: false });
 
-    // Count words and phrases per user
+    // Count words per user
     const wordCounts = new Map<string, number>();
-    const phraseCounts = new Map<string, number>();
     const lastReviewDates = new Map<string, string>();
 
     for (const word of words || []) {
-      wordCounts.set(word.user_id, (wordCounts.get(word.user_id) || 0) + 1);
-    }
-
-    for (const phrase of phrases || []) {
-      phraseCounts.set(phrase.user_id, (phraseCounts.get(phrase.user_id) || 0) + 1);
+      if (word.user_id) {
+        wordCounts.set(word.user_id, (wordCounts.get(word.user_id) || 0) + 1);
+      }
     }
 
     for (const p of progress || []) {
@@ -95,7 +89,6 @@ export async function GET() {
       created_at: authUser.created_at,
       email_confirmed: !!authUser.email_confirmed_at,
       word_count: wordCounts.get(authUser.id) || 0,
-      phrase_count: phraseCounts.get(authUser.id) || 0,
       last_review_date: lastReviewDates.get(authUser.id) || null,
     }));
 
