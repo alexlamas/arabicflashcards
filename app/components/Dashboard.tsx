@@ -230,7 +230,7 @@ export function Dashboard() {
       {/* My Words Section */}
       {myWordsCount > 0 && (
         <Link href="/my-words" className="block">
-            <div className="bg-white border rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
+            <div className="bg-white border rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">

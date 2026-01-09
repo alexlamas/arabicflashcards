@@ -4,6 +4,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { ProfileService, UserProfile } from "../services/profileService";
 import { useAuth } from "./AuthContext";
 
+const PROFILE_CACHE_KEY = "cached_profile";
+const LAST_USER_KEY = "last_user_id";
+
 interface ProfileContextType {
   profile: UserProfile | null;
   isLoading: boolean;
@@ -15,22 +18,72 @@ interface ProfileContextType {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
+function getCachedProfile(userId: string): UserProfile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const cached = localStorage.getItem(`${PROFILE_CACHE_KEY}_${userId}`);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
+  return null;
+}
+
+function setCachedProfile(userId: string, profile: UserProfile) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`${PROFILE_CACHE_KEY}_${userId}`, JSON.stringify(profile));
+    localStorage.setItem(LAST_USER_KEY, userId);
+  } catch {
+    // Ignore localStorage errors
+  }
+}
+
+function getLastUserProfile(): UserProfile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const lastUserId = localStorage.getItem(LAST_USER_KEY);
+    if (lastUserId) {
+      return getCachedProfile(lastUserId);
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
+  return null;
+}
+
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProfile = async () => {
+  // Hydrate from cache on mount (client-side only)
+  useEffect(() => {
+    const cached = getLastUserProfile();
+    if (cached) {
+      setProfile(cached);
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchProfile = async (showLoading = true) => {
     if (!session) {
       setProfile(null);
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
+    if (showLoading) {
+      setIsLoading(true);
+    }
     try {
       const data = await ProfileService.getProfile();
       setProfile(data);
+      if (data) {
+        setCachedProfile(session.user.id, data);
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
@@ -39,7 +92,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchProfile();
+    if (!session) {
+      setProfile(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Try to load from cache first for instant display
+    const cached = getCachedProfile(session.user.id);
+    if (cached) {
+      setProfile(cached);
+      setIsLoading(false);
+      // Fetch fresh data in background (silent)
+      fetchProfile(false);
+    } else {
+      // No cache, fetch with loading state
+      fetchProfile(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
@@ -47,6 +116,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const updated = await ProfileService.updateProfile(profileData);
     if (updated) {
       setProfile(updated);
+      if (session?.user?.id) {
+        setCachedProfile(session.user.id, updated);
+      }
     }
   };
 

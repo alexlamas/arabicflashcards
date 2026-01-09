@@ -102,7 +102,7 @@ export function TopNav() {
   const { navigate } = useOfflineNavigation();
   const { reviewCount } = useWords();
   const { session, handleLogout } = useAuth();
-  const { firstName: profileFirstName, avatar } = useProfile();
+  const { firstName: profileFirstName, avatar, isLoading: isProfileLoading } = useProfile();
   const { isAdmin, isReviewer } = useUserRoles();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -120,7 +120,7 @@ export function TopNav() {
     <>
       <AuthDialog />
 
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
+      <nav className="fixed top-0 pt-4 bg-white left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
         <div className="h-12 flex items-center gap-1 bg-white border border-gray-200 rounded-full shadow-lg px-2 pr-1">
           {/* Mobile hamburger - on left */}
           <Button
@@ -174,21 +174,25 @@ export function TopNav() {
 
           {/* Desktop right side */}
           <div className="hidden md:flex items-center">
-            {/* User dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-full p-1 h-auto gap-1.5 pr-3 shadow-sm text-sm font-medium">
-                  <Image
-                    src={avatarImage}
-                    alt="Avatar"
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                  {displayName}
-                  <CaretDown className="h-3 w-3 text-gray-400" />
-                </Button>
-              </DropdownMenuTrigger>
+            {/* User dropdown - only show when profile is loaded */}
+            {!isProfileLoading && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="rounded-full p-1 h-auto gap-1.5 pr-3 shadow-sm text-sm font-medium animate-in fade-in duration-300"
+                  >
+                    <Image
+                      src={avatarImage}
+                      alt="Avatar"
+                      width={28}
+                      height={28}
+                      className="rounded-full"
+                    />
+                    {displayName}
+                    <CaretDown className="h-3 w-3 text-gray-400" />
+                  </Button>
+                </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem disabled className="text-xs text-gray-500">
                   {session?.user?.email}
@@ -231,43 +235,46 @@ export function TopNav() {
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
+            )}
           </div>
 
-          {/* Mobile avatar on right */}
+          {/* Mobile avatar on right - only show when profile is loaded */}
           <div className="md:hidden">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Image
-                    src={avatarImage}
-                    alt="Avatar"
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem disabled className="text-xs text-gray-500">
-                  {session?.user?.email}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                  <GearSix className="w-4 h-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsFeedbackOpen(true)}>
-                  <ChatCircle className="w-4 h-4 mr-2" />
-                  Send feedback
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <SignOut className="w-4 h-4 mr-2" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!isProfileLoading && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full animate-in fade-in duration-300">
+                    <Image
+                      src={avatarImage}
+                      alt="Avatar"
+                      width={28}
+                      height={28}
+                      className="rounded-full"
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem disabled className="text-xs text-gray-500">
+                    {session?.user?.email}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                    <GearSix className="w-4 h-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsFeedbackOpen(true)}>
+                    <ChatCircle className="w-4 h-4 mr-2" />
+                    Send feedback
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <SignOut className="w-4 h-4 mr-2" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 

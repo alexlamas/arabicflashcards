@@ -51,8 +51,8 @@ export function Header({
   };
 
   return (
-    <header className="fixed top-20 -translate-y-10 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-40">
-      <div className="flex items-center gap-2 px-3 pb-3 pt-10 backdrop-blur-lg bg-white/90 border rounded-b-3xl">
+    <header className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-40 py-4 bg-white/90">
+      <div className="flex items-center gap-2 p-2 backdrop-blur-lg border rounded-full">
       {title && !tabs && <h1 className="font-semibold text-lg mr-4">{title}</h1>}
       {showSearch && (
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
