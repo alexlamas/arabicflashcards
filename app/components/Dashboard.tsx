@@ -15,8 +15,8 @@ import { GearSix, SignOut } from "@phosphor-icons/react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Play, TrendingUp, Check, Sparkles } from "lucide-react";
-import { BookOpen } from "@phosphor-icons/react";
+import { Play, TrendingUp, Check } from "lucide-react";
+import { BookOpen, PencilLine } from "@phosphor-icons/react";
 import Link from "next/link";
 import Image from "next/image";
 import { PackPreviewModal } from "./PackPreviewModal";
@@ -384,7 +384,7 @@ export function Dashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-amber-600" />
+                    <PencilLine className="w-6 h-6 text-amber-600" />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">My words</h3>
