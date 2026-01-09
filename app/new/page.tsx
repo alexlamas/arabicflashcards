@@ -10,7 +10,6 @@ import {
   PlayCircle,
   X,
   Star,
-  GithubLogo,
   Heart,
 } from "@phosphor-icons/react";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";

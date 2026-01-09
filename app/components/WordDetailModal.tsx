@@ -59,7 +59,6 @@ export function WordDetailModal({
 
   // Use prop if explicitly provided (even if empty), otherwise use internal state
   const sentences = sentencesProp !== undefined ? sentencesProp : internalSentences;
-  const setSentences = onSentencesUpdate || setInternalSentences;
 
   // Only fetch sentences internally if prop is not provided (backwards compatibility)
   useEffect(() => {
