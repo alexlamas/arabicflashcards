@@ -228,7 +228,7 @@ export default function NewLandingPage() {
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: [0.2, 0.5, 0.2] }}
+        animate={{ opacity: [0.4, 0.7, 0.4] }}
         transition={{ delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
         className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
         onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
