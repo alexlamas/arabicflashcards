@@ -282,7 +282,7 @@ export default function NewLandingPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: hasScrolled ? 0 : [0.4, 0.7, 0.4] }}
-        transition={hasScrolled ? { duration: 0.3 } : { delay: 2.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        transition={hasScrolled ? { duration: 0.3 } : { delay: 3, duration: 2, repeat: Infinity, ease: "easeInOut" }}
         className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
         onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       >
