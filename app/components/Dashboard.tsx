@@ -3,27 +3,16 @@
 import { useWords } from "../contexts/WordsContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useProfile } from "../contexts/ProfileContext";
-import { AVATAR_OPTIONS } from "../services/profileService";
 import { useEffect, useState, useMemo } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { GearSix, SignOut, ChatCircle } from "@phosphor-icons/react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PencilLine } from "@phosphor-icons/react";
 import Link from "next/link";
-import Image from "next/image";
+import { toast } from "@/hooks/use-toast";
 import { PackPreviewModal } from "./PackPreviewModal";
 import { DashboardPackCard } from "./DashboardPackCard";
-import { SettingsModal } from "./SettingsModal";
-import { FeedbackModal } from "./FeedbackModal";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { FluencyProgressBar } from "./FluencyProgressBar";
 
@@ -38,12 +27,13 @@ const LEVEL_CONFIG: Record<PackLevel, { label: string; color: string; bgColor: s
 const LEVEL_ORDER: PackLevel[] = ["beginner", "intermediate", "advanced"];
 
 export function Dashboard() {
-  const { session, handleLogout } = useAuth();
-  const { firstName: profileFirstName, avatar } = useProfile();
+  const { session } = useAuth();
+  const { firstName: profileFirstName } = useProfile();
   const {
     words,
     reviewCount,
     isLoading: isWordsLoading,
+    refreshWords,
   } = useWords();
 
   const [availablePacks, setAvailablePacks] = useState<StarterPack[]>([]);
@@ -55,8 +45,6 @@ export function Dashboard() {
   const [uninstallingPackId, setUninstallingPackId] = useState<string | null>(null);
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [weeklyStats, setWeeklyStats] = useState<{ thisWeek: number; lastWeek: number } | null>(null);
 
   // Count personal words (words without a source pack)
@@ -171,10 +159,18 @@ export function Dashboard() {
       await StarterPackService.uninstallPack(packId);
       setInstalledPackIds(installedPackIds.filter(id => id !== packId));
       setIsPreviewOpen(false);
-      window.location.reload();
+      await refreshWords(true);
+      toast({
+        title: "Pack removed",
+        description: "The pack has been uninstalled from your library.",
+      });
     } catch (error) {
       console.error("Error uninstalling pack:", error);
-      alert(`Failed to uninstall pack: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        variant: "destructive",
+        title: "Failed to uninstall pack",
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
     } finally {
       setUninstallingPackId(null);
     }
@@ -183,14 +179,21 @@ export function Dashboard() {
   const handleInstallPack = async (packId: string) => {
     setInstallingPackId(packId);
     try {
-      const result = await StarterPackService.importPack(packId);
-      console.log("Pack imported:", result);
+      await StarterPackService.importPack(packId);
       setInstalledPackIds([...installedPackIds, packId]);
       setIsPreviewOpen(false);
-      window.location.reload();
+      await refreshWords(true);
+      toast({
+        title: "Pack installed",
+        description: "The pack has been added to your library.",
+      });
     } catch (error) {
       console.error("Error installing pack:", error);
-      alert(`Failed to install pack: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        variant: "destructive",
+        title: "Failed to install pack",
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
     } finally {
       setInstallingPackId(null);
     }
@@ -203,49 +206,9 @@ export function Dashboard() {
 
   // Use profile first name, fallback to email prefix
   const firstName = profileFirstName || session?.user?.email?.split("@")[0] || "there";
-  const displayName = profileFirstName || session?.user?.email?.split("@")[0] || "User";
-  const avatarImage = AVATAR_OPTIONS.find(a => a.id === avatar)?.image || "/avatars/pomegranate.png";
 
   return (
     <div className="p-6 lg:pt-24 max-w-4xl mx-auto space-y-8 w-full">
-      {/* Top right avatar dropdown */}
-      {session && (
-        <div className="absolute top-4 right-4 lg:top-6 lg:right-6 z-20">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-3 py-2 pr-5 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
-                <Image
-                  src={avatarImage}
-                  alt="Avatar"
-                  width={28}
-                  height={28}
-                  className="rounded-full"
-                />
-                <span className="text-sm font-medium text-gray-700">{displayName}</span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem disabled className="text-xs text-gray-500">
-                {session.user.email}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                <GearSix className="w-4 h-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsFeedbackOpen(true)}>
-                <ChatCircle className="w-4 h-4 mr-2" />
-                Send feedback
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <SignOut className="w-4 h-4 mr-2" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
       {/* Welcome & Stats - connected */}
       <div className="rounded-2xl overflow-hidden border border-gray-200">
         <WelcomeBanner
@@ -355,18 +318,6 @@ export function Dashboard() {
         onUninstall={handleUninstallPack}
         isInstalling={installingPackId === selectedPack?.id}
         isUninstalling={uninstallingPackId === selectedPack?.id}
-      />
-
-      {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-
-      {/* Feedback Modal */}
-      <FeedbackModal
-        isOpen={isFeedbackOpen}
-        onClose={() => setIsFeedbackOpen(false)}
       />
     </div>
   );

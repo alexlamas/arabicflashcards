@@ -134,19 +134,29 @@ export class SyncService {
         errors: [new Error("No internet connection")],
       };
     }
-    
+
+    // Check for pending actions before showing sync indicator
+    const actions = OfflineStorage.getPendingActions();
+    if (actions.length === 0) {
+      return {
+        success: true,
+        syncedCount: 0,
+        failedCount: 0,
+        errors: [],
+      };
+    }
+
     this.syncInProgress = true;
     this.notifyListeners(true);
-    
+
     const result: SyncResult = {
       success: true,
       syncedCount: 0,
       failedCount: 0,
       errors: [],
     };
-    
+
     try {
-      const actions = OfflineStorage.getPendingActions();
       
       for (const action of actions) {
         try {

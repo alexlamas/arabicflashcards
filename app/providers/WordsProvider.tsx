@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { WordsContext } from "../contexts/WordsContext";
 import { Word } from "../types/word";
 import { useAuth } from "../contexts/AuthContext";
@@ -14,6 +14,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
   const { session, isLoading: isAuthLoading } = useAuth();
   const [words, setWords] = useState<Word[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const prevUserIdRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [totalWords, setTotalWords] = useState(0);
   const [weekCount, setWeekCount] = useState(0);
@@ -52,8 +53,10 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshWords = useCallback(async () => {
-    setIsLoading(true);
+  const refreshWords = useCallback(async (silent?: boolean) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     setError(null);
 
     // Set user ID for offline storage
@@ -163,14 +166,21 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
     // Don't load words until auth state is determined
     if (isAuthLoading) return;
 
+    const currentUserId = session?.user?.id || null;
+    const userChanged = currentUserId !== prevUserIdRef.current;
+
     // Set user ID for offline storage when session changes
-    if (session?.user?.id) {
-      OfflineStorage.setUserId(session.user.id);
+    if (currentUserId) {
+      OfflineStorage.setUserId(currentUserId);
     } else {
       OfflineStorage.setUserId(null);
     }
 
-    refreshWords();
+    // Only do full refresh on initial load or user change, not on token refresh
+    if (userChanged) {
+      prevUserIdRef.current = currentUserId;
+      refreshWords();
+    }
 
     if (!session?.user) return;
 
@@ -190,7 +200,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
           filter: `user_id=eq.${session.user.id}`,
         },
         () => {
-          refreshWords();
+          refreshWords(true);
         }
       )
       .on(
@@ -202,7 +212,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
           filter: `user_id=eq.${session.user.id}`,
         },
         () => {
-          refreshWords();
+          refreshWords(true);
         }
       )
       .subscribe();

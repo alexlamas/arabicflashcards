@@ -64,46 +64,33 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const handleSave = async () => {
     if (!previewWord) return;
 
-    console.log("🔵 CLIENT: Starting save process");
-    console.log("🔵 CLIENT: Preview word:", previewWord);
-
     try {
       const requestBody = {
         text: previewWord.english,
         confirmed: true,
         word: previewWord,
       };
-      
-      console.log("🔵 CLIENT: Sending request to /api/words/create");
-      console.log("🔵 CLIENT: Request body:", requestBody);
 
       const response = await fetch("/api/words/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "same-origin", // Include cookies for authentication
+        credentials: "same-origin",
         body: JSON.stringify(requestBody),
       });
 
-      console.log("🔵 CLIENT: Response status:", response.status);
-      console.log("🔵 CLIENT: Response ok:", response.ok);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("🔴 CLIENT: Error response:", errorData);
         throw new Error(errorData.error || "Failed to save word");
       }
 
       const savedWord = await response.json();
-      console.log("🟢 CLIENT: Word saved successfully:", savedWord);
-      
-      onWordAdded(savedWord); // The complete word data is already here
+      onWordAdded(savedWord);
       setOpen(false);
       setInputText("");
       setPreviewWord(null);
     } catch (err) {
-      console.error("🔴 CLIENT: Catch block error:", err);
       setError("Error saving: " + err);
     }
   };

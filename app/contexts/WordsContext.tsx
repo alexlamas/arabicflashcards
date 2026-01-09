@@ -13,7 +13,7 @@ type WordsContextType = {
   error: string | null;
   handleWordDeleted: (wordId?: string) => Promise<void>;
   handleWordUpdate: (updatedWord: Word) => void;
-  refreshWords: () => Promise<void>;
+  refreshWords: (silent?: boolean) => Promise<void>;
   reviewCount: number;
   fetchReviewCount: () => Promise<void>;
 };

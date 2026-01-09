@@ -7,6 +7,7 @@ import { ProfileProvider } from "../contexts/ProfileContext";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 import { AuthDialog } from "../components/AuthDialog";
+import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -59,6 +60,7 @@ export default function MainLayout({
       <ProfileProvider>
         <WordsProvider>
           <AuthenticatedLayout>{children}</AuthenticatedLayout>
+          <Toaster />
         </WordsProvider>
       </ProfileProvider>
     </AuthProvider>

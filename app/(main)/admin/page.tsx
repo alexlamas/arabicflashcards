@@ -49,6 +49,7 @@ import {
   Plus,
   Loader2,
 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type PackWithCounts = StarterPack & { word_count: number };
 
@@ -260,7 +261,11 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error("Error changing role:", error);
-      alert(error instanceof Error ? error.message : "Failed to update role");
+      toast({
+        variant: "destructive",
+        title: "Failed to update role",
+        description: error instanceof Error ? error.message : "An error occurred",
+      });
       // Reload to get correct state
       loadData();
     } finally {

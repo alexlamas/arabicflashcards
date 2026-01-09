@@ -9,7 +9,7 @@ import InfoButton from "./InfoButton";
 import { useWords } from "../../contexts/WordsContext";
 import { useOfflineSync, offlineHelpers } from "../../hooks/useOfflineSync";
 import { WordDetailModal } from "../WordDetailModal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatTimeUntilReview } from "../../utils/formatReviewTime";
 import {
   Star,
@@ -36,11 +36,11 @@ export function Review() {
   const { fetchReviewCount } = useWords();
   const { handleOfflineAction } = useOfflineSync();
 
-  const loadNextWord = useCallback(async () => {
+  const loadNextWord = useCallback(async (showLoading = true) => {
     if (!session?.user) return;
 
     setError(null);
-    setIsLoading(true);
+    if (showLoading) setIsLoading(true);
     try {
       const words = await SpacedRepetitionService.getDueWords(
         session.user.id,
@@ -141,22 +141,22 @@ export function Review() {
     fetchReviewCount();
     window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
 
-    // Keep the animation visible briefly
+    // Clear animation to trigger exit, then load next word
     setTimeout(() => {
       setFeedbackAnimation({ isPlaying: false, text: "", color: "" });
-    }, 800);
+    }, 600);
 
-    // Load next word quickly
+    // Load next word after exit animation completes (skip loading skeleton)
     setTimeout(async () => {
-      await loadNextWord();
-    }, 700);
+      await loadNextWord(false);
+    }, 800);
   };
 
   if (error) {
     return (
       <div className="text-center p-8">
         <div className="text-red-500 mb-4">{error}</div>
-        <Button onClick={loadNextWord}>Try Again</Button>
+        <Button onClick={() => loadNextWord()}>Try Again</Button>
       </div>
     );
   }
@@ -190,37 +190,56 @@ export function Review() {
   return (
     <div className="max-w-2xl w-full mx-auto px-4">
       <Card
-        className="p-6 cursor-pointer shadow-md relative overflow-hidden"
+        className="w-full p-6 cursor-pointer shadow-md relative overflow-hidden"
         onClick={() => setIsFlipped(!isFlipped)}
       >
         <CardContent className="min-h-[200px] flex items-center justify-center relative z-10">
           <motion.div
             key={`${currentWord.id}-${isFlipped ? "back" : "front"}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
           >
-              {!isFlipped ? (
-                <h3 className="text-2xl font-semibold select-none">
-                  {currentWord.english}
-                </h3>
-              ) : (
-                <div className="text-center">
-                  <div className="text-3xl font-arabic mb-2 select-none">
-                    {currentWord.arabic}
-                  </div>
-                  <div className="text-sm text-gray-600 select-none">
-                    {currentWord.transliteration}
-                  </div>
+            {!isFlipped ? (
+              <h3 className="text-2xl font-semibold select-none text-center">
+                {currentWord.english}
+              </h3>
+            ) : (
+              <div className="text-center">
+                <div className="text-3xl font-arabic mb-2 select-none">
+                  {currentWord.arabic}
                 </div>
-              )}
-            </motion.div>
-          </CardContent>
+                <div className="text-sm text-gray-600 select-none">
+                  {currentWord.transliteration}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </CardContent>
 
-          {feedbackAnimation.isPlaying && (
-            <>
+          {/* Open button in bottom right of card */}
+          {isFlipped && (
+            <div className="absolute bottom-3 right-3 z-10">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex group text-gray-500 hover:text-gray-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsModalOpen(true);
+                }}
+              >
+                Open
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-all group-hover:-rotate-12" />
+              </Button>
+            </div>
+          )}
+
+          <AnimatePresence>
+            {feedbackAnimation.isPlaying && (
               <motion.div
-                className={`absolute inset-0 ${feedbackAnimation.color} z-20`}
+                key="feedback-overlay"
+                className={`absolute inset-0 ${feedbackAnimation.color} z-20 flex items-center justify-center`}
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ opacity: 0 }}
@@ -231,91 +250,57 @@ export function Review() {
               >
                 {/* Gradient edge */}
                 <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-black/10" />
-              </motion.div>
 
-              {/* Text and icon */}
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center z-30"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  delay: 0.15,
-                  duration: 0.1,
-                }}
-              >
-                <div className="relative flex flex-col items-center">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      delay: 0.18,
-                      duration: 0.15,
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 25,
-                    }}
-                    className="text-white text-3xl font-bold flex items-center gap-3"
-                  >
+                {/* Text and icon */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    delay: 0.15,
+                    duration: 0.15,
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25,
+                  }}
+                  className="relative z-30 flex flex-col items-center"
+                >
+                  <div className="text-white flex flex-col items-center gap-2">
                     {feedbackAnimation.text === "Forgot" && (
-                      <Ghost
-                        size={40}
-                        weight="fill"
-                        className="animate-pulse"
-                      />
+                      <Ghost size={48} weight="fill" />
                     )}
                     {feedbackAnimation.text === "Struggled" && (
-                      <SmileyNervous
-                        size={40}
-                        weight="fill"
-                        className="animate-pulse"
-                      />
+                      <SmileyNervous size={48} weight="fill" />
                     )}
                     {feedbackAnimation.text === "Remembered" && (
-                      <Balloon
-                        size={40}
-                        weight="fill"
-                        className="animate-bounce"
-                      />
+                      <Balloon size={48} weight="fill" />
                     )}
                     {feedbackAnimation.text === "Perfect!" && (
-                      <Star size={40} weight="fill" className="animate-pulse" />
+                      <Star size={48} weight="fill" />
                     )}
-                    {feedbackAnimation.text}
-                  </motion.div>
+                    <span className="text-2xl font-bold">{feedbackAnimation.text}</span>
+                  </div>
                   {feedbackAnimation.nextReviewText && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{
-                        delay: 0.2,
+                        delay: 0.05,
                         duration: 0.1,
-                        ease: "easeOut",
                       }}
-                      className="absolute top-full mt-2 text-white/90 text-sm font-medium"
+                      className="mt-2 text-white/90 text-sm font-medium"
                     >
                       {feedbackAnimation.nextReviewText}
                     </motion.div>
                   )}
-                </div>
+                </motion.div>
               </motion.div>
-            </>
-          )}
+            )}
+          </AnimatePresence>
         </Card>
 
-      {!isFlipped ? (
+      {!isFlipped && (
         <div className="w-full pt-4">
           <InfoButton word={currentWord} />
-        </div>
-      ) : (
-        <div className="w-full flex justify-end pt-4">
-          <Button
-            variant="ghost"
-            className=" flex group"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Open
-            <ArrowRight className="group-hover:translate-x-0.5 transition-all group-hover:-rotate-12" />
-          </Button>
         </div>
       )}
 

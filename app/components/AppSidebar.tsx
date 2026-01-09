@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import {
   SidebarContent,
@@ -7,13 +10,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuBadge,
-  SidebarHeader,
+  SidebarFooter,
   SidebarProvider,
   Sidebar,
   SidebarInset,
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   GraduationCap,
   GameController,
@@ -22,10 +32,18 @@ import {
   HouseSimple,
   NotePencil,
   Swatches,
+  SignOut,
+  ChatCircle,
+  CaretUpDown,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { useWords } from "../contexts/WordsContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useProfile } from "../contexts/ProfileContext";
+import { AVATAR_OPTIONS } from "../services/profileService";
 import { AuthDialog } from "./AuthDialog";
+import { SettingsModal } from "./SettingsModal";
+import { FeedbackModal } from "./FeedbackModal";
 import { useOfflineNavigation } from "../hooks/useOfflineNavigation";
 import { useUserRoles } from "../hooks/useUserRoles";
 
@@ -36,36 +54,23 @@ interface AppSidebarProps {
 export function AppSidebar({ children }: AppSidebarProps) {
   const pathname = usePathname();
   const { navigate } = useOfflineNavigation();
-  const {
-    reviewCount,
-    totalWords,
-  } = useWords();
+  const { reviewCount, totalWords } = useWords();
+  const { session, handleLogout } = useAuth();
+  const { firstName: profileFirstName, avatar } = useProfile();
   const { isAdmin, isReviewer } = useUserRoles();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+
+  const displayName = profileFirstName || session?.user?.email?.split("@")[0] || "User";
+  const avatarImage = AVATAR_OPTIONS.find(a => a.id === avatar)?.image || "/avatars/pomegranate.svg";
+
   return (
     <>
       <AuthDialog />
 
       <SidebarProvider>
-        <Sidebar>
-          <SidebarHeader>
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 py-3 pl-1 hover:opacity-80 transition-opacity"
-            >
-              <Image
-                src="/logo.svg"
-                alt="Yalla Flash"
-                width={26}
-                height={26}
-                className="rounded mb-2"
-              />
-              <span className="font-pphatton font-bold text-lg">
-                Yalla Flash
-              </span>
-            </button>
-          </SidebarHeader>
-
-          <SidebarContent>
+        <Sidebar variant="floating">
+          <SidebarContent className="min-h-0">
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -157,10 +162,64 @@ export function AppSidebar({ children }: AppSidebarProps) {
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
+
+          <SidebarFooter>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton className="h-12">
+                      <Image
+                        src={avatarImage}
+                        alt="Avatar"
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                      />
+                      <span className="truncate">{displayName}</span>
+                      <CaretUpDown className="ml-auto h-4 w-4 opacity-50" />
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="top"
+                    align="start"
+                    className="w-[--radix-dropdown-menu-trigger-width]"
+                  >
+                    <DropdownMenuItem disabled className="text-xs text-gray-500">
+                      {session?.user?.email}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                      <GearSix className="w-4 h-4 mr-2" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsFeedbackOpen(true)}>
+                      <ChatCircle className="w-4 h-4 mr-2" />
+                      Send feedback
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <SignOut className="w-4 h-4 mr-2" />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset>{children}</SidebarInset>
         <SidebarTrigger />
       </SidebarProvider>
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+      />
     </>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle } from "@phosphor-icons/react";
+import { toast } from "@/hooks/use-toast";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -47,7 +48,11 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
       }, 1500);
     } catch (error) {
       console.error("Error submitting feedback:", error);
-      alert("Failed to submit feedback. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Failed to submit feedback",
+        description: "Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
