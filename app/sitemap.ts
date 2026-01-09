@@ -1,18 +1,16 @@
 import { MetadataRoute } from "next";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: "https://arabicflashcards.vercel.app",
+      url: "https://yallaflash.com",
       lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
+      priority: 1.0,
     },
     {
-      url: "https://arabicflashcards.vercel.app/review",
+      url: "https://yallaflash.com/new",
       lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
+      priority: 1.0,
     },
   ];
 }

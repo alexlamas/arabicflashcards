@@ -54,7 +54,7 @@ const ppHatton = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://yourdomain.com"),
+  metadataBase: new URL("https://yallaflash.com"),
   title: {
     default: "Yalla! Learn Lebanese Arabic - Fun Flashcards That Actually Work",
     template: "%s | Yalla! Lebanese Arabic",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     title: "Yalla! Learn Lebanese Arabic - The Fun Way",
     description:
       "Smart flashcards that make learning Lebanese Arabic addictively fun. Your brain will thank you (in Arabic)!",
-    url: "https://yourdomain.com",
+    url: "https://yallaflash.com",
     siteName: "Yalla! Lebanese Arabic",
     locale: "en_US",
     type: "website",
