@@ -102,7 +102,7 @@ function ColorSwatch({ name, hex, className }: { name: string; hex: string; clas
   );
 }
 
-// Mock packs for demos
+// Mock packs for demos (no image_url to show fallback icons)
 const mockPacks: StarterPack[] = [
   {
     id: "1",
@@ -111,7 +111,7 @@ const mockPacks: StarterPack[] = [
     language: "lebanese",
     level: "beginner",
     is_active: true,
-    image_url: "/packs/greetings.png",
+    image_url: null,
     icon: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -123,7 +123,7 @@ const mockPacks: StarterPack[] = [
     language: "lebanese",
     level: "beginner",
     is_active: true,
-    image_url: "/packs/numbers.png",
+    image_url: null,
     icon: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -133,9 +133,9 @@ const mockPacks: StarterPack[] = [
     name: "Common foods",
     description: "Food and drink vocabulary",
     language: "lebanese",
-    level: "beginner",
+    level: "intermediate",
     is_active: true,
-    image_url: "/packs/common-foods.png",
+    image_url: null,
     icon: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -145,9 +145,9 @@ const mockPacks: StarterPack[] = [
     name: "Family members",
     description: "Family and relationship terms",
     language: "lebanese",
-    level: "beginner",
+    level: "advanced",
     is_active: true,
-    image_url: "/packs/family-members.png",
+    image_url: null,
     icon: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
