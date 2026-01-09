@@ -198,7 +198,7 @@ export default function NewLandingPage() {
               onClick={() => handlePackClick(pack)}
               className="flex-shrink-0 snap-start cursor-pointer group"
             >
-              <div className="w-40 sm:w-48 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300">
+              <div className="w-48 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300">
                 {pack.image_url ? (
                   <div className="aspect-square relative overflow-hidden">
                     <Image
@@ -228,18 +228,12 @@ export default function NewLandingPage() {
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 0.6 }}
-        className="flex justify-center pb-8"
+        animate={{ opacity: [0, 0.5, 0] }}
+        transition={{ delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="flex justify-center pb-8 cursor-pointer"
+        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
       >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          className="text-gray-300 cursor-pointer hover:text-gray-400 transition-colors"
-          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-        >
-          <CaretDown size={28} weight="bold" />
-        </motion.div>
+        <CaretDown size={28} weight="bold" className="text-gray-400" />
       </motion.div>
 
       {/* Pack Preview Modal */}
