@@ -39,11 +39,11 @@ export class SpacedRepetitionService {
     }
   }
 
-  static async getDueWords(userId: string, limit: number = 20, packId?: string) {
+  static async getDueWords(userId: string, limit: number = 20) {
     // If offline, use cached words
     if (!getOnlineStatus()) {
       const cachedWords = OfflineStorage.getWords();
-      const dueWords = calculateDueWords(cachedWords, limit, packId);
+      const dueWords = calculateDueWords(cachedWords, limit);
       return dueWords;
     }
 
@@ -51,8 +51,7 @@ export class SpacedRepetitionService {
     try {
       const now = new Date().toISOString();
 
-      // Build query with join to words table
-      let query = supabase
+      const { data, error } = await supabase
         .from("word_progress")
         .select(`
           word_id,
@@ -73,15 +72,6 @@ export class SpacedRepetitionService {
         .order("next_review_date")
         .limit(limit);
 
-      // Apply pack filter
-      if (packId === "my-words") {
-        query = query.is("words.pack_id", null);
-      } else if (packId) {
-        query = query.eq("words.pack_id", packId);
-      }
-
-      const { data, error } = await query;
-
       if (error) throw error;
 
       if (!data?.length) return [];
@@ -98,37 +88,28 @@ export class SpacedRepetitionService {
       console.error("Error in getDueWords:", error);
       // Fallback to offline data on error
       const cachedWords = OfflineStorage.getWords();
-      const dueWords = calculateDueWords(cachedWords, limit, packId);
+      const dueWords = calculateDueWords(cachedWords, limit);
       return dueWords;
     }
   }
 
-  static async getDueWordsCount(userId: string, packId?: string): Promise<number> {
+  static async getDueWordsCount(userId: string): Promise<number> {
     // If offline, use cached words
     if (!getOnlineStatus()) {
       const cachedWords = OfflineStorage.getWords();
-      return countDueWords(cachedWords, packId);
+      return countDueWords(cachedWords);
     }
 
     const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
-      // Build query with optional pack filter via join
-      let query = supabase
+      const { count, error } = await supabase
         .from("word_progress")
-        .select("word_id, words!inner(pack_id)", { count: "exact", head: true })
+        .select("word_id", { count: "exact", head: true })
         .eq("user_id", userId)
         .in("status", ["learning", "learned"])
         .lte("next_review_date", now);
-
-      if (packId === "my-words") {
-        query = query.is("words.pack_id", null);
-      } else if (packId) {
-        query = query.eq("words.pack_id", packId);
-      }
-
-      const { count, error } = await query;
 
       if (error) throw error;
       return count || 0;
@@ -136,7 +117,7 @@ export class SpacedRepetitionService {
       console.error("Error getting due words count:", error);
       // Fallback to offline data on error
       const cachedWords = OfflineStorage.getWords();
-      return countDueWords(cachedWords, packId);
+      return countDueWords(cachedWords);
     }
   }
 

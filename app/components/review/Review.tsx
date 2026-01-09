@@ -20,11 +20,7 @@ import {
 } from "@phosphor-icons/react";
 import { ArrowRight } from "lucide-react";
 
-interface ReviewProps {
-  packId?: string;
-}
-
-export function Review({ packId }: ReviewProps) {
+export function Review() {
   const { session } = useAuth();
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -48,8 +44,7 @@ export function Review({ packId }: ReviewProps) {
     try {
       const words = await SpacedRepetitionService.getDueWords(
         session.user.id,
-        1,
-        packId
+        1
       );
       setCurrentWord(words?.[0] || null);
       setIsFlipped(false);
@@ -59,7 +54,7 @@ export function Review({ packId }: ReviewProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [session, packId]);
+  }, [session]);
 
   // Load the first word when component mounts
 
@@ -189,7 +184,7 @@ export function Review({ packId }: ReviewProps) {
 
   if (!currentWord) {
     if (!session) return null;
-    return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} packId={packId} />;
+    return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} />;
   }
 
   return (

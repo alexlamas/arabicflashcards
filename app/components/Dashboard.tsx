@@ -15,7 +15,6 @@ import { GearSix, SignOut } from "@phosphor-icons/react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
 import { PencilLine } from "@phosphor-icons/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -87,24 +86,6 @@ export function Dashboard() {
 
     return progress;
   }, [words, installedPackIds, packWordCounts]);
-
-  // Calculate due words count for each installed pack
-  const packDueCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    const now = new Date();
-
-    installedPackIds.forEach(packId => {
-      const packWords = words.filter(w => w.pack_id === packId);
-      const dueWords = packWords.filter(w =>
-        w.next_review_date &&
-        new Date(w.next_review_date) <= now &&
-        (w.status === "learning" || w.status === "learned")
-      );
-      counts[packId] = dueWords.length;
-    });
-
-    return counts;
-  }, [words, installedPackIds]);
 
   useEffect(() => {
     async function loadPacks() {
@@ -292,7 +273,6 @@ export function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {installedPacks.map((pack) => {
               const progress = packProgress[pack.id] || { total: 0, learned: 0 };
-              const dueCount = packDueCounts[pack.id] || 0;
 
               return (
                 <DashboardPackCard
@@ -302,16 +282,6 @@ export function Dashboard() {
                   progress={progress}
                   sentenceCount={packSentenceCounts[pack.id] || 0}
                   onClick={() => openPackPreview(pack)}
-                  actionSlot={
-                    dueCount > 0 ? (
-                      <Link href={`/review?pack=${pack.id}`}>
-                        <Button size="sm" className="gap-1">
-                          <Play className="w-3 h-3" />
-                          {dueCount}
-                        </Button>
-                      </Link>
-                    ) : undefined
-                  }
                 />
               );
             })}
