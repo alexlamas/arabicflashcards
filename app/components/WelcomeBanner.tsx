@@ -134,10 +134,10 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
               e.currentTarget.src = "/logo.svg";
             }}
           />
-          <div className="flex-1 flex flex-row justify-between items-center">
+          <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
             <div>
-            <h1 className="text-3xl font-semibold font-pphatton mt-1 text-gray-900">{fluency.greeting}, {firstName}!</h1>
-            <p className="text-sm text-gray-500 py-1">{levelSubtitle}</p>
+              <h1 className="text-3xl font-semibold font-pphatton mt-1 text-gray-900">{fluency.greeting}, {firstName}!</h1>
+              <p className="text-sm text-gray-500 py-1">{levelSubtitle}</p>
             </div>
             <Link href="/review">
               <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-medium rounded-full pl-2.5 gap-1">

@@ -42,30 +42,30 @@ export function Header({
 
   const getTabDot = (tabKey: string) => {
     if (tabKey === "learned") {
-      return <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />;
+      return <div className="size-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />;
     }
     if (tabKey === "learning") {
-      return <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" />;
+      return <div className="size-2 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" />;
     }
     return null;
   };
 
   return (
-    <header className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-40 py-4 bg-white/90">
-      <div className="flex items-center gap-2 p-2 backdrop-blur-lg border rounded-full">
+    <header className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-4xl pt-3 px-6 z-40 bg-white">
+      <div className="flex items-center gap-2 p-1 border rounded-full bg-gray-50">
       {title && !tabs && <h1 className="font-semibold text-lg mr-4">{title}</h1>}
       {showSearch && (
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       )}
       {tabs && onTabChange && (
-        <div className="inline-flex items-center bg-neutral-100 rounded-full p-0.5">
+        <div className="inline-flex items-center rounded-full p-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => onTabChange(tab.key)}
               className={`px-4 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1.5 ${
                 activeTab === tab.key
-                  ? "bg-white  shadow-sm text-neutral-900"
+                  ? "bg-gray-200/70  shadow-sm text-neutral-900"
                   : "text-neutral-500 hover:text-neutral-900"
               } `}
             >

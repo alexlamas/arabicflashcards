@@ -75,7 +75,7 @@ function MyWordsContent() {
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab as FilterTab)}
       />
-      <div className="p-4 px-6 pt-24">
+      <div className="p-4 px-9 pt-24">
         <WordGrid
           words={filteredWords}
           hideArabic={hideArabic}

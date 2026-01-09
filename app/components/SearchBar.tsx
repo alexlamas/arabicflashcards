@@ -43,7 +43,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         placeholder="Search..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-9 pr-8 rounded-full"
+        className="pl-9 pr-8 rounded-full bg-white"
       />
       {value && (
         <button

@@ -156,11 +156,11 @@ function WeeklyStats({ thisWeek, lastWeek }: { thisWeek: number; lastWeek?: numb
   const isUp = percentChange !== null && percentChange >= 0;
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 md:gap-3">
       <div className="flex items-center gap-1">
         <TrendUp className="w-4 h-4 text-emerald-500" weight="bold" />
-        <span className="text-gray-600">This week:</span>
-        <span className="font-semibold text-gray-900">{thisWeek} reviews</span>
+        <span className="font-semibold text-gray-900">{thisWeek}</span>
+        <span className="hidden md:inline text-gray-600">reviews this week</span>
       </div>
       {percentChange !== null && (
         <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -168,7 +168,7 @@ function WeeklyStats({ thisWeek, lastWeek }: { thisWeek: number; lastWeek?: numb
             ? "bg-emerald-50 text-emerald-700 font-medium"
             : "bg-amber-50 text-amber-700 font-medium"
         }`}>
-          {isUp ? "↑ " : "↓ "} {Math.abs(percentChange)}% vs last week
+          {isUp ? "↑" : "↓"}{Math.abs(percentChange)}%<span className="hidden md:inline"> vs last week</span>
         </span>
       )}
     </div>

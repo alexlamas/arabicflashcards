@@ -121,7 +121,7 @@ export function TopNav() {
       <AuthDialog />
 
       <nav className="fixed top-0 pt-4 bg-white left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
-        <div className="h-12 flex items-center gap-1 bg-white border border-gray-200 rounded-full shadow-lg px-2 pr-1">
+        <div className="h-12 flex items-center gap-1 bg-white border border-gray-200 rounded-full shadow-sm px-2 pr-1">
           {/* Mobile hamburger - on left */}
           <Button
             variant="ghost"
