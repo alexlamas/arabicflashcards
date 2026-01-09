@@ -594,7 +594,7 @@ export default function NewLandingPage() {
                   <div className="relative">
                     {/* Back cards (decorative stack) */}
                     <motion.div
-                      className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-100"
+                      className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-200"
                       animate={{
                         x: -6,
                         y: -8,
@@ -604,7 +604,7 @@ export default function NewLandingPage() {
                       transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.05 }}
                     />
                     <motion.div
-                      className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-100"
+                      className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-200"
                       animate={{
                         x: -3,
                         y: -4,
