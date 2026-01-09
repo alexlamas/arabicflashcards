@@ -42,6 +42,7 @@ export default function NewLandingPage() {
   const [hasScrolled, setHasScrolled] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+  const hasCarouselStarted = useRef(false);
 
   // Auto-scroll carousel
   useEffect(() => {
@@ -60,15 +61,20 @@ export default function NewLandingPage() {
       animationId = requestAnimationFrame(scroll);
     };
 
-    // Delay start to let entrance animations finish
-    const timeout = setTimeout(() => {
+    // Only delay on first start, resume immediately after hover
+    if (!hasCarouselStarted.current) {
+      const timeout = setTimeout(() => {
+        hasCarouselStarted.current = true;
+        animationId = requestAnimationFrame(scroll);
+      }, 2000);
+      return () => {
+        clearTimeout(timeout);
+        cancelAnimationFrame(animationId);
+      };
+    } else {
       animationId = requestAnimationFrame(scroll);
-    }, 2000);
-
-    return () => {
-      clearTimeout(timeout);
-      cancelAnimationFrame(animationId);
-    };
+      return () => cancelAnimationFrame(animationId);
+    }
   }, [isCarouselPaused, packs.length]);
 
   // Track scroll to hide chevron
@@ -200,7 +206,7 @@ export default function NewLandingPage() {
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-gray-500 mb-10 max-w-lg mx-auto"
           >
             Smart flashcards to help you finally understand what Teta is saying about you.
@@ -208,7 +214,7 @@ export default function NewLandingPage() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <Button
               size="lg"
@@ -228,7 +234,7 @@ export default function NewLandingPage() {
           ref={carouselRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
           className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           onMouseEnter={() => setIsCarouselPaused(true)}
@@ -241,7 +247,7 @@ export default function NewLandingPage() {
               key={pack.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.7 + index * 0.03, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => handlePackClick(pack)}
               className="flex-shrink-0 snap-start cursor-pointer group"
             >
@@ -276,7 +282,7 @@ export default function NewLandingPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: hasScrolled ? 0 : [0.4, 0.7, 0.4] }}
-        transition={hasScrolled ? { duration: 0.3 } : { delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        transition={hasScrolled ? { duration: 0.3 } : { delay: 2.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
         className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
         onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       >
