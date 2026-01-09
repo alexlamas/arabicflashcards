@@ -230,10 +230,11 @@ export default function NewLandingPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: [0, 0.5, 0] }}
         transition={{ delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        className="flex justify-center pb-8 cursor-pointer"
+        className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
         onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
       >
-        <CaretDown size={28} weight="bold" className="text-gray-400" />
+        <CaretDown size={24} weight="bold" className="text-gray-400" />
+        <CaretDown size={24} weight="bold" className="text-gray-400" />
       </motion.div>
 
       {/* Pack Preview Modal */}
