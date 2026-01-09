@@ -98,7 +98,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           />
           <div className="flex-1 flex flex-row justify-between items-center">
             <div>
-              <h1 className="text-3xl font-semibold font-pphatton mt-1 text-gray-900">
+              <h1 className="text-3xl font-semibold font-pphatton mt-2 text-gray-900">
                 Ahla w sahla, {firstName}!
               </h1>
               <p className="text-sm text-gray-500 py-1">
@@ -136,7 +136,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           />
           <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
             <div>
-              <h1 className="text-3xl font-semibold font-pphatton mt-1 text-gray-900">{fluency.greeting}, {firstName}!</h1>
+              <h1 className="text-3xl font-semibold font-pphatton mt-2 text-gray-900">{fluency.greeting}, {firstName}!</h1>
               <p className="text-sm text-gray-500 py-1">{levelSubtitle}</p>
             </div>
             <Link href="/review">
