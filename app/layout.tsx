@@ -61,6 +61,16 @@ export const metadata: Metadata = {
   },
   description:
     "Finally, a fun way to learn Lebanese Arabic! Smart flashcards that know when you're about to forget. From 'Kifak' to fluent - start your journey today!",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
   keywords: [
     "Lebanese Arabic",
     "language learning",
