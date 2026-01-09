@@ -40,6 +40,36 @@ export default function NewLandingPage() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [timerProgress, setTimerProgress] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+
+  // Auto-scroll carousel
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel || isCarouselPaused || packs.length === 0) return;
+
+    const scrollSpeed = 0.5; // pixels per frame
+    let animationId: number;
+
+    const scroll = () => {
+      if (carousel.scrollLeft >= carousel.scrollWidth - carousel.clientWidth) {
+        carousel.scrollLeft = 0; // Reset to start
+      } else {
+        carousel.scrollLeft += scrollSpeed;
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+
+    // Delay start to let entrance animations finish
+    const timeout = setTimeout(() => {
+      animationId = requestAnimationFrame(scroll);
+    }, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(animationId);
+    };
+  }, [isCarouselPaused, packs.length]);
 
   // Track scroll to hide chevron
   useEffect(() => {
@@ -195,11 +225,16 @@ export default function NewLandingPage() {
       {/* Edge-to-edge Packs Carousel */}
       <section className="py-8 overflow-hidden min-h-[320px] sm:min-h-[340px]">
         <motion.div
+          ref={carouselRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide snap-x snap-mandatory"
+          className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          onMouseEnter={() => setIsCarouselPaused(true)}
+          onMouseLeave={() => setIsCarouselPaused(false)}
+          onTouchStart={() => setIsCarouselPaused(true)}
+          onTouchEnd={() => setTimeout(() => setIsCarouselPaused(false), 3000)}
         >
           {packs.map((pack, index) => (
             <motion.div
