@@ -15,8 +15,8 @@ import { GearSix, SignOut } from "@phosphor-icons/react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Play, TrendingUp, Check } from "lucide-react";
-import { BookOpen, PencilLine } from "@phosphor-icons/react";
+import { Play } from "lucide-react";
+import { PencilLine } from "@phosphor-icons/react";
 import Link from "next/link";
 import Image from "next/image";
 import { PackPreviewModal } from "./PackPreviewModal";
@@ -41,7 +41,6 @@ export function Dashboard() {
     words,
     totalWords,
     learnedCount,
-    weekCount,
     reviewCount,
     isLoading: isWordsLoading,
   } = useWords();
@@ -57,7 +56,6 @@ export function Dashboard() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const learningCount = totalWords - learnedCount;
   const progressPercent = totalWords > 0 ? Math.round((learnedCount / totalWords) * 100) : 0;
 
   // Count personal words (words without a source pack)
@@ -301,62 +299,6 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* Progress Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {isWordsLoading ? (
-          <>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white border rounded-xl p-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg animate-pulse" />
-                  <div className="space-y-2">
-                    <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
-                    <div className="h-4 w-16 bg-gray-100 rounded animate-pulse" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        ) : (
-          <>
-            <div className="bg-white border rounded-xl p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Check className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{learnedCount}</p>
-                  <p className="text-sm text-gray-500">Learned</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white border rounded-xl p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{learningCount}</p>
-                  <p className="text-sm text-gray-500">Learning</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white border rounded-xl p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">+{weekCount}</p>
-                  <p className="text-sm text-gray-500">This week</p>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
 
       {/* Overall Progress Bar */}
       {totalWords > 0 && (
