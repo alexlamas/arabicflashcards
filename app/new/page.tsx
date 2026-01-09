@@ -177,7 +177,7 @@ export default function NewLandingPage() {
               height={28}
             />
             <span className="font-pphatton font-bold text-lg text-gray-900">
-              Yalla Flash
+              Yalla<span className="hidden sm:inline"> Flash</span>
             </span>
           </Link>
 
