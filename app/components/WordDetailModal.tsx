@@ -24,9 +24,11 @@ import { useWords } from "../contexts/WordsContext";
 
 interface WordDetailModalProps {
   word: Word | null;
+  sentences?: Sentence[];
   isOpen: boolean;
   onClose: () => void;
   onWordUpdate?: (updatedWord: Word) => void;
+  onSentencesUpdate?: (sentences: Sentence[]) => void;
 }
 
 const TypeBadge = ({ type }: { type: string }) => (
@@ -37,27 +39,39 @@ const TypeBadge = ({ type }: { type: string }) => (
 
 export function WordDetailModal({
   word,
+  sentences: sentencesProp,
   isOpen,
   onClose,
   onWordUpdate,
+  onSentencesUpdate,
 }: WordDetailModalProps) {
   const { session } = useAuth();
-  // All users can edit their own words
-  const canEdit = !!session?.user;
+  const isPackWord = !!word?.pack_id;
+  // Users can add notes/examples to any word, but can only edit/delete custom words
+  const canAddNotes = !!session?.user;
+  const canEditWord = !!session?.user && !isPackWord;
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [internalSentences, setInternalSentences] = useState<Sentence[]>([]);
+  const [loadingSentences, setLoadingSentences] = useState(false);
   const { handleOfflineAction } = useOfflineSync();
   const { handleWordDeleted } = useWords();
 
-  // Fetch sentences when word changes
+  // Use prop if explicitly provided (even if empty), otherwise use internal state
+  const sentences = sentencesProp !== undefined ? sentencesProp : internalSentences;
+  const setSentences = onSentencesUpdate || setInternalSentences;
+
+  // Only fetch sentences internally if prop is not provided (backwards compatibility)
   useEffect(() => {
-    if (word?.id && isOpen) {
-      SentenceService.getSentencesForWord(word.id).then(setSentences);
-    } else {
-      setSentences([]);
+    if (word?.id && isOpen && sentencesProp === undefined) {
+      setLoadingSentences(true);
+      SentenceService.getSentencesForWord(word.id)
+        .then((fetched) => {
+          setInternalSentences(fetched);
+        })
+        .finally(() => setLoadingSentences(false));
     }
-  }, [word?.id, isOpen]);
+  }, [word?.id, isOpen, sentencesProp]);
 
   if (!word) return null;
   const hasSentences = sentences.length > 0;
@@ -95,51 +109,68 @@ export function WordDetailModal({
       modal={true}
     >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-start justify-between pr-10">
-          <div className="flex-1">
-            <DialogTitle className="text-2xl font-semibold flex items-center gap-3">
-              {word.english}
-              <TypeBadge type={word.type} />
-            </DialogTitle>
-          </div>
-          <div className="absolute right-4 top-4 flex">
-            {canEdit && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsEditOpen(true)}
-                  title="Edit word"
-                >
-                  <PencilSimpleIcon weight="bold" />
-                </Button>
-                <EditWord
-                  word={word}
-                  onWordUpdate={handleWordUpdate}
-                  open={isEditOpen}
-                  onOpenChange={setIsEditOpen}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  title="Delete word"
-                  className="hover:bg-red-50 hover:text-red-600"
-                >
-                  <TrashSimpleIcon weight="bold" />
-                </Button>
-              </>
-            )}
-            <DialogClose>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <XIcon weight="bold" />
-              </Button>
-            </DialogClose>
-          </div>
-        </DialogHeader>
+            <DialogHeader className="flex flex-row items-start justify-between pr-10">
+              <div className="flex-1">
+                <DialogTitle className="text-2xl font-semibold flex items-center gap-3">
+                  {word.english}
+                  <TypeBadge type={word.type} />
+                </DialogTitle>
+              </div>
+              <div className="absolute right-4 top-4 flex items-center gap-1">
+                {isPackWord && (
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 mr-1">
+                    From pack
+                  </span>
+                )}
+                {canEditWord ? (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsEditOpen(true)}
+                      title="Edit word"
+                    >
+                      <PencilSimpleIcon weight="bold" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      title="Delete word"
+                      className="hover:bg-red-50 hover:text-red-600"
+                    >
+                      <TrashSimpleIcon weight="bold" />
+                    </Button>
+                  </>
+                ) : canAddNotes && isPackWord && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsEditOpen(true)}
+                    title="Add examples"
+                  >
+                    <PencilSimpleIcon weight="bold" />
+                  </Button>
+                )}
+                {canAddNotes && (
+                  <EditWord
+                    word={word}
+                    onWordUpdate={handleWordUpdate}
+                    open={isEditOpen}
+                    onOpenChange={setIsEditOpen}
+                    isPackWord={isPackWord}
+                  />
+                )}
+                <DialogClose>
+                  <Button variant="ghost" size="icon" onClick={onClose}>
+                    <XIcon weight="bold" />
+                  </Button>
+                </DialogClose>
+              </div>
+            </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+            <div className="space-y-6 mt-4">
           {/* Arabic and transliteration */}
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <div className="text-4xl font-arabic mb-3">{word.arabic}</div>
@@ -149,12 +180,7 @@ export function WordDetailModal({
           {/* Example Sentences */}
           {hasSentences && (
             <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                Example Sentences
-                <span className="text-sm font-normal bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
-                  {sentences.length}
-                </span>
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Example sentences</h3>
               <div className="space-y-4">
                 {sentences.map((sentence) => (
                   <div
@@ -188,11 +214,11 @@ export function WordDetailModal({
             </div>
           )}
 
-          {/* Empty state */}
-          {!hasSentences && !hasNotes && (
+          {/* Empty state - don't show while sentences are loading */}
+          {!loadingSentences && !hasSentences && !hasNotes && (
             <div
               className="relative text-center py-8 text-gray-500 hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
-              onClick={() => canEdit && setIsEditOpen(true)}
+              onClick={() => canAddNotes && setIsEditOpen(true)}
             >
               <NoteBlankIcon
                 size={24}
@@ -210,7 +236,7 @@ export function WordDetailModal({
                 className="absolute left-0 group-hover:left-[0.6rem] group-hover:text-yellow-500 right-1 top-[2.03rem] mx-auto mb-2 -rotate-6 group-hover:rotate-[24px] transition-all opacity-0 group-hover:opacity-20"
               />
               <p className="text-sm mt-1">
-                {canEdit
+                {canAddNotes
                   ? "Click to add examples and notes"
                   : "Add examples and notes"}
               </p>

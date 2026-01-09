@@ -162,7 +162,7 @@ export function ExampleSentenceManager({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <label className="text-sm font-medium">Example Sentences</label>
+        <label className="text-sm font-medium">Example sentences</label>
         <Button
           type="button"
           variant="outline"

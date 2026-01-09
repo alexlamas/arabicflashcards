@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Word } from "../types/word";
+import { Word, Sentence } from "../types/word";
 import { WordDetailModal } from "./WordDetailModal";
 import { formatTimeUntilReview } from "../utils/formatReviewTime";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
+import { SentenceService } from "../services/sentenceService";
 
 const StatusBadge = ({
   word,
@@ -64,12 +65,16 @@ export function WordGrid({
   onWordUpdate: (updatedWord: Word) => void;
 }) {
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
+  const [selectedWordSentences, setSelectedWordSentences] = useState<Sentence[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { session } = useAuth();
   const { handleOfflineAction } = useOfflineSync();
 
-  const handleShowDetails = (word: Word) => {
+  const handleShowDetails = async (word: Word) => {
     setSelectedWord(word);
+    // Pre-fetch sentences before opening modal to avoid jump
+    const sentences = await SentenceService.getSentencesForWord(word.id);
+    setSelectedWordSentences(sentences);
     setIsModalOpen(true);
   };
 
@@ -103,6 +108,7 @@ export function WordGrid({
     <>
       <WordDetailModal
         word={selectedWord}
+        sentences={selectedWordSentences}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onWordUpdate={(updatedWord) => {
@@ -112,6 +118,7 @@ export function WordGrid({
             setSelectedWord(updatedWord);
           }
         }}
+        onSentencesUpdate={setSelectedWordSentences}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {words.map((word) => (

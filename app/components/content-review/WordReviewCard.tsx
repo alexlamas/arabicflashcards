@@ -232,7 +232,7 @@ export function WordReviewCard({
       {word.sentences.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground">
-            Example Sentences ({word.sentences.length})
+            Example sentences ({word.sentences.length})
           </h3>
           {word.sentences.map((sentence) => (
             <SentenceReviewCard

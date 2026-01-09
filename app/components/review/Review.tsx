@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SpacedRepetitionService } from "../../services/spacedRepetitionService";
 import { useAuth } from "../../contexts/AuthContext";
-import { Word } from "../../types/word";
+import { Word, Sentence } from "../../types/word";
+import { SentenceService } from "../../services/sentenceService";
 import BoostReview from "./BoostReview";
 import InfoButton from "./InfoButton";
 import { useWords } from "../../contexts/WordsContext";
@@ -23,6 +24,7 @@ import { ArrowRight } from "lucide-react";
 export function Review() {
   const { session } = useAuth();
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
+  const [currentWordSentences, setCurrentWordSentences] = useState<Sentence[]>([]);
   const [isFlipped, setIsFlipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -156,7 +158,7 @@ export function Review() {
     return (
       <div className="text-center p-8">
         <div className="text-red-500 mb-4">{error}</div>
-        <Button onClick={() => loadNextWord()}>Try Again</Button>
+        <Button onClick={() => loadNextWord()}>Try again</Button>
       </div>
     );
   }
@@ -224,8 +226,12 @@ export function Review() {
                 variant="ghost"
                 size="sm"
                 className="flex group text-gray-500 hover:text-gray-700"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
+                  if (currentWord) {
+                    const sentences = await SentenceService.getSentencesForWord(currentWord.id);
+                    setCurrentWordSentences(sentences);
+                  }
                   setIsModalOpen(true);
                 }}
               >
@@ -279,19 +285,20 @@ export function Review() {
                     )}
                     <span className="text-2xl font-bold">{feedbackAnimation.text}</span>
                   </div>
-                  {feedbackAnimation.nextReviewText && (
+                  {/* Reserve space for next review text to prevent layout shift */}
+                  <div className="mt-2 h-5">
                     <motion.div
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      animate={{ opacity: feedbackAnimation.nextReviewText ? 1 : 0 }}
                       transition={{
                         delay: 0.05,
                         duration: 0.1,
                       }}
-                      className="mt-2 text-white/90 text-sm font-medium"
+                      className="text-white/90 text-sm font-medium"
                     >
-                      {feedbackAnimation.nextReviewText}
+                      {feedbackAnimation.nextReviewText || '\u00A0'}
                     </motion.div>
-                  )}
+                  </div>
                 </motion.div>
               </motion.div>
             )}
@@ -423,11 +430,13 @@ export function Review() {
 
       <WordDetailModal
         word={currentWord}
+        sentences={currentWordSentences}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onWordUpdate={(updatedWord) => {
           setCurrentWord(updatedWord);
         }}
+        onSentencesUpdate={setCurrentWordSentences}
       />
     </div>
   );

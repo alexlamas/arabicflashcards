@@ -51,14 +51,14 @@ function NavLink({  active, badge, icon: Icon, children, onClick }: NavLinkProps
       className={cn(
         "px-3 py-1.5 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5",
         active
-          ? "bg-gray-100 text-gray-900 font-semibold"
-          : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+          ? "bg-gray-200 text-gray-900 font-semibold"
+          : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
       )}
     >
       <Icon className="h-4 w-4" />
       {children}
       {badge !== undefined && badge > 0 && (
-        <span className="text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center bg-gray-200">
+        <span className="text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center bg-emerald-600 text-white">
           {badge}
         </span>
       )}

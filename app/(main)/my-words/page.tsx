@@ -12,10 +12,13 @@ type FilterTab = "all" | "learning" | "learned";
 function MyWordsContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const {
-    words,
+    words: allWords,
     isLoading: isWordsLoading,
     handleWordUpdate,
   } = useWords();
+
+  // Only show custom words (not pack words)
+  const words = allWords.filter(w => !w.pack_id);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [hideArabic, setHideArabic] = useState(false);

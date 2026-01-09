@@ -29,9 +29,10 @@ interface EditWordProps {
   onWordUpdate: (updatedWord: Word) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  isPackWord?: boolean;
 }
 
-export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChange }: EditWordProps) {
+export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChange, isPackWord = false }: EditWordProps) {
   const { handleOfflineAction } = useOfflineSync();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
 
@@ -97,98 +98,126 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
       )}
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit word</DialogTitle>
+          <DialogTitle>{isPackWord ? "Add examples" : "Edit word"}</DialogTitle>
           <DialogDescription>
-            Make changes to the word. Click save when you&apos;re done.
+            {isPackWord
+              ? "Add your own example sentences for this word."
+              : "Make changes to the word. Click save when you're done."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {isPackWord ? (
           <div className="space-y-4">
-            <Input
-              placeholder="English"
-              value={formData.english}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, english: e.target.value }))
-              }
-            />
-            <Input
-              placeholder={formData.type === "verb" ? "Arabic (3rd person past - he did)" : "Arabic"}
-              value={formData.arabic}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, arabic: e.target.value }))
-              }
-              dir="rtl"
-              className="font-arabic text-lg"
-            />
-            <Input
-              placeholder="Transliteration"
-              value={formData.transliteration}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  transliteration: e.target.value,
-                }))
-              }
-            />
-
-            <div className="grid w-full items-center gap-2">
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, type: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {wordTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Notes</label>
-              <Textarea
-                placeholder="Add any notes or extra details about this word..."
-                value={formData.notes || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
-                }
-                className="min-h-[80px]"
-              />
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-2xl font-arabic mb-1">{word.arabic}</p>
+              <p className="text-gray-600">{word.english}</p>
             </div>
 
             <ExampleSentenceManager
               wordId={word.id}
-              wordArabic={formData.arabic || word.arabic}
-              wordEnglish={formData.english || word.english}
-              wordType={formData.type || word.type}
-              wordNotes={formData.notes || word.notes}
+              wordArabic={word.arabic}
+              wordEnglish={word.english}
+              wordType={word.type}
+              wordNotes={word.notes}
             />
-          </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
-              {hasChanges() ? "Save changes" : "Done"}
-            </Button>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={() => setOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
           </div>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
+              <Input
+                placeholder="English"
+                value={formData.english}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, english: e.target.value }))
+                }
+              />
+              <Input
+                placeholder={formData.type === "verb" ? "Arabic (3rd person past - he did)" : "Arabic"}
+                value={formData.arabic}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, arabic: e.target.value }))
+                }
+                dir="rtl"
+                className="font-arabic text-lg"
+              />
+              <Input
+                placeholder="Transliteration"
+                value={formData.transliteration}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    transliteration: e.target.value,
+                  }))
+                }
+              />
+
+              <div className="grid w-full items-center gap-2">
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, type: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wordTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Notes</label>
+                <Textarea
+                  placeholder="Add any notes or extra details about this word..."
+                  value={formData.notes || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                  }
+                  className="min-h-[80px]"
+                />
+              </div>
+
+              <ExampleSentenceManager
+                wordId={word.id}
+                wordArabic={formData.arabic || word.arabic}
+                wordEnglish={formData.english || word.english}
+                wordType={formData.type || word.type}
+                wordNotes={formData.notes || word.notes}
+              />
+            </div>
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
+                {hasChanges() ? "Save changes" : "Done"}
+              </Button>
+            </div>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

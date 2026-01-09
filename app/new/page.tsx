@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,79 +8,115 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   PlayCircle,
-  CardsThree,
-  TrendUp,
-  Ghost,
-  SmileyNervous,
-  Balloon,
+  X,
   Star,
-  ArrowRight,
-  CheckCircle,
+  GithubLogo,
+  Heart,
 } from "@phosphor-icons/react";
-
-const FLUENCY_LEVELS = [
-  { level: "tourist", label: "Tourist", threshold: 0, logo: "/logo-tourist.svg" },
-  { level: "visitor", label: "Visitor", threshold: 50, logo: "/logo-visitor.svg" },
-  { level: "resident", label: "Resident", threshold: 150, logo: "/logo-resident.svg" },
-  { level: "local", label: "Local", threshold: 350, logo: "/logo-local.svg" },
-];
+import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
+import { StarterPackService, StarterPack, PackWord } from "../services/starterPackService";
 
 export default function NewLandingPage() {
   const { setShowAuthDialog } = useAuth();
+  const [packs, setPacks] = useState<StarterPack[]>([]);
+  const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
+  const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
+  const [previewWords, setPreviewWords] = useState<PackWord[]>([]);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
-  const flashcards = [
-    { arabic: "مرحبا", english: "Hello", transliteration: "marhaba" },
-    { arabic: "شكراً", english: "Thank you", transliteration: "shukran" },
-    { arabic: "كيفك؟", english: "How are you?", transliteration: "kifak?" },
-    { arabic: "يلا", english: "Let's go!", transliteration: "yalla" },
+  // Sample demoCards for demo
+  const demoCards = [
+    { arabic: "حبيبي", english: "my love", transliteration: "habibi" },
+    { arabic: "عيب", english: "shameful", transliteration: "3ayb" },
+    { arabic: "كتير", english: "very", transliteration: "ktir" },
   ];
 
-  const [currentCard, setCurrentCard] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [feedbackAnimation, setFeedbackAnimation] = useState<{
-    isPlaying: boolean;
-    text: string;
-    color: string;
-    icon: "ghost" | "nervous" | "balloon" | "star" | null;
-  }>({ isPlaying: false, text: "", color: "", icon: null });
+  // How it works interactive state
+  const [activeStep, setActiveStep] = useState(1);
+  const [isHowItWorksPaused, setIsHowItWorksPaused] = useState(false);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [timerProgress, setTimerProgress] = useState(0);
 
-  const [activeLevelIndex, setActiveLevelIndex] = useState(0);
-
-  // Cycle through fluency levels
+  // Show feedback overlay after step 3 loads
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveLevelIndex((prev) => (prev + 1) % FLUENCY_LEVELS.length);
-    }, 3000);
-    return () => clearInterval(interval);
+    if (activeStep === 3) {
+      setShowFeedback(false);
+      const feedbackTimer = setTimeout(() => setShowFeedback(true), 1000);
+      return () => clearTimeout(feedbackTimer);
+    } else {
+      setShowFeedback(false);
+    }
+  }, [activeStep]);
+
+  // Timer progress for the vertical line
+  useEffect(() => {
+    if (isHowItWorksPaused) return;
+
+    setTimerProgress(0);
+    const duration = 4000; // matches auto-advance interval
+    const interval = 50; // update every 50ms for smooth animation
+    const increment = interval / duration;
+
+    const timer = setInterval(() => {
+      setTimerProgress(prev => {
+        if (prev >= 1) return 0;
+        return prev + increment;
+      });
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [activeStep, isHowItWorksPaused]);
+
+  // Load packs
+  useEffect(() => {
+    async function loadPacks() {
+      try {
+        const [availablePacks, wordCounts] = await Promise.all([
+          StarterPackService.getAvailablePacks(),
+          StarterPackService.getPackWordCounts(),
+        ]);
+        setPacks(availablePacks);
+        setPackWordCounts(wordCounts);
+      } catch (error) {
+        console.error("Error loading packs:", error);
+      }
+    }
+    loadPacks();
   }, []);
 
-  const handleRating = (rating: number) => {
-    const feedbackText = rating === 0 ? "Forgot" : rating === 1 ? "Struggled" : rating === 2 ? "Remembered" : "Perfect!";
-    const feedbackColor = rating === 0 ? "#ef4444" : rating === 1 ? "#f59e0b" : rating === 2 ? "#10b981" : "#14b8a6";
-    const feedbackIcon = rating === 0 ? "ghost" : rating === 1 ? "nervous" : rating === 2 ? "balloon" : "star";
+  // Auto-advance "How it works" steps
+  useEffect(() => {
+    if (isHowItWorksPaused) return;
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev % 3) + 1);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isHowItWorksPaused]);
 
-    setFeedbackAnimation({ isPlaying: true, text: feedbackText, color: feedbackColor, icon: feedbackIcon as "ghost" | "nervous" | "balloon" | "star" });
-
-    setTimeout(() => {
-      setFeedbackAnimation({ isPlaying: false, text: "", color: "", icon: null });
-    }, 1500);
-
-    setTimeout(() => {
-      setIsFlipped(false);
-      setTimeout(() => {
-        setCurrentCard((prev) => (prev + 1) % flashcards.length);
-      }, 150);
-    }, 1300);
+  // Load preview words when pack is selected
+  const handlePackClick = async (pack: StarterPack) => {
+    setPreviewWords([]); // Clear old words immediately
+    setLoadingPreview(true);
+    setSelectedPack(pack);
+    try {
+      const { words } = await StarterPackService.getPackContents(pack.id);
+      setPreviewWords(words.slice(0, 6)); // Show first 6 words
+    } catch (error) {
+      console.error("Error loading preview:", error);
+    } finally {
+      setLoadingPreview(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation - Pill style like app */}
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
-        <div className="h-12 flex items-center gap-1 bg-white border border-gray-200 rounded-full shadow-sm px-4">
+      {/* Simple nav */}
+      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4">
+        <div className="h-12 flex items-center bg-white border border-gray-200 rounded-full shadow-sm px-4 pr-1.5 gap-2">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo-tourist.svg"
+              src="/avatars/pomegranate.svg"
               alt="Yalla Flash"
               width={28}
               height={28}
@@ -92,350 +128,729 @@ export default function NewLandingPage() {
 
           <div className="flex-1" />
 
-          <button
-            onClick={() => setShowAuthDialog(true)}
-            className="text-gray-600 hover:text-gray-900 text-sm font-medium px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            Log in
-          </button>
           <Button
             onClick={() => setShowAuthDialog(true)}
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-full px-5 text-sm font-medium"
+            className="rounded-full"
+            variant={"ghost"}
           >
-            Get started
+            Log in
+          </Button>
+          <Button
+            onClick={() => setShowAuthDialog(true)}
+            className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 text-sm font-medium"
+          >
+            Start free
           </Button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left - Content */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 text-sm font-medium mb-6"
-              >
-                <TrendUp className="w-4 h-4" weight="bold" />
-                Smart spaced repetition
-              </motion.div>
-
-              <h1 className="font-pphatton text-5xl sm:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Learn
-                <br />
-                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
-                  Lebanese Arabic
-                </span>
-              </h1>
-
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-md">
-                Smart flashcards that adapt to your brain. Go from tourist to local with words that actually stick.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                <Button
-                  size="lg"
-                  onClick={() => setShowAuthDialog(true)}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-full px-8 py-6 text-base font-medium group"
-                >
-                  <PlayCircle className="w-5 h-5 mr-2" weight="fill" />
-                  Start learning free
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-
-              {/* Social proof */}
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" weight="fill" />
-                  <span>Free forever</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" weight="fill" />
-                  <span>No credit card</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Right - Flashcard Demo */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="relative max-w-sm mx-auto">
-                {/* Card stack effect */}
-                <div className="absolute inset-0 bg-white rounded-2xl border border-gray-200 transform -translate-y-2 -translate-x-1 rotate-[-2deg] opacity-60" />
-                <div className="absolute inset-0 bg-white rounded-2xl border border-gray-200 transform -translate-y-1 rotate-[-1deg] opacity-80" />
-
-                {/* Main flashcard */}
-                <div
-                  className="relative bg-white rounded-2xl border border-gray-200 shadow-lg cursor-pointer overflow-hidden"
-                  onClick={() => setIsFlipped(!isFlipped)}
-                >
-                  {/* Card content */}
-                  <div className="min-h-[180px] flex flex-col items-center justify-center p-6">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`${currentCard}-${isFlipped}`}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-center"
-                      >
-                        {!isFlipped ? (
-                          <p className="text-3xl font-semibold text-gray-900">
-                            {flashcards[currentCard].english}
-                          </p>
-                        ) : (
-                          <>
-                            <p className="text-4xl font-arabic mb-2">
-                              {flashcards[currentCard].arabic}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {flashcards[currentCard].transliteration}
-                            </p>
-                          </>
-                        )}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Card chin with buttons */}
-                  <div className="border-t border-gray-100 p-4 bg-gray-50/50">
-                    <AnimatePresence mode="wait">
-                      {!isFlipped ? (
-                        <motion.p
-                          key="hint"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-center text-xs text-gray-400"
-                        >
-                          Tap to reveal
-                        </motion.p>
-                      ) : (
-                        <motion.div
-                          key="buttons"
-                          className="grid grid-cols-4 gap-2"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                        >
-                          {[
-                            { label: "Forgot", color: "bg-red-50 text-red-600 border-red-200", rating: 0 },
-                            { label: "Struggled", color: "bg-amber-50 text-amber-600 border-amber-200", rating: 1 },
-                            { label: "Remembered", color: "bg-emerald-50 text-emerald-600 border-emerald-200", rating: 2 },
-                            { label: "Perfect", color: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent", rating: 3 },
-                          ].map((btn) => (
-                            <button
-                              key={btn.label}
-                              onClick={(e) => { e.stopPropagation(); handleRating(btn.rating); }}
-                              className={`py-2 rounded-lg border text-xs font-medium transition-all hover:scale-105 ${btn.color}`}
-                            >
-                              {btn.label}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Feedback animation overlay */}
-                  {feedbackAnimation.isPlaying && (
-                    <>
-                      <motion.div
-                        className="absolute inset-0 z-20 rounded-2xl"
-                        style={{ backgroundColor: feedbackAnimation.color }}
-                        initial={{ x: "-100%" }}
-                        animate={{ x: 0 }}
-                        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                      />
-                      <motion.div
-                        className="absolute inset-0 flex flex-col items-center justify-center z-30"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        <motion.div
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-                          className="mb-2"
-                        >
-                          {feedbackAnimation.icon === "ghost" && <Ghost className="w-10 h-10 text-white" weight="fill" />}
-                          {feedbackAnimation.icon === "nervous" && <SmileyNervous className="w-10 h-10 text-white" weight="fill" />}
-                          {feedbackAnimation.icon === "balloon" && <Balloon className="w-10 h-10 text-white" weight="fill" />}
-                          {feedbackAnimation.icon === "star" && <Star className="w-10 h-10 text-white" weight="fill" />}
-                        </motion.div>
-                        <span className="text-white text-xl font-bold">
-                          {feedbackAnimation.text}
-                        </span>
-                      </motion.div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Fluency Levels Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
+      {/* Hero */}
+      <section className="pt-36 pb-12 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="font-pphatton text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-5 tracking-tight"
           >
-            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Track your journey to fluency
-            </h2>
-            <p className="text-gray-600 max-w-lg mx-auto">
-              Progress through four levels as you learn. Each milestone unlocks a new badge.
-            </p>
-          </motion.div>
-
-          {/* Level progression */}
-          <div className="relative">
-            {/* Progress bar background */}
-            <div className="absolute top-1/2 left-0 right-0 h-2 bg-gray-200 rounded-full -translate-y-1/2 hidden sm:block" />
-            <motion.div
-              className="absolute top-1/2 left-0 h-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full -translate-y-1/2 hidden sm:block"
-              initial={{ width: "0%" }}
-              whileInView={{ width: `${((activeLevelIndex + 1) / FLUENCY_LEVELS.length) * 100}%` }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            />
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 relative">
-              {FLUENCY_LEVELS.map((level, index) => (
-                <motion.div
-                  key={level.level}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex flex-col items-center p-4 rounded-2xl transition-all ${
-                    index <= activeLevelIndex ? "bg-white shadow-lg border border-gray-100" : "opacity-50"
-                  }`}
-                >
-                  <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-3 ${
-                    index <= activeLevelIndex ? "bg-gradient-to-br from-emerald-50 to-teal-50" : "bg-gray-100"
-                  }`}>
-                    <Image
-                      src={level.logo}
-                      alt={level.label}
-                      width={56}
-                      height={56}
-                      className={index <= activeLevelIndex ? "" : "grayscale opacity-50"}
-                    />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{level.label}</h3>
-                  <p className="text-xs text-gray-500">{level.threshold}+ words</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: CardsThree,
-                title: "Vocabulary packs",
-                description: "Start with curated packs for greetings, food, family and more.",
-                gradient: "from-emerald-500 to-teal-500",
-              },
-              {
-                icon: TrendUp,
-                title: "Smart scheduling",
-                description: "Words you know appear less. Struggling? We'll show it more.",
-                gradient: "from-teal-500 to-cyan-500",
-              },
-              {
-                icon: PlayCircle,
-                title: "Quick reviews",
-                description: "Review in minutes a day. Perfect for your commute or coffee break.",
-                gradient: "from-cyan-500 to-emerald-500",
-              },
-            ].map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-2xl border border-gray-200 bg-white hover:shadow-lg transition-shadow"
-              >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4`}>
-                  <feature.icon className="w-6 h-6 text-white" weight="fill" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-600">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 p-10 sm:p-14 text-center shadow-2xl"
+            Learn Lebanese Arabic
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-lg sm:text-xl text-gray-500 mb-10 max-w-lg mx-auto"
           >
-            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-white mb-4">
-              Ready to start?
-            </h2>
-            <p className="text-white/80 mb-8 max-w-md mx-auto">
-              Join learners mastering Lebanese Arabic with smart flashcards. Free forever.
-            </p>
+            Smart flashcards to help you finally understand what Teta is saying about you.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
             <Button
               size="lg"
               onClick={() => setShowAuthDialog(true)}
-              className="bg-white text-emerald-600 hover:bg-white/90 rounded-full px-10 py-6 text-base font-semibold"
+              className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8 pl-5 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
-              Get started free
+              <PlayCircle className="!size-6" weight="fill" />
+              Start learning
             </Button>
           </motion.div>
         </div>
       </section>
 
+      {/* Edge-to-edge Packs Carousel */}
+      <section className="py-8 overflow-hidden min-h-[320px] sm:min-h-[340px]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide snap-x snap-mandatory"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {packs.map((pack, index) => (
+            <motion.div
+              key={pack.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 + index * 0.03, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => handlePackClick(pack)}
+              className="flex-shrink-0 snap-start cursor-pointer group"
+            >
+              <div className="w-40 sm:w-48 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300">
+                {pack.image_url ? (
+                  <div className="aspect-square relative overflow-hidden">
+                    <Image
+                      src={pack.image_url}
+                      alt={pack.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                    <span className="text-4xl font-arabic text-gray-300">ع</span>
+                  </div>
+                )}
+                <div className="p-3">
+                  <h3 className="font-medium text-gray-900 text-sm">{pack.name}</h3>
+                  <p className="text-xs text-gray-500">
+                    {packWordCounts[pack.id] || 0} words
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* Pack Preview Modal */}
+      <AnimatePresence>
+        {selectedPack && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedPack(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl"
+            >
+              {/* Pack header with image */}
+              <div className="relative">
+                {selectedPack.image_url ? (
+                  <div className="h-48 relative">
+                    <Image
+                      src={selectedPack.image_url}
+                      alt={selectedPack.name}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                    <span className="text-6xl font-arabic text-gray-300">ع</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setSelectedPack(null)}
+                  className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="text-2xl font-bold text-white">{selectedPack.name}</h3>
+                  <p className="text-white/80 text-sm">{packWordCounts[selectedPack.id] || 0} words</p>
+                </div>
+              </div>
+
+              {/* Preview words */}
+              <div className="p-4 pt-4 pb-0">
+                <p className="text-sm text-gray-500 mb-3">Preview words:</p>
+                {/* Fixed height container to prevent layout shift */}
+                <div className="relative h-[284px] overflow-hidden">
+                  {loadingPreview || previewWords.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="space-y-2 pb-16">
+                      {previewWords.map((word) => (
+                        <div
+                          key={word.id}
+                          className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
+                        >
+                          <span className="text-gray-900 font-medium">{word.english}</span>
+                          <span className="text-gray-600 font-arabic text-lg">{word.arabic}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Fade gradient at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
+                </div>
+              </div>
+              <div className="p-4 pt-0">
+                <Button
+                  onClick={() => {
+                    setSelectedPack(null);
+                    setShowAuthDialog(true);
+                  }}
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full py-6"
+                >
+                  Start learning this pack
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* How it works - interactive */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.6 }}
+        className="py-24 px-4 bg-gray-50/80"
+      >
+        <div
+          className="max-w-5xl mx-auto"
+          ref={howItWorksRef}
+          onMouseEnter={() => setIsHowItWorksPaused(true)}
+          onMouseLeave={() => setIsHowItWorksPaused(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900">
+              How it works
+            </h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-16 items-start">
+            {/* Steps - vertical timeline */}
+            <div className="relative">
+              {/* Connecting line - positioned at center of circles (p-3 + w-10/2 = 12px + 20px = 32px) */}
+              <div
+                className="absolute left-8 top-8 bottom-0 w-px"
+                style={{ background: 'linear-gradient(to bottom, #e5e7eb 0%, #e5e7eb 70%, transparent 100%)' }}
+              />
+
+              {/* Progress line - shows completed steps + current timer progress */}
+              <div
+                className="absolute left-8 top-8 w-px origin-top"
+                style={{
+                  height: 'calc(100% - 32px)',
+                  background: 'linear-gradient(to bottom, #111827 0%, #111827 70%, transparent 100%)',
+                  transform: `scaleY(${
+                    activeStep === 1 ? timerProgress * 0.5 :
+                    activeStep === 2 ? 0.5 + timerProgress * 0.5 :
+                    1
+                  })`,
+                  transformOrigin: 'top',
+                  transition: isHowItWorksPaused ? 'transform 0.3s ease' : 'none'
+                }}
+              />
+
+              <div className="space-y-2">
+                {[
+                  { step: 1, title: "Pick a pack or add your own", desc: "Start with curated high-frequency words, or add vocabulary from your teacher, shows, or conversations." },
+                  { step: 2, title: "Review daily", desc: "Spaced repetition shows you words right before you'd forget them. A few minutes a day is all it takes." },
+                  { step: 3, title: "Recall actively", desc: "You see English, try to remember Arabic. This active effort builds stronger memory than passive reading." },
+                ].map((item, index) => (
+                  <motion.button
+                    key={item.step}
+                    onClick={() => setActiveStep(item.step)}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ delay: index * 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-start gap-5 w-full text-left p-3 rounded-xl transition-colors duration-300 hover:bg-gray-50 group"
+                  >
+                    {/* Step number */}
+                    <div className="relative z-10">
+                      <motion.div
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm border-2 transition-colors duration-300"
+                        animate={{
+                          backgroundColor: activeStep === item.step ? '#111827' : '#ffffff',
+                          borderColor: activeStep === item.step ? '#111827' : activeStep > item.step ? '#111827' : '#e5e7eb',
+                          color: activeStep === item.step ? '#ffffff' : activeStep > item.step ? '#111827' : '#9ca3af',
+                        }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {activeStep > item.step ? (
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          item.step
+                        )}
+                      </motion.div>
+                    </div>
+
+                    {/* Content - fixed height container */}
+                    <div className="flex-1 pt-1.5 min-h-[88px]">
+                      <motion.h3
+                        className="font-semibold text-base mb-1.5 transition-colors duration-300"
+                        animate={{ color: activeStep === item.step ? '#111827' : '#6b7280' }}
+                      >
+                        {item.title}
+                      </motion.h3>
+                      <motion.p
+                        className="text-sm leading-relaxed transition-colors duration-300"
+                        animate={{ color: activeStep === item.step ? '#6b7280' : '#9ca3af' }}
+                      >
+                        {item.desc}
+                      </motion.p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Demo area - changes based on activeStep */}
+            <div className="relative h-[320px] flex items-center justify-center">
+              {/* Step 1: Pack fanning into words */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: activeStep === 1 ? 1 : 0,
+                  scale: activeStep === 1 ? 1 : 0.9,
+                  y: activeStep === 1 ? 0 : activeStep > 1 ? -30 : 30,
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ pointerEvents: activeStep === 1 ? 'auto' : 'none' }}
+              >
+                <div className="relative">
+                  {/* Pack card */}
+                  <motion.div
+                    className="w-40 h-40 rounded-2xl overflow-hidden border border-gray-200 shadow-lg mx-auto"
+                    animate={{
+                      scale: activeStep === 1 ? 1 : 1,
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <Image
+                      src="https://fyivbeipfwtogeszgfnd.supabase.co/storage/v1/object/public/pack-images/government-society.png"
+                      alt="Government & Society"
+                      width={160}
+                      height={160}
+                      className="object-cover w-full h-full"
+                    />
+                  </motion.div>
+
+                  {/* Fanned word cards - overlapping pack */}
+                  <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex justify-center gap-3">
+                    {demoCards.map((card, i) => (
+                      <motion.div
+                        key={i}
+                        animate={{
+                          opacity: activeStep === 1 ? 1 : 0,
+                          y: activeStep === 1 ? 0 : -20,
+                          rotate: activeStep === 1 ? (i - 1) * 8 : 0,
+                          scale: activeStep === 1 ? 1 : 0.8,
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                          delay: activeStep === 1 ? 0.15 + i * 0.05 : 0,
+                        }}
+                        className="w-16 h-20 bg-white rounded-lg border border-gray-200 shadow-md flex flex-col items-center justify-center p-1.5"
+                      >
+                        <span className="text-lg font-arabic">{card.arabic}</span>
+                        <span className="text-[10px] text-gray-400">{card.english}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Shared flashcard for steps 2 & 3 */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: activeStep >= 2 ? 1 : 0,
+                  scale: activeStep >= 2 ? 1 : 0.9,
+                  y: activeStep >= 2 ? 0 : 30,
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ pointerEvents: activeStep >= 2 ? 'auto' : 'none' }}
+              >
+                <div className="w-full max-w-xs">
+                  {/* Progress bar - matches actual product */}
+                  <motion.div
+                    className="w-full mb-4 flex items-center gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: activeStep >= 2 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex-1 bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full"
+                          initial={{ width: '0%' }}
+                          animate={{ width: activeStep === 2 ? '16.6%' : activeStep === 3 ? (showFeedback ? '33%' : '16.6%') : '0%' }}
+                          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500 tabular-nums">
+                      {activeStep === 2 ? '1' : showFeedback ? '2' : '1'}/6
+                    </span>
+                  </motion.div>
+
+                  {/* Card with decorative stack */}
+                  <div className="relative">
+                    {/* Back cards (decorative stack) */}
+                    <motion.div
+                      className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-100"
+                      animate={{
+                        x: -6,
+                        y: -8,
+                        rotate: -2,
+                        opacity: activeStep >= 2 ? 0.5 : 0
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.05 }}
+                    />
+                    <motion.div
+                      className="absolute inset-0 bg-white rounded-2xl shadow-sm border border-gray-100"
+                      animate={{
+                        x: -3,
+                        y: -4,
+                        rotate: -1,
+                        opacity: activeStep >= 2 ? 0.75 : 0
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.025 }}
+                    />
+
+                    {/* Main card */}
+                    <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                    {/* Feedback overlay */}
+                    <AnimatePresence>
+                      {showFeedback && (
+                        <motion.div
+                          className="absolute inset-0 bg-emerald-500 z-20 flex items-center justify-center"
+                          initial={{ x: "-100%" }}
+                          animate={{ x: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                        >
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.15, type: "spring", stiffness: 400, damping: 25 }}
+                            className="flex flex-col items-center text-white"
+                          >
+                            <Star size={40} weight="fill" />
+                            <span className="text-xl font-bold mt-1">Perfect!</span>
+                            <motion.span
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.05 }}
+                              className="text-sm text-white/90 mt-1"
+                            >
+                              Next review in 4 days
+                            </motion.span>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Card content area */}
+                    <div className="h-[170px] flex flex-col items-center justify-center p-6 relative">
+                      {/* English (front) */}
+                      <motion.p
+                        className="text-3xl font-semibold text-gray-900 absolute"
+                        animate={{
+                          opacity: activeStep === 2 ? 1 : 0,
+                          y: activeStep === 2 ? 0 : -10,
+                          scale: activeStep === 2 ? 1 : 0.95,
+                        }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        {demoCards[0].english}
+                      </motion.p>
+
+                      {/* Arabic (back) */}
+                      <motion.div
+                        className="flex flex-col items-center absolute"
+                        animate={{
+                          opacity: activeStep === 3 ? 1 : 0,
+                          y: activeStep === 3 ? 0 : 10,
+                          scale: activeStep === 3 ? 1 : 0.95,
+                        }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <p className="text-3xl font-arabic mb-1">
+                          {demoCards[0].arabic}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {demoCards[0].transliteration}
+                        </p>
+                      </motion.div>
+                    </div>
+
+                    {/* Footer area - fixed height */}
+                    <div className="border-t border-gray-100 bg-gray-50/50 h-14 flex items-center justify-center px-3">
+                      {/* Tap to reveal hint */}
+                      {activeStep === 2 && (
+                        <motion.p
+                          className="text-xs text-gray-400"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          tap to reveal
+                        </motion.p>
+                      )}
+
+                      {/* Rating buttons */}
+                      {activeStep === 3 && (
+                        <motion.div
+                          className="grid grid-cols-4 gap-1.5 w-full"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {[
+                            { label: "Forgot", bg: "bg-red-50", border: "border-red-200", color: "text-red-700" },
+                            { label: "Struggled", bg: "bg-orange-50", border: "border-orange-200", color: "text-orange-700" },
+                            { label: "Remembered", bg: "bg-green-50", border: "border-green-200", color: "text-green-700" },
+                            { label: "Perfect", bg: "bg-gradient-to-r from-emerald-500 to-teal-500", border: "border-transparent", color: "text-white shadow-md" },
+                          ].map((btn) => (
+                            <div
+                              key={btn.label}
+                              className={`py-1.5 rounded-lg border text-[10px] font-medium text-center ${btn.bg} ${btn.border} ${btn.color}`}
+                            >
+                              {btn.label}
+                            </div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Levels preview */}
+      <section className="py-24 px-4">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center flex flex-col items-center mb-12"
+          >
+            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+              Your journey
+            </h2>
+            <p className="text-gray-500 max-w-lg">
+              Learning commonly used words first helps you understand the majority of conversations within a few hundred words.
+            </p>
+          </motion.div>
+
+          {/* Progress bar with illustrations */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="p-6"
+          >
+            {/* Illustrations row */}
+            <div className="flex mb-3">
+              {[
+                { logo: "/logo-tourist-aligned.svg", label: "Tourist", words: "50", delay: 0.3 },
+                { logo: "/logo-visitor-aligned.svg", label: "Visitor", words: "150", delay: 1.0 },
+                { logo: "/logo-resident-aligned.svg", label: "Resident", words: "350", delay: 1.9 },
+                { logo: "/logo-local-aligned.svg", label: "Local", words: "600", delay: 3.0 },
+              ].map((level, i) => (
+                <div
+                  key={level.label}
+                  className="flex flex-col items-center w-12"
+                  style={{ flex: i === 0 ? 50 : i === 1 ? 100 : i === 2 ? 200 : 250 }}
+                >
+                  <motion.div
+                    className="size-24 mb-2"
+                    initial={{ opacity: 0.25 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: level.delay, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <Image
+                      src={level.logo}
+                      alt={level.label}
+                      width={56}
+                      height={56}
+                      className="w-full h-full"
+                    />
+                  </motion.div>
+                  <motion.span
+                    className="text-xs font-medium text-gray-900"
+                    initial={{ opacity: 0.4 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: level.delay, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {level.label}
+                  </motion.span>
+                  <span className="text-[10px] text-gray-400">{level.words}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Progress bar - animated from 0 to 600 words */}
+            <div className="flex gap-1 h-3 mb-4">
+              {/* Tourist: 0-50 */}
+              <div className="flex-[50] rounded-l-full overflow-hidden bg-gray-100">
+                <motion.div
+                  className="h-full"
+                  style={{ backgroundColor: '#47907D' }}
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '100%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </div>
+              {/* Visitor: 50-150 */}
+              <div className="flex-[100] overflow-hidden bg-gray-100">
+                <motion.div
+                  className="h-full"
+                  style={{ backgroundColor: '#47907D' }}
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '100%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </div>
+              {/* Resident: 150-350 */}
+              <div className="flex-[200] overflow-hidden bg-gray-100">
+                <motion.div
+                  className="h-full"
+                  style={{ backgroundColor: '#47907D' }}
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '100%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.2, delay: 1.9, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </div>
+              {/* Local: 350-600, mostly filled */}
+              <div className="flex-[250] rounded-r-full overflow-hidden bg-gray-100 flex">
+                <motion.div
+                  className="h-full"
+                  style={{ backgroundColor: '#47907D' }}
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '72%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.4, delay: 3.0, ease: [0.16, 1, 0.3, 1] }}
+                />
+                <motion.div
+                  className="h-full"
+                  style={{ backgroundColor: '#7ab5a6' }}
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '20%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 4.2, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#47907D' }} />
+                <span className="text-gray-600">Learned <span className="font-semibold text-gray-900">530</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#7ab5a6' }} />
+                <span className="text-gray-600">Learning <span className="font-semibold text-gray-900">50</span></span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 px-4 bg-gray-50">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="relative overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-sm p-12 text-center">
+            <DottedGlowBackground
+              gap={20}
+              radius={1.5}
+              color="rgba(0,0,0,0.12)"
+              glowColor="#47907D"
+              opacity={0.7}
+              speedScale={0.4}
+            />
+            <div className="relative z-10">
+              <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Ready to start?
+              </h2>
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                Join learners building real Lebanese Arabic fluency, one word at a time.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => setShowAuthDialog(true)}
+                className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-10 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                Get started free
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 px-4">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} Yalla Flash
-          </p>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>Compare:</span>
-            <Link href="/?theme=notion" className="text-emerald-600 hover:underline">
-              Current
-            </Link>
-            <span>&middot;</span>
-            <Link href="/?theme=bold" className="text-emerald-600 hover:underline">
-              Bold
-            </Link>
+      <footer className="py-12 px-4 bg-gray-50">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/avatars/pomegranate.svg"
+                alt="Yalla Flash"
+                width={32}
+                height={32}
+              />
+              <span className="font-pphatton font-bold text-gray-900">Yalla Flash</span>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                Made with <Heart weight="fill" className="text-red-500 w-4 h-4" /> by a fellow learner
+              </span>
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400">
+            <p>&copy; {new Date().getFullYear()} Yalla Flash</p>
           </div>
         </div>
       </footer>
