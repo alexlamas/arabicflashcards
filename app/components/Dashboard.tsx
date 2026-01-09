@@ -377,21 +377,26 @@ export function Dashboard() {
 
       {/* My Words Section */}
       {myWordsCount > 0 && (
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">My words</h3>
-                <p className="text-sm text-gray-500">{myWordsCount} personal words & expressions</p>
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Personal vocabulary</h2>
+          <Link href="/my-words" className="block">
+            <div className="bg-white border rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">My words</h3>
+                    <p className="text-sm text-gray-500">{myWordsCount} personal {myWordsCount === 1 ? 'word' : 'words'} & expressions</p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  View all
+                </Button>
               </div>
             </div>
-            <Link href="/learning?filter=personal">
-              <Button variant="outline" size="sm">View all</Button>
-            </Link>
-          </div>
+          </Link>
         </div>
       )}
 
@@ -463,15 +468,6 @@ export function Dashboard() {
         );
       })}
 
-      {/* Quick Actions */}
-      <div className="flex gap-3">
-        <Link href="/learning">
-          <Button variant="outline">View learning ({learningCount})</Button>
-        </Link>
-        <Link href="/learned">
-          <Button variant="outline">View learned ({learnedCount})</Button>
-        </Link>
-      </div>
 
       {/* Pack Preview Modal */}
       <PackPreviewModal
