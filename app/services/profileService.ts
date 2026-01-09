@@ -3,10 +3,18 @@ import { createClient } from "@/utils/supabase/client";
 export interface UserProfile {
   id: string;
   first_name: string | null;
-  last_name: string | null;
+  avatar: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export const AVATAR_OPTIONS = [
+  { id: "pomegranate", label: "Pomegranate", image: "/avatars/pomegranate.svg" },
+  { id: "tree", label: "Tree", image: "/avatars/tree.svg" },
+  { id: "moon", label: "Moon", image: "/avatars/moon.svg" },
+  { id: "cedar", label: "Cedar", image: "/avatars/cedar.svg" },
+  { id: "leaf", label: "Leaf", image: "/avatars/leaf.svg" },
+] as const;
 
 export const ProfileService = {
   async getProfile(): Promise<UserProfile | null> {
@@ -29,7 +37,7 @@ export const ProfileService = {
     return data;
   },
 
-  async updateProfile(profile: { first_name?: string; last_name?: string }): Promise<UserProfile | null> {
+  async updateProfile(profile: { first_name?: string; avatar?: string }): Promise<UserProfile | null> {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -3,6 +3,7 @@
 import { useWords } from "../contexts/WordsContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useProfile } from "../contexts/ProfileContext";
+import { AVATAR_OPTIONS } from "../services/profileService";
 import { useEffect, useState, useMemo } from "react";
 import {
   DropdownMenu,
@@ -11,8 +12,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { GearSix, SignOut } from "@phosphor-icons/react";
+import { GearSix, SignOut, ChatCircle } from "@phosphor-icons/react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
+import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PencilLine } from "@phosphor-icons/react";
@@ -21,8 +23,9 @@ import Image from "next/image";
 import { PackPreviewModal } from "./PackPreviewModal";
 import { DashboardPackCard } from "./DashboardPackCard";
 import { SettingsModal } from "./SettingsModal";
+import { FeedbackModal } from "./FeedbackModal";
 import { WelcomeBanner } from "./WelcomeBanner";
-import { ProgressBreakdown } from "./ProgressBreakdown";
+import { FluencyProgressBar } from "./FluencyProgressBar";
 
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
@@ -36,7 +39,7 @@ const LEVEL_ORDER: PackLevel[] = ["beginner", "intermediate", "advanced"];
 
 export function Dashboard() {
   const { session, handleLogout } = useAuth();
-  const { firstName: profileFirstName } = useProfile();
+  const { firstName: profileFirstName, avatar } = useProfile();
   const {
     words,
     reviewCount,
@@ -53,6 +56,8 @@ export function Dashboard() {
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [weeklyStats, setWeeklyStats] = useState<{ thisWeek: number; lastWeek: number } | null>(null);
 
   // Count personal words (words without a source pack)
   const myWordsCount = useMemo(() => {
@@ -128,6 +133,16 @@ export function Dashboard() {
     loadPacks();
   }, []);
 
+  // Fetch weekly review stats
+  useEffect(() => {
+    async function loadWeeklyStats() {
+      if (!session?.user?.id) return;
+      const stats = await SpacedRepetitionService.getWeeklyReviewStats(session.user.id);
+      setWeeklyStats(stats);
+    }
+    loadWeeklyStats();
+  }, [session?.user?.id]);
+
   // Separate installed and available packs
   const installedPacks = useMemo(() => {
     return availablePacks.filter(pack => installedPackIds.includes(pack.id));
@@ -189,6 +204,7 @@ export function Dashboard() {
   // Use profile first name, fallback to email prefix
   const firstName = profileFirstName || session?.user?.email?.split("@")[0] || "there";
   const displayName = profileFirstName || session?.user?.email?.split("@")[0] || "User";
+  const avatarImage = AVATAR_OPTIONS.find(a => a.id === avatar)?.image || "/avatars/pomegranate.png";
 
   return (
     <div className="p-6 lg:pt-24 max-w-4xl mx-auto space-y-8 w-full">
@@ -197,9 +213,9 @@ export function Dashboard() {
         <div className="absolute top-4 right-4 lg:top-6 lg:right-6 z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+              <button className="flex items-center gap-2 px-3 py-2 pr-5 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                 <Image
-                  src="/avatar-pomegranate.png"
+                  src={avatarImage}
                   alt="Avatar"
                   width={28}
                   height={28}
@@ -217,6 +233,11 @@ export function Dashboard() {
                 <GearSix className="w-4 h-4 mr-2" />
                 Settings
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsFeedbackOpen(true)}>
+                <ChatCircle className="w-4 h-4 mr-2" />
+                Send feedback
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <SignOut className="w-4 h-4 mr-2" />
                 Log out
@@ -225,17 +246,23 @@ export function Dashboard() {
           </DropdownMenu>
         </div>
       )}
-      {/* Welcome & Review CTA */}
-      <WelcomeBanner
-        firstName={firstName}
-        reviewCount={reviewCount}
-        learnedCount={learnedCount}
-        isLoading={isWordsLoading}
-      />
-
-
-      {/* Progress Breakdown */}
-      <ProgressBreakdown words={words} />
+      {/* Welcome & Stats - connected */}
+      <div className="rounded-2xl overflow-hidden border border-gray-200">
+        <WelcomeBanner
+          firstName={firstName}
+          reviewCount={reviewCount}
+          learnedCount={learnedCount}
+          totalWords={words.length}
+          isLoading={isWordsLoading}
+        />
+        {words.length > 0 && (
+          <FluencyProgressBar
+            words={words}
+            reviewsThisWeek={weeklyStats?.thisWeek}
+            reviewsLastWeek={weeklyStats?.lastWeek}
+          />
+        )}
+      </div>
 
       {/* My Words Section */}
       {myWordsCount > 0 && (
@@ -334,6 +361,12 @@ export function Dashboard() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
       />
     </div>
   );

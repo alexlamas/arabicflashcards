@@ -12,6 +12,7 @@ import {
   Sidebar,
   SidebarInset,
   SidebarSeparator,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   GraduationCap,
@@ -23,15 +24,6 @@ import {
   Swatches,
 } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { ChevronsUpDown } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
 import { AuthDialog } from "./AuthDialog";
 import { useOfflineNavigation } from "../hooks/useOfflineNavigation";
@@ -48,16 +40,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
     reviewCount,
     totalWords,
   } = useWords();
-  const { session } = useAuth();
-  const { setShowAuthDialog, handleLogout } = useAuth();
   const { isAdmin, isReviewer } = useUserRoles();
-
-  const handleLoginClick = (event: Event) => {
-    event.preventDefault();
-    if (setShowAuthDialog) {
-      setShowAuthDialog(true);
-    }
-  };
   return (
     <>
       <AuthDialog />
@@ -65,48 +48,21 @@ export function AppSidebar({ children }: AppSidebarProps) {
       <SidebarProvider>
         <Sidebar>
           <SidebarHeader>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-between h-full py-3 pl-1"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/logo.svg"
-                          alt="Yalla Flash"
-                          width={26}
-                          height={26}
-                          className="rounded mb-2"
-                        />
-                        <span className="font-pphatton font-bold text-lg">
-                          Yalla Flash
-                        </span>
-                      </div>
-                      <ChevronsUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    {session ? (
-                      <>
-                        <DropdownMenuItem disabled className="text-xs text-gray-500">
-                          {session.user.email}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>
-                          Log out
-                        </DropdownMenuItem>
-                      </>
-                    ) : (
-                      <DropdownMenuItem onSelect={handleLoginClick}>
-                        Log in
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 py-3 pl-1 hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/logo.svg"
+                alt="Yalla Flash"
+                width={26}
+                height={26}
+                className="rounded mb-2"
+              />
+              <span className="font-pphatton font-bold text-lg">
+                Yalla Flash
+              </span>
+            </button>
           </SidebarHeader>
 
           <SidebarContent>
@@ -134,35 +90,18 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator />
-
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
+              
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/my-words"}
                       onClick={() => navigate("/my-words")}
                     >
                       <BookOpen className="h-4 w-4" />
-                      <span>My Words</span>
+                      <span>My words</span>
                       <SidebarMenuBadge>{totalWords}</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator />
-
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
+                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={pathname === "/memory-game"}
                       onClick={() => navigate("/memory-game")}
@@ -171,6 +110,16 @@ export function AppSidebar({ children }: AppSidebarProps) {
                       <span>Memory game</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator />
+
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                 
                   {isReviewer && (
                     <SidebarMenuItem>
                       <SidebarMenuButton
@@ -210,6 +159,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
           </SidebarContent>
         </Sidebar>
         <SidebarInset>{children}</SidebarInset>
+        <SidebarTrigger />
       </SidebarProvider>
     </>
   );

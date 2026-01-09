@@ -42,6 +42,7 @@ export function ExampleSentenceManager({
     if (wordId) {
       loadSentences();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wordId]);
 
   const loadSentences = async () => {

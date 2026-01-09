@@ -1,4 +1,11 @@
-export type WordType = "noun" | "verb" | "adjective" | "phrase";
+export type WordType =
+  | "noun"
+  | "verb"
+  | "adjective"
+  | "adverb"
+  | "pronoun"
+  | "particle"
+  | "phrase";
 
 export interface Sentence {
   id: string;

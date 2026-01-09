@@ -12,14 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
-import type { Word, Sentence, WordType } from "@/app/types/word";
+import { Check, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import type { Word, Sentence } from "@/app/types/word";
 import { SentenceReviewCard } from "./SentenceReviewCard";
 
 interface WordReviewCardProps {
   word: Word & { sentences: Sentence[] };
   onApprove: (updates: Partial<Word>) => Promise<void>;
-  onSkip: () => void;
+  onUnapprove: () => Promise<void>;
   onPrevious: () => void;
   onNext: () => void;
   onSentenceApprove: (sentenceId: string, updates: Partial<Sentence>) => Promise<void>;
@@ -29,12 +29,20 @@ interface WordReviewCardProps {
   totalCount: number;
 }
 
-const WORD_TYPES: WordType[] = ["noun", "verb", "adjective", "phrase"];
+const WORD_TYPES = [
+  "noun",
+  "verb",
+  "adjective",
+  "adverb",
+  "pronoun",
+  "particle",
+  "phrase",
+] as const;
 
 export function WordReviewCard({
   word,
   onApprove,
-  onSkip,
+  onUnapprove,
   onPrevious,
   onNext,
   onSentenceApprove,
@@ -47,13 +55,9 @@ export function WordReviewCard({
   const [english, setEnglish] = useState(word.english);
   const [transliteration, setTransliteration] = useState(word.transliteration);
   const [type, setType] = useState<string>(word.type);
-  const [notes, setNotes] = useState(word.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const arabicRef = useRef<HTMLInputElement>(null);
-  const englishRef = useRef<HTMLInputElement>(null);
-  const transliterationRef = useRef<HTMLInputElement>(null);
-  const notesRef = useRef<HTMLInputElement>(null);
 
   // Reset form when word changes
   useEffect(() => {
@@ -61,10 +65,9 @@ export function WordReviewCard({
     setEnglish(word.english);
     setTransliteration(word.transliteration);
     setType(word.type);
-    setNotes(word.notes || "");
     // Focus arabic field when word changes
     arabicRef.current?.focus();
-  }, [word.id, word.arabic, word.english, word.transliteration, word.type, word.notes]);
+  }, [word.id, word.arabic, word.english, word.transliteration, word.type]);
 
   const handleApprove = useCallback(async () => {
     if (isSubmitting) return;
@@ -75,12 +78,11 @@ export function WordReviewCard({
       if (english !== word.english) updates.english = english;
       if (transliteration !== word.transliteration) updates.transliteration = transliteration;
       if (type !== word.type) updates.type = type;
-      if (notes !== (word.notes || "")) updates.notes = notes;
       await onApprove(updates);
     } finally {
       setIsSubmitting(false);
     }
-  }, [arabic, english, transliteration, type, notes, word, onApprove, isSubmitting]);
+  }, [arabic, english, transliteration, type, word, onApprove, isSubmitting]);
 
   // Global keyboard handler
   useEffect(() => {
@@ -94,34 +96,46 @@ export function WordReviewCard({
         handleApprove();
       }
 
-      // Escape to skip
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onSkip();
-      }
+      // Up/Down arrows to move between fields
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        const inputs = Array.from(document.querySelectorAll<HTMLElement>(
+          'input:not([type="hidden"]), select, textarea, [role="combobox"]'
+        )).filter(el => !(el as HTMLInputElement).disabled);
 
-      // Arrow keys for navigation (when holding Alt)
-      if (e.altKey && e.key === "ArrowLeft" && hasPrevious) {
-        e.preventDefault();
-        onPrevious();
-      }
-      if (e.altKey && e.key === "ArrowRight" && hasNext) {
-        e.preventDefault();
-        onNext();
+        const currentIdx = inputs.findIndex(el => el === document.activeElement);
+        if (currentIdx !== -1) {
+          e.preventDefault();
+          const nextIdx = e.key === "ArrowDown"
+            ? Math.min(currentIdx + 1, inputs.length - 1)
+            : Math.max(currentIdx - 1, 0);
+          inputs[nextIdx]?.focus();
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleApprove, onSkip, onPrevious, onNext, hasPrevious, hasNext]);
+  }, [handleApprove]);
 
   return (
     <div className="space-y-4">
       {/* Progress indicator */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          Word {currentIndex + 1} of {totalCount}
-        </span>
+        <div className="flex items-center gap-2">
+          <span>
+            Word {currentIndex + 1} of {totalCount}
+          </span>
+          {word.reviewed_at && (
+            <button
+              onClick={onUnapprove}
+              className="inline-flex items-center gap-1.5 text-emerald-600 bg-green-50 px-2 py-1 pr-3 rounded-full text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+              title="Click to unapprove"
+            >
+              <CheckCircle2 className="size-4" />
+              Approved
+            </button>
+          )}
+        </div>
         <div className="flex gap-2">
           <Button
             variant="ghost"
@@ -158,7 +172,7 @@ export function WordReviewCard({
               value={arabic}
               onChange={(e) => setArabic(e.target.value)}
               dir="rtl"
-              className="font-arabic text-2xl text-right"
+              className="font-arabic !text-4xl text-right h-14"
               autoFocus
             />
           </div>
@@ -167,7 +181,6 @@ export function WordReviewCard({
           <div className="space-y-2">
             <Label htmlFor="english">English</Label>
             <Input
-              ref={englishRef}
               id="english"
               value={english}
               onChange={(e) => setEnglish(e.target.value)}
@@ -178,7 +191,6 @@ export function WordReviewCard({
           <div className="space-y-2">
             <Label htmlFor="transliteration">Transliteration</Label>
             <Input
-              ref={transliterationRef}
               id="transliteration"
               value={transliteration}
               onChange={(e) => setTransliteration(e.target.value)}
@@ -202,36 +214,15 @@ export function WordReviewCard({
             </Select>
           </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Input
-              ref={notesRef}
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes..."
-            />
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-2 pt-4">
-            <Button
-              variant="outline"
-              onClick={onSkip}
-              disabled={isSubmitting}
-              className="flex-1"
-            >
-              <SkipForward className="h-4 w-4 mr-2" />
-              Skip (Esc)
-            </Button>
+          {/* Action button */}
+          <div className="pt-4">
             <Button
               onClick={handleApprove}
               disabled={isSubmitting}
-              className="flex-1"
+              className="w-full"
             >
               <Check className="h-4 w-4 mr-2" />
-              {isSubmitting ? "Saving..." : "Approve (Enter)"}
+              {isSubmitting ? "Saving..." : word.reviewed_at ? "Update (Enter)" : "Approve (Enter)"}
             </Button>
           </div>
         </CardContent>
@@ -254,11 +245,10 @@ export function WordReviewCard({
       )}
 
       {/* Keyboard shortcuts help */}
-      <div className="text-xs text-muted-foreground text-center space-x-4">
-        <span>Tab: next field</span>
-        <span>Enter: approve</span>
-        <span>Esc: skip</span>
-        <span>Alt+←/→: navigate</span>
+      <div className="text-xs text-muted-foreground text-center">
+        <span>↑ ↓  move between fields</span>
+        <span className="mx-2">·</span>
+        <span>Enter to approve</span>
       </div>
     </div>
   );

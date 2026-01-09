@@ -4,18 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUserRoles } from "../../hooks/useUserRoles";
 import { useRouter } from "next/navigation";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { StarterPack } from "../../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, CheckCircle2 } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { WordReviewCard } from "../../components/content-review/WordReviewCard";
 import {
@@ -23,18 +14,25 @@ import {
   WordWithSentences,
 } from "../../services/contentReviewService";
 import type { Word, Sentence } from "../../types/word";
+import { cn } from "@/lib/utils";
+
+interface PackWithStats extends StarterPack {
+  total: number;
+  reviewed: number;
+}
 
 export default function ContentEditorPage() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const { isReviewer, isLoading: isRolesLoading } = useUserRoles();
   const router = useRouter();
 
-  const [packs, setPacks] = useState<StarterPack[]>([]);
+  const [packs, setPacks] = useState<PackWithStats[]>([]);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
   const [words, setWords] = useState<WordWithSentences[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({ total: 0, reviewed: 0 });
+  const [isLoadingPacks, setIsLoadingPacks] = useState(true);
+  const filter = "all";
 
   // Redirect non-reviewers
   useEffect(() => {
@@ -45,22 +43,25 @@ export default function ContentEditorPage() {
     }
   }, [session, isReviewer, isAuthLoading, isRolesLoading, router]);
 
-  // Load packs
+  // Load packs with stats
   useEffect(() => {
     if (isReviewer) {
-      loadPacks();
+      loadPacksWithStats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReviewer]);
 
-  // Load content when pack selected
+  // Load content when pack changes
   useEffect(() => {
     if (selectedPack) {
-      loadPackContent(selectedPack);
+      loadPackContent(selectedPack, filter);
     }
-  }, [selectedPack]);
+  }, [selectedPack, filter]);
 
-  async function loadPacks() {
+  async function loadPacksWithStats() {
+    setIsLoadingPacks(true);
     const supabase = createClient();
+
     const { data, error } = await supabase
       .from("packs")
       .select("*")
@@ -68,26 +69,32 @@ export default function ContentEditorPage() {
 
     if (error) {
       console.error("Error loading packs:", error);
+      setIsLoadingPacks(false);
       return;
     }
-    setPacks(data || []);
-    if (data && data.length > 0 && !selectedPack) {
-      setSelectedPack(data[0].id);
+
+    // Load stats for each pack
+    const packsWithStats: PackWithStats[] = await Promise.all(
+      (data || []).map(async (pack) => {
+        const stats = await ContentReviewService.getPackWordCount(pack.id);
+        return { ...pack, ...stats };
+      })
+    );
+
+    setPacks(packsWithStats);
+    if (packsWithStats.length > 0 && !selectedPack) {
+      setSelectedPack(packsWithStats[0].id);
     }
+    setIsLoadingPacks(false);
   }
 
-  async function loadPackContent(packId: string) {
+  async function loadPackContent(packId: string, wordFilter: "unreviewed" | "reviewed" | "all") {
     setIsLoading(true);
     setCurrentIndex(0);
 
     try {
-      // Get unreviewed words with sentences
-      const unreviewedWords = await ContentReviewService.getUnreviewedWords(packId);
-      setWords(unreviewedWords);
-
-      // Get stats
-      const packStats = await ContentReviewService.getPackWordCount(packId);
-      setStats(packStats);
+      const filteredWords = await ContentReviewService.getWords(packId, wordFilter);
+      setWords(filteredWords);
     } catch (error) {
       console.error("Error loading content:", error);
       setWords([]);
@@ -96,37 +103,65 @@ export default function ContentEditorPage() {
     }
   }
 
+  const updatePackStats = (packId: string, delta: number) => {
+    setPacks((prev) =>
+      prev.map((p) =>
+        p.id === packId ? { ...p, reviewed: p.reviewed + delta } : p
+      )
+    );
+  };
+
   const handleApprove = useCallback(
     async (updates: Partial<Word>) => {
       const currentWord = words[currentIndex];
-      if (!currentWord) return;
+      if (!currentWord || !selectedPack) return;
 
       try {
         await ContentReviewService.updateAndApproveWord(currentWord.id, updates);
 
-        // Remove from list and move to next
-        const newWords = words.filter((_, i) => i !== currentIndex);
-        setWords(newWords);
+        const wasNewlyApproved = !currentWord.reviewed_at;
+        setWords((prev) =>
+          prev.map((w, i) =>
+            i === currentIndex
+              ? { ...w, ...updates, reviewed_at: new Date().toISOString() }
+              : w
+          )
+        );
 
-        // Update stats
-        setStats((prev) => ({ ...prev, reviewed: prev.reviewed + 1 }));
+        if (wasNewlyApproved) {
+          updatePackStats(selectedPack, 1);
+        }
 
-        // Adjust index if needed
-        if (currentIndex >= newWords.length && newWords.length > 0) {
-          setCurrentIndex(newWords.length - 1);
+        if (currentIndex < words.length - 1) {
+          setCurrentIndex(currentIndex + 1);
         }
       } catch (error) {
         console.error("Error approving word:", error);
       }
     },
-    [words, currentIndex]
+    [words, currentIndex, selectedPack]
   );
 
-  const handleSkip = useCallback(() => {
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+  const handleUnapprove = useCallback(async () => {
+    const currentWord = words[currentIndex];
+    if (!currentWord || !selectedPack) return;
+
+    try {
+      await ContentReviewService.unapproveWord(currentWord.id);
+
+      setWords((prev) =>
+        prev.map((w, i) =>
+          i === currentIndex
+            ? { ...w, reviewed_at: null, reviewed_by: null }
+            : w
+        )
+      );
+
+      updatePackStats(selectedPack, -1);
+    } catch (error) {
+      console.error("Error unapproving word:", error);
     }
-  }, [currentIndex, words.length]);
+  }, [words, currentIndex, selectedPack]);
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
@@ -145,7 +180,6 @@ export default function ContentEditorPage() {
       try {
         await ContentReviewService.updateAndApproveSentence(sentenceId, updates);
 
-        // Update local state to mark sentence as reviewed
         setWords((prev) =>
           prev.map((word) => ({
             ...word,
@@ -163,7 +197,6 @@ export default function ContentEditorPage() {
     []
   );
 
-  // Loading state
   if (isAuthLoading || isRolesLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -177,73 +210,103 @@ export default function ContentEditorPage() {
   }
 
   const currentWord = words[currentIndex];
-  const progressPercent = stats.total > 0 ? (stats.reviewed / stats.total) * 100 : 0;
+  const selectedPackData = packs.find((p) => p.id === selectedPack);
 
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30">
-        <SidebarTrigger />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <h1 className="font-semibold">Content Review</h1>
-
-        <div className="ml-4">
-          <Select value={selectedPack || ""} onValueChange={setSelectedPack}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select pack" />
-            </SelectTrigger>
-            <SelectContent>
-              {packs.map((pack) => (
-                <SelectItem key={pack.id} value={pack.id}>
-                  {pack.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="flex h-screen">
+      {/* Left Panel - Pack List */}
+      <div className="w-72 border-r bg-gray-50/50 overflow-y-auto shrink-0 relative z-0">
+        <div className="p-4 border-b bg-white sticky top-0 z-10">
+          <h1 className="font-semibold">Content Review</h1>
         </div>
 
-      </header>
-
-      <div className="p-4 max-w-2xl mx-auto">
-        {/* Progress section */}
-        {!isLoading && stats.total > 0 && (
-          <div className="mb-6 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="font-medium">Review Progress</span>
-              <span className="text-muted-foreground">
-                {stats.reviewed} of {stats.total} words approved
-              </span>
-            </div>
-            <Progress value={progressPercent} className="h-3" />
-          </div>
-        )}
-
-        {isLoading ? (
+        {isLoadingPacks ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
           </div>
-        ) : words.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-            <h2 className="text-xl font-semibold mb-2">All done!</h2>
-            <p className="text-muted-foreground">
-              All words in this pack have been reviewed.
-            </p>
+        ) : (
+          <div className="p-2 space-y-1 isolate">
+            {packs.map((pack) => {
+              const progressPercent = pack.total > 0 ? (pack.reviewed / pack.total) * 100 : 0;
+              const isComplete = pack.reviewed === pack.total && pack.total > 0;
+
+              return (
+                <button
+                  key={pack.id}
+                  onClick={() => setSelectedPack(pack.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors border",
+                    selectedPack === pack.id
+                      ? "bg-white shadow-sm border-gray-200"
+                      : "border-transparent hover:bg-white/60"
+                  )}
+                >
+                  {pack.image_url ? (
+                    <img
+                      src={pack.image_url}
+                      alt={pack.name}
+                      className="w-12 h-12 rounded-lg object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center text-2xl shrink-0">
+                      {pack.icon || "📦"}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate">{pack.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {pack.reviewed}/{pack.total} reviewed
+                    </div>
+                    <div className="mt-1.5 relative z-0">
+                      <Progress
+                        value={progressPercent}
+                        className={cn("h-1.5", isComplete && "[&>div]:bg-green-500")}
+                      />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        ) : currentWord ? (
-          <WordReviewCard
-            word={currentWord}
-            onApprove={handleApprove}
-            onSkip={handleSkip}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            onSentenceApprove={handleSentenceApprove}
-            hasPrevious={currentIndex > 0}
-            hasNext={currentIndex < words.length - 1}
-            currentIndex={currentIndex}
-            totalCount={words.length}
-          />
-        ) : null}
+        )}
       </div>
-    </>
+
+      {/* Right Panel - Review UI */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 max-w-3xl mx-auto">
+          {selectedPackData && (
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold">{selectedPackData.name}</h2>
+              <p className="text-sm text-muted-foreground">
+                {selectedPackData.reviewed} of {selectedPackData.total} words approved
+              </p>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            </div>
+          ) : words.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-muted-foreground">No words in this pack.</p>
+            </div>
+          ) : currentWord ? (
+            <WordReviewCard
+              word={currentWord}
+              onApprove={handleApprove}
+              onUnapprove={handleUnapprove}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              onSentenceApprove={handleSentenceApprove}
+              hasPrevious={currentIndex > 0}
+              hasNext={currentIndex < words.length - 1}
+              currentIndex={currentIndex}
+              totalCount={words.length}
+            />
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }

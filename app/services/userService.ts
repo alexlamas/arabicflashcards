@@ -95,4 +95,27 @@ export class UserService {
     if (error) throw error;
     this.clearCache(userId);
   }
+
+  static async getAllUserRoles(): Promise<Record<string, string[]>> {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("user_id, role");
+
+    if (error) {
+      console.error("Error fetching all user roles:", error);
+      return {};
+    }
+
+    // Group roles by user_id
+    const rolesByUser: Record<string, string[]> = {};
+    (data || []).forEach(row => {
+      if (!rolesByUser[row.user_id]) {
+        rolesByUser[row.user_id] = [];
+      }
+      rolesByUser[row.user_id].push(row.role);
+    });
+
+    return rolesByUser;
+  }
 }

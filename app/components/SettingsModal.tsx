@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile } from "../contexts/ProfileContext";
 import { useAuth } from "../contexts/AuthContext";
+import { AVATAR_OPTIONS } from "../services/profileService";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -22,13 +25,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { profile, updateProfile } = useProfile();
   const { session } = useAuth();
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("pomegranate");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setFirstName(profile.first_name || "");
-      setLastName(profile.last_name || "");
+      setSelectedAvatar(profile.avatar || "pomegranate");
     }
   }, [profile]);
 
@@ -37,7 +40,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     try {
       await updateProfile({
         first_name: firstName.trim() || undefined,
-        last_name: lastName.trim() || undefined,
+        avatar: selectedAvatar,
       });
       onClose();
     } catch (error) {
@@ -55,25 +58,44 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Avatar selection */}
           <div className="space-y-2">
-            <Label htmlFor="firstName">First name</Label>
+            <Label>Avatar</Label>
+            <div className="flex gap-2 flex-wrap">
+              {AVATAR_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSelectedAvatar(option.id)}
+                  className={cn(
+                    "relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all",
+                    selectedAvatar === option.id
+                      ? "border-blue-500 ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                  title={option.label}
+                >
+                  <Image
+                    src={option.image}
+                    alt={option.label}
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="firstName">What do I call you</Label>
             <Input
               id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Enter your first name"
+              placeholder="Enter your name"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Last name</Label>
-            <Input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Enter your last name"
-            />
-          </div>
 
           <div className="space-y-2">
             <Label className="text-gray-500">Email</Label>

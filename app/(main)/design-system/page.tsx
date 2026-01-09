@@ -383,33 +383,38 @@ export default function DesignSystemPage() {
           >
             <div className="space-y-4">
               <div>
-                <StateLabel label="Tourist Level (0-49 words)" />
-                <WelcomeBanner firstName="Alex" reviewCount={8} learnedCount={12} />
+                <StateLabel label="First Time User (no words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={0} totalWords={0} />
               </div>
 
               <div>
-                <StateLabel label="Visitor Level (50-149 words)" />
-                <WelcomeBanner firstName="Alex" reviewCount={15} learnedCount={87} />
+                <StateLabel label="Tourist Level - Has Reviews (0-49 words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={8} learnedCount={12} totalWords={50} />
               </div>
 
               <div>
-                <StateLabel label="Resident Level (150-349 words)" />
-                <WelcomeBanner firstName="Alex" reviewCount={5} learnedCount={220} />
+                <StateLabel label="Visitor Level - Has Reviews (50-149 words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={15} learnedCount={87} totalWords={120} />
               </div>
 
               <div>
-                <StateLabel label="Local Level (350+ words)" />
-                <WelcomeBanner firstName="Alex" reviewCount={3} learnedCount={400} />
+                <StateLabel label="Resident Level - Has Reviews (150-349 words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={5} learnedCount={220} totalWords={280} />
+              </div>
+
+              <div>
+                <StateLabel label="Local Level - Has Reviews (350+ words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={3} learnedCount={400} totalWords={450} />
               </div>
 
               <div>
                 <StateLabel label="All Caught Up (Visitor)" />
-                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={87} />
+                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={87} totalWords={120} />
               </div>
 
               <div>
                 <StateLabel label="Loading" />
-                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={0} isLoading />
+                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={0} totalWords={0} isLoading />
               </div>
             </div>
           </ComponentSection>

@@ -26,6 +26,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AdminService,
   AdminUser,
   AdminWord,
@@ -42,8 +49,6 @@ import {
   Plus,
   Loader2,
 } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 
 type PackWithCounts = StarterPack & { word_count: number };
 
@@ -55,8 +60,12 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [words, setWords] = useState<AdminWord[]>([]);
   const [packs, setPacks] = useState<PackWithCounts[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("packs");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [togglingRole, setTogglingRole] = useState<string | null>(null);
 
   // Pack expansion state
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
@@ -101,14 +110,19 @@ export default function AdminPage() {
     if (isAdmin) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, activeTab]);
 
   async function loadData() {
     setIsLoading(true);
     try {
       if (activeTab === "users") {
-        const usersData = await AdminService.getAllUsers();
+        const [usersData, rolesResponse] = await Promise.all([
+          AdminService.getAllUsers(),
+          fetch('/api/admin/roles').then(r => r.json()),
+        ]);
         setUsers(usersData);
+        setUserRoles(rolesResponse);
       } else if (activeTab === "words") {
         const wordsData = await AdminService.getAllWords();
         setWords(wordsData);
@@ -224,6 +238,36 @@ export default function AdminPage() {
     }
   }
 
+  async function handleRoleChange(userId: string, newRole: 'admin' | 'reviewer' | 'standard') {
+    setTogglingRole(userId);
+    try {
+      const response = await fetch('/api/admin/roles', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, role: newRole }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update role');
+      }
+
+      // Update local state
+      if (newRole === 'standard') {
+        setUserRoles(prev => ({ ...prev, [userId]: [] }));
+      } else {
+        setUserRoles(prev => ({ ...prev, [userId]: [newRole] }));
+      }
+    } catch (error) {
+      console.error("Error changing role:", error);
+      alert(error instanceof Error ? error.message : "Failed to update role");
+      // Reload to get correct state
+      loadData();
+    } finally {
+      setTogglingRole(null);
+    }
+  }
+
   // Show loading while checking auth
   if (isAuthLoading || isRolesLoading) {
     return (
@@ -241,8 +285,6 @@ export default function AdminPage() {
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="mr-2 h-4" />
           <TabsList>
             <TabsTrigger value="packs">Starter Packs</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
@@ -446,33 +488,50 @@ export default function AdminPage() {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Roles</TableHead>
                     <TableHead>Words</TableHead>
-                    <TableHead>Last Review</TableHead>
                     <TableHead>Joined</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        {user.email_confirmed ? (
-                          <span className="text-green-600 text-xs">Confirmed</span>
-                        ) : (
-                          <span className="text-amber-600 text-xs">Pending</span>
-                        )}
-                      </TableCell>
-                      <TableCell>{user.word_count}</TableCell>
-                      <TableCell>
-                        {user.last_review_date
-                          ? new Date(user.last_review_date).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {users.map((user) => {
+                    const roles = userRoles[user.id] || [];
+                    const currentRole = roles.includes('admin') ? 'admin' : roles.includes('reviewer') ? 'reviewer' : 'standard';
+                    const isCurrentUser = user.id === session?.user?.id;
+
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          {user.email_confirmed ? (
+                            <span className="text-green-600 text-xs">Confirmed</span>
+                          ) : (
+                            <span className="text-amber-600 text-xs">Pending</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={currentRole}
+                            onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
+                            disabled={togglingRole === user.id || isCurrentUser}
+                          >
+                            <SelectTrigger className="w-28 h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="standard">Standard</SelectItem>
+                              <SelectItem value="reviewer">Reviewer</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>{user.word_count}</TableCell>
+                        <TableCell>
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}

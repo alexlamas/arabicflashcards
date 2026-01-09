@@ -173,6 +173,42 @@ export class SpacedRepetitionService {
       throw error;
     }
   }
+
+  static async getWeeklyReviewStats(userId: string): Promise<{ thisWeek: number; lastWeek: number }> {
+    const supabase = createClient();
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    try {
+      // Get reviews from this week
+      const { count: thisWeekCount, error: thisWeekError } = await supabase
+        .from("word_progress")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("updated_at", oneWeekAgo.toISOString());
+
+      if (thisWeekError) throw thisWeekError;
+
+      // Get reviews from last week
+      const { count: lastWeekCount, error: lastWeekError } = await supabase
+        .from("word_progress")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("updated_at", twoWeeksAgo.toISOString())
+        .lt("updated_at", oneWeekAgo.toISOString());
+
+      if (lastWeekError) throw lastWeekError;
+
+      return {
+        thisWeek: thisWeekCount || 0,
+        lastWeek: lastWeekCount || 0,
+      };
+    } catch (error) {
+      console.error("Error getting weekly review stats:", error);
+      return { thisWeek: 0, lastWeek: 0 };
+    }
+  }
 }
 
 function calculateNextReview(

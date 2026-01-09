@@ -8,7 +8,8 @@ interface ProfileContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   firstName: string | null;
-  updateProfile: (profile: { first_name?: string; last_name?: string }) => Promise<void>;
+  avatar: string;
+  updateProfile: (profile: { first_name?: string; avatar?: string }) => Promise<void>;
   refetchProfile: () => Promise<void>;
 }
 
@@ -39,9 +40,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  const updateProfile = async (profileData: { first_name?: string; last_name?: string }) => {
+  const updateProfile = async (profileData: { first_name?: string; avatar?: string }) => {
     const updated = await ProfileService.updateProfile(profileData);
     if (updated) {
       setProfile(updated);
@@ -49,6 +51,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   const firstName = profile?.first_name || null;
+  const avatar = profile?.avatar || "pomegranate";
 
   return (
     <ProfileContext.Provider
@@ -56,6 +59,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         profile,
         isLoading,
         firstName,
+        avatar,
         updateProfile,
         refetchProfile: fetchProfile,
       }}
