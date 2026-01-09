@@ -436,7 +436,6 @@ export function Review() {
         onWordUpdate={(updatedWord) => {
           setCurrentWord(updatedWord);
         }}
-        onSentencesUpdate={setCurrentWordSentences}
       />
     </div>
   );

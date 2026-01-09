@@ -28,7 +28,6 @@ interface WordDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onWordUpdate?: (updatedWord: Word) => void;
-  onSentencesUpdate?: (sentences: Sentence[]) => void;
 }
 
 const TypeBadge = ({ type }: { type: string }) => (
@@ -43,7 +42,6 @@ export function WordDetailModal({
   isOpen,
   onClose,
   onWordUpdate,
-  onSentencesUpdate,
 }: WordDetailModalProps) {
   const { session } = useAuth();
   const isPackWord = !!word?.pack_id;
