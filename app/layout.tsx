@@ -76,9 +76,23 @@ export const metadata: Metadata = {
     description:
       "Smart flashcards that make learning Lebanese Arabic addictively fun. Your brain will thank you (in Arabic)!",
     url: "https://yallaflash.com",
-    siteName: "Yalla! Lebanese Arabic",
+    siteName: "Yalla Flash",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Yalla Flash - Learn Lebanese Arabic",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Yalla Flash - Learn Lebanese Arabic",
+    description: "Smart flashcards that make learning Lebanese Arabic addictively fun.",
+    images: ["/og.png"],
   },
   robots: {
     index: true,

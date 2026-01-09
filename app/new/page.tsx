@@ -844,7 +844,7 @@ export default function NewLandingPage() {
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <span className="flex items-center gap-1">
-                Made with <Heart weight="fill" className="text-red-500 w-4 h-4" /> by a fellow learner
+                Made with <Heart weight="fill" className="text-red-500 w-4 h-4" /> by a fellow telmeez.
               </span>
             </div>
           </div>
