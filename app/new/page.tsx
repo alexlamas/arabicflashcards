@@ -40,6 +40,13 @@ export default function NewLandingPage() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [timerProgress, setTimerProgress] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [showChevron, setShowChevron] = useState(false);
+
+  // Delay chevron appearance until after carousel
+  useEffect(() => {
+    const timer = setTimeout(() => setShowChevron(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
   const hasCarouselStarted = useRef(false);
@@ -279,16 +286,18 @@ export default function NewLandingPage() {
       </section>
 
       {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: hasScrolled ? 0 : [0.4, 0.7, 0.4] }}
-        transition={hasScrolled ? { duration: 0.3 } : { delay: 3, duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
-        onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-      >
-        <CaretDown size={24} weight="bold" className="text-gray-400" />
-        <CaretDown size={24} weight="bold" className="text-gray-400" />
-      </motion.div>
+      {showChevron && !hasScrolled && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
+          onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        >
+          <CaretDown size={24} weight="bold" className="text-gray-400" />
+          <CaretDown size={24} weight="bold" className="text-gray-400" />
+        </motion.div>
+      )}
 
       {/* Pack Preview Modal */}
       <AnimatePresence>
