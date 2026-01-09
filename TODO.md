@@ -1,31 +1,34 @@
 # Arabic Flashcards - Roadmap
 
+## Done
+
+- [x] Review flow (spaced repetition)
+- [x] Word cards (word, transliteration, meaning)
+- [x] Sentences alongside words
+- [x] Pack detail view (PackPreviewModal)
+- [x] "Caught up" empty state (WelcomeBanner)
+- [x] Word detail modal (tap to expand)
+- [x] My Words page with tabs (all/learning/learned)
+- [x] Design system page
+
 ## MVP (ship this)
 
-- [ ] Fluency progress (% toward core 350)
-- [ ] Topic packs with unlock progression
-- [ ] Learn flow (new words in a pack)
-- [ ] Review flow (spaced repetition)
-- [ ] Search/add words (unified bar)
-- [ ] Word cards (word, transliteration, meaning)
-- [ ] Basic settings (daily goal, transliteration toggle)
+- [ ] Learn flow (introduce new words from a pack)
+- [ ] Search/add words (unified search bar)
+- [ ] Basic settings (daily goal, notifications)
 
 ## V2 (near-term)
 
 - [ ] Audio pronunciation
-- [ ] Sentences alongside words
-- [ ] Pack detail view
-- [ ] "Caught up" empty state
+- [ ] Fluency progress (% toward core vocabulary)
 - [ ] Fluency milestone celebrations
-- [ ] Word detail (tap to expand)
+- [ ] Pack unlock progression
 
 ## V3+ (later)
 
 - [ ] Streaks + motivation
-- [ ] Weekly/monthly stats
+- [ ] Weekly/monthly stats improvements
 - [ ] Onboarding for new users
 - [ ] Social (share progress, leaderboards)
-- [ ] Offline mode
-- [ ] Spaced repetition tuning (easy/hard buttons)
+- [ ] Full offline mode
 - [ ] Import word lists
-- [ ] AI-generated example sentences

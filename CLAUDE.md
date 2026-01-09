@@ -20,12 +20,12 @@ app/
 ├── (main)/              # Main authenticated routes
 │   ├── page.tsx         # Home/dashboard
 │   ├── review/          # Flashcard review session
-│   ├── learning/        # Words currently being learned
-│   ├── learned/         # Mastered words
+│   ├── my-words/        # User's vocabulary (all/learning/learned tabs)
 │   ├── this-week/       # Weekly progress
 │   ├── this-month/      # Monthly progress
 │   ├── content-editor/  # Content editor (reviewer role)
 │   ├── admin/           # Admin panel (admin role)
+│   ├── design-system/   # Component library reference
 │   └── memory-game/     # Memory matching game
 ├── api/                 # API routes
 │   ├── generate-sentence/  # AI sentence generation
