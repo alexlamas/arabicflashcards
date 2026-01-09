@@ -779,7 +779,7 @@ export default function NewLandingPage() {
                       alt={level.label}
                       width={56}
                       height={56}
-                      className="w-full h-full brightness-0"
+                      className="w-full h-full"
                     />
                   </motion.div>
                   <motion.span
