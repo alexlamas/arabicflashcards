@@ -7,7 +7,6 @@ import { Session } from "@supabase/supabase-js";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ViewToggle } from "./ViewToggle";
 import { Word } from "../types/word";
-import ReviewTimeline from "./review/ReviewTimeline";
 import { useWords } from "../contexts/WordsContext";
 // import { useUserRoles } from "../hooks/useUserRoles"; // No longer needed - all users can manage their words
 
@@ -18,7 +17,6 @@ interface TabConfig {
 }
 
 export function Header({
-  variant = "default",
   session,
   searchTerm = "",
   setSearchTerm,
@@ -29,7 +27,6 @@ export function Header({
   activeTab,
   onTabChange,
 }: {
-  variant?: "default" | "review";
   session?: Session | null;
   searchTerm?: string;
   setSearchTerm?: (value: string) => void;
@@ -70,7 +67,6 @@ export function Header({
           ))}
         </div>
       )}
-      {variant === "review" && <ReviewTimeline />}
       {showSearch && (
         <>
           <SearchBar value={searchTerm} onChange={setSearchTerm} />

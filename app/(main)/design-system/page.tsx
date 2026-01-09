@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Copy, ChevronRight, Play } from "lucide-react";
 import { DashboardPackCard } from "@/app/components/DashboardPackCard";
 import { WelcomeBanner } from "@/app/components/WelcomeBanner";
+import { ProgressBreakdown } from "@/app/components/ProgressBreakdown";
+import { Word } from "@/app/types/word";
 import { StarterPackService, StarterPack } from "@/app/services/starterPackService";
-import Link from "next/link";
 import Image from "next/image";
 
 // Helper component for displaying components with copy-able names
@@ -102,6 +103,53 @@ function ColorSwatch({ name, hex, className }: { name: string; hex: string; clas
   );
 }
 
+// Helper to create mock words for ProgressBreakdown demos
+function createMockWords({ learned, learning, newWords }: { learned: number; learning: number; newWords: number }): Word[] {
+  const now = new Date();
+  const oneDay = 24 * 60 * 60 * 1000;
+  const oneMonth = 30 * oneDay;
+
+  const words: Word[] = [];
+
+  // Learned words (next_review > 1 month)
+  for (let i = 0; i < learned; i++) {
+    words.push({
+      id: `learned-${i}`,
+      arabic: "مثال",
+      english: "example",
+      transliteration: "mithal",
+      status: "learning",
+      next_review_date: new Date(now.getTime() + oneMonth + oneDay * (i + 1)).toISOString(),
+    } as Word);
+  }
+
+  // Learning words (next_review 1 day to 1 month)
+  for (let i = 0; i < learning; i++) {
+    words.push({
+      id: `learning-${i}`,
+      arabic: "مثال",
+      english: "example",
+      transliteration: "mithal",
+      status: "learning",
+      next_review_date: new Date(now.getTime() + oneDay * 2 + oneDay * (i % 28)).toISOString(),
+    } as Word);
+  }
+
+  // New words (next_review within 1 day)
+  for (let i = 0; i < newWords; i++) {
+    words.push({
+      id: `new-${i}`,
+      arabic: "مثال",
+      english: "example",
+      transliteration: "mithal",
+      status: "learning",
+      next_review_date: new Date(now.getTime() + 1000 * 60 * 60 * (i % 24)).toISOString(),
+    } as Word);
+  }
+
+  return words;
+}
+
 export default function DesignSystemPage() {
   const [packs, setPacks] = useState<StarterPack[]>([]);
 
@@ -142,7 +190,7 @@ export default function DesignSystemPage() {
                 "Colors",
                 "Logo",
                 "DashboardPackCard",
-                "ProgressBar",
+                "ProgressBreakdown",
                 "WelcomeBanner",
                 "Button",
                 "RatingButtons",
@@ -294,40 +342,33 @@ export default function DesignSystemPage() {
           </ComponentSection>
         </div>
 
-        {/* Progress Bar */}
-        <div id="progressbar">
+        {/* Progress Breakdown */}
+        <div id="progressbreakdown">
           <ComponentSection
-            name="ProgressBar"
-            path="app/components/Dashboard.tsx (inline)"
-            description="Overall progress indicator"
+            name="ProgressBreakdown"
+            path="app/components/ProgressBreakdown.tsx"
+            description="Segmented progress bar showing learned, learning, and new words"
           >
             <div className="space-y-4">
               <div>
-                <StateLabel label="Default (67%)" />
-                <div className="bg-white border rounded-xl p-5">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Overall progress</span>
-                    <span className="text-sm text-gray-500">24/36 words learned</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3">
-                    <div className="bg-green-500 h-3 rounded-full" style={{ width: "67%" }} />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2">67% complete</p>
-                </div>
+                <StateLabel label="Mixed Progress" />
+                <ProgressBreakdown
+                  words={createMockWords({ learned: 133, learning: 87, newWords: 51 })}
+                />
               </div>
 
               <div>
-                <StateLabel label="Empty (0%)" />
-                <div className="bg-white border rounded-xl p-5">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Overall progress</span>
-                    <span className="text-sm text-gray-500">0/36 words learned</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3">
-                    <div className="bg-green-500 h-3 rounded-full" style={{ width: "0%" }} />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2">0% complete</p>
-                </div>
+                <StateLabel label="Mostly Learned" />
+                <ProgressBreakdown
+                  words={createMockWords({ learned: 180, learning: 15, newWords: 5 })}
+                />
+              </div>
+
+              <div>
+                <StateLabel label="Just Starting" />
+                <ProgressBreakdown
+                  words={createMockWords({ learned: 5, learning: 20, newWords: 75 })}
+                />
               </div>
             </div>
           </ComponentSection>

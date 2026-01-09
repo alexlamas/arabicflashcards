@@ -22,6 +22,7 @@ import { PackPreviewModal } from "./PackPreviewModal";
 import { DashboardPackCard } from "./DashboardPackCard";
 import { SettingsModal } from "./SettingsModal";
 import { WelcomeBanner } from "./WelcomeBanner";
+import { ProgressBreakdown } from "./ProgressBreakdown";
 
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
@@ -38,8 +39,6 @@ export function Dashboard() {
   const { firstName: profileFirstName } = useProfile();
   const {
     words,
-    totalWords,
-    learnedCount,
     reviewCount,
     isLoading: isWordsLoading,
   } = useWords();
@@ -54,8 +53,6 @@ export function Dashboard() {
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  const progressPercent = totalWords > 0 ? Math.round((learnedCount / totalWords) * 100) : 0;
 
   // Count personal words (words without a source pack)
   const myWordsCount = useMemo(() => {
@@ -227,22 +224,8 @@ export function Dashboard() {
       />
 
 
-      {/* Overall Progress Bar */}
-      {totalWords > 0 && (
-        <div className="bg-white border rounded-xl p-5">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">Overall progress</span>
-            <span className="text-sm text-gray-500">{learnedCount}/{totalWords} words learned</span>
-          </div>
-          <div className="w-full bg-gray-100 rounded-full h-3">
-            <div
-              className="bg-green-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <p className="text-xs text-gray-400 mt-2">{progressPercent}% complete</p>
-        </div>
-      )}
+      {/* Progress Breakdown */}
+      <ProgressBreakdown words={words} />
 
       {/* My Words Section */}
       {myWordsCount > 0 && (
