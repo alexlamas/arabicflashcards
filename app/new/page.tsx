@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,6 +36,7 @@ export default function NewLandingPage() {
   const [activeStep, setActiveStep] = useState(1);
   const [isHowItWorksPaused, setIsHowItWorksPaused] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement>(null);
+  const isHowItWorksInView = useInView(howItWorksRef, { once: false, amount: 0.3 });
   const [showFeedback, setShowFeedback] = useState(false);
   const [timerProgress, setTimerProgress] = useState(0);
 
@@ -51,7 +53,7 @@ export default function NewLandingPage() {
 
   // Timer progress for the vertical line
   useEffect(() => {
-    if (isHowItWorksPaused) return;
+    if (isHowItWorksPaused || !isHowItWorksInView) return;
 
     setTimerProgress(0);
     const duration = 4000; // matches auto-advance interval
@@ -66,7 +68,7 @@ export default function NewLandingPage() {
     }, interval);
 
     return () => clearInterval(timer);
-  }, [activeStep, isHowItWorksPaused]);
+  }, [activeStep, isHowItWorksPaused, isHowItWorksInView]);
 
   // Load packs
   useEffect(() => {
@@ -87,12 +89,12 @@ export default function NewLandingPage() {
 
   // Auto-advance "How it works" steps
   useEffect(() => {
-    if (isHowItWorksPaused) return;
+    if (isHowItWorksPaused || !isHowItWorksInView) return;
     const interval = setInterval(() => {
       setActiveStep((prev) => (prev % 3) + 1);
     }, 4000);
     return () => clearInterval(interval);
-  }, [isHowItWorksPaused]);
+  }, [isHowItWorksPaused, isHowItWorksInView]);
 
   // Load preview words when pack is selected
   const handlePackClick = async (pack: StarterPack) => {
@@ -231,7 +233,7 @@ export default function NewLandingPage() {
         animate={{ opacity: [0.4, 0.7, 0.4] }}
         transition={{ delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
         className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
-        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+        onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       >
         <CaretDown size={24} weight="bold" className="text-gray-400" />
         <CaretDown size={24} weight="bold" className="text-gray-400" />
