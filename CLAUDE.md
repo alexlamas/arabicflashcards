@@ -121,6 +121,9 @@ npm run build
 npm run lint
 ```
 
+### Important: Don't run builds during development
+Avoid running `npm run build` while the dev server is running - it interferes with the `.next` folder and breaks hot reloading. Use `npm run lint` to check for errors instead.
+
 ## Environment Variables
 
 Required in `.env.local`:
