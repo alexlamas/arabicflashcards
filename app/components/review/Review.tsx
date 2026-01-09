@@ -164,7 +164,7 @@ export function Review() {
   // Show skeleton while loading
   if (isLoading) {
     return (
-      <div className="max-w-2xl w-full mx-auto px-4">
+      <div className="max-w-2xl w-full mx-auto">
         <div className="p-6 rounded-lg border shadow-md bg-white">
           <div className="min-h-[200px] flex items-center justify-center">
             <div className="space-y-4 w-full max-w-xs">
@@ -188,7 +188,7 @@ export function Review() {
   }
 
   return (
-    <div className="max-w-2xl w-full mx-auto px-4">
+    <div className="max-w-2xl w-full mx-auto">
       <Card
         className="w-full p-6 cursor-pointer shadow-md relative overflow-hidden"
         onClick={() => setIsFlipped(!isFlipped)}

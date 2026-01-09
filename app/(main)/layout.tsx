@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebar } from "../components/AppSidebar";
+import { TopNav } from "../components/TopNav";
 import { AuthProvider } from "../providers/AuthProvider";
 import { WordsProvider } from "../providers/WordsProvider";
 import { ProfileProvider } from "../contexts/ProfileContext";
@@ -44,7 +44,8 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ServiceWorkerRegistration />
-      <AppSidebar>{children}</AppSidebar>
+      <TopNav />
+      <main className="pt-16">{children}</main>
       <OfflineIndicator />
     </>
   );

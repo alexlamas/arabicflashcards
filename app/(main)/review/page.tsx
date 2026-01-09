@@ -20,17 +20,12 @@ export default function ReviewPage() {
   const progressPercent = total > 0 ? (completed / total) * 100 : 0;
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center w-full max-w-2xl px-4">
-        {/* Min-height reserves space for card + controls so progress bar doesn't shift */}
-        <div className="min-h-[400px] md:min-h-[340px] w-full">
-          <Review />
-        </div>
-
-        {/* Progress bar below review */}
+    <div className="pt-16 pb-16">
+      <div className="flex flex-col items-center w-full max-w-2xl mx-auto px-4">
+        {/* Progress bar at top */}
         {total > 0 && (
-          <div className="w-48">
-            <div className="bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+          <div className="w-full mb-8 flex items-center gap-3 pl-2 pr-1">
+            <div className="flex-1 bg-white border border-gray-200 rounded-full p-1 shadow-sm">
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500 ease-out"
@@ -38,13 +33,13 @@ export default function ReviewPage() {
                 />
               </div>
             </div>
-            <div className="text-center mt-1.5">
-              <span className="text-xs text-gray-500">
-                {completed}/{total}
-              </span>
-            </div>
+            <span className="text-xs text-gray-500 tabular-nums">
+              {completed}/{total}
+            </span>
           </div>
         )}
+
+        <Review />
       </div>
     </div>
   );

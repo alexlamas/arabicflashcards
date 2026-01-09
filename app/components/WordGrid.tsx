@@ -3,7 +3,6 @@ import { Word } from "../types/word";
 import { WordDetailModal } from "./WordDetailModal";
 import { formatTimeUntilReview } from "../utils/formatReviewTime";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
-import { CalendarDays } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 
@@ -13,13 +12,11 @@ const StatusBadge = ({
   word: Word;
   onStartLearning?: () => void;
 }) => {
-  // Show review time badge if available
   const reviewTime = formatTimeUntilReview(word.next_review_date);
   if (!reviewTime) return null;
 
   return (
-    <div className="flex items-center text-xs h-6 font-medium px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-600">
-      <CalendarDays size={14} className="mr-2 text-neutral-400" />
+    <div className="text-xs text-gray-500">
       {reviewTime}
     </div>
   );
@@ -38,7 +35,7 @@ const ListCard = ({
 }) => {
   return (
     <div
-      className="p-6 rounded-lg border-[0.5px] border-gray-200 relative group hover:shadow-md transition-shadow cursor-pointer"
+      className="h-full p-6 rounded-lg border-[0.5px] border-gray-200 relative group hover:shadow-md transition-shadow cursor-pointer"
       onClick={onShowDetails}
     >
       <div className="flex justify-between items-center">
@@ -116,16 +113,15 @@ export function WordGrid({
           }
         }}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {words.map((word) => (
-          <div key={word.english}>
-            <ListCard
-              word={word}
-              onShowDetails={() => handleShowDetails(word)}
-              onStartLearning={() => handleStartLearning(word)}
-              hideArabic={hideArabic}
-            />
-          </div>
+          <ListCard
+            key={word.id}
+            word={word}
+            onShowDetails={() => handleShowDetails(word)}
+            onStartLearning={() => handleStartLearning(word)}
+            hideArabic={hideArabic}
+          />
         ))}
       </div>
     </>

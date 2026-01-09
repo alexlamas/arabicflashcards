@@ -64,7 +64,7 @@ function MyWordsContent() {
   ];
 
   return (
-    <>
+    <div className="max-w-4xl mx-auto">
       <Header
         session={session}
         searchTerm={searchTerm}
@@ -75,14 +75,14 @@ function MyWordsContent() {
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab as FilterTab)}
       />
-      <div className="p-4">
+      <div className="p-4 px-6 pt-24">
         <WordGrid
           words={filteredWords}
           hideArabic={hideArabic}
           onWordUpdate={handleWordUpdate}
         />
       </div>
-    </>
+    </div>
   );
 }
 

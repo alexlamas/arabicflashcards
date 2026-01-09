@@ -8,7 +8,7 @@ import { StarterPackService, StarterPack } from "../services/starterPackService"
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { PencilLine } from "@phosphor-icons/react";
+import { CardsThree } from "@phosphor-icons/react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { PackPreviewModal } from "./PackPreviewModal";
@@ -208,7 +208,7 @@ export function Dashboard() {
   const firstName = profileFirstName || session?.user?.email?.split("@")[0] || "there";
 
   return (
-    <div className="p-6 lg:pt-24 max-w-4xl mx-auto space-y-8 w-full">
+    <div className="p-6 pt-12 max-w-4xl mx-auto space-y-8 w-full">
       {/* Welcome & Stats - connected */}
       <div className="rounded-2xl overflow-hidden border border-gray-200">
         <WelcomeBanner
@@ -234,7 +234,7 @@ export function Dashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                    <PencilLine className="w-6 h-6 text-gray-600" />
+                    <CardsThree className="w-6 h-6 text-gray-600" />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">My words</h3>

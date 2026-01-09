@@ -193,24 +193,22 @@ export default function MemoryGamePage() {
   }
 
   return (
-    <div className="w-full px-4 py-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Memory game</h1>
-          </div>
-          <Button
+    <div className="w-full px-4 py-6 pt-12">
+      <div className="max-w-4xl px-4 mx-auto">
+         
+         
+
+        <div className="flex justify-between items-center mb-6 text-sm text-muted-foreground">
+          <span>Moves: {moves}</span>
+           <Button
             variant="outline"
-            size="icon"
             onClick={initializeGame}
             title="Restart game"
+            className="rounded-full"
           >
             <ShuffleIcon className="h-5 w-5" />
+            Shuffle
           </Button>
-        </div>
-
-        <div className="flex justify-between mb-6 text-sm text-muted-foreground">
-          <span>Moves: {moves}</span>
           <span>
             Matches: {matches}/{cards.length / 2}
           </span>

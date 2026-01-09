@@ -10,18 +10,18 @@ export function ViewToggle({ hideArabic, onChange }: ViewToggleProps) {
   return hideArabic ? (
     <Button
       variant="outline"
-      size="sm"
+      size="icon"
       onClick={() => onChange(!hideArabic)}
-      className="gap-2"
+      className="gap-2 rounded-full"
     >
       <EyeClosedIcon weight="bold" />
     </Button>
   ) : (
     <Button
       variant="outline"
-      size="sm"
+      size="icon"
       onClick={() => onChange(!hideArabic)}
-      className="gap-2"
+      className="gap-2 rounded-full"
     >
       <EyeIcon weight="bold" />
     </Button>
