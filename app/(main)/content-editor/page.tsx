@@ -1,19 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUserRoles } from "../../hooks/useUserRoles";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -21,20 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  StarterPack,
-  StarterPackWord,
-} from "../../services/starterPackService";
+import { StarterPack } from "../../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
-import { Check, X, Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-
-type EditingCell = {
-  id: string;
-  field: string;
-  value: string;
-} | null;
+import { Progress } from "@/components/ui/progress";
+import { WordReviewCard } from "../../components/content-review/WordReviewCard";
+import {
+  ContentReviewService,
+  WordWithSentences,
+} from "../../services/contentReviewService";
+import type { Word, Sentence } from "../../types/word";
 
 export default function ContentEditorPage() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -43,10 +31,10 @@ export default function ContentEditorPage() {
 
   const [packs, setPacks] = useState<StarterPack[]>([]);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
-  const [words, setWords] = useState<StarterPackWord[]>([]);
+  const [words, setWords] = useState<WordWithSentences[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingCell, setEditingCell] = useState<EditingCell>(null);
-  const [saving, setSaving] = useState(false);
+  const [stats, setStats] = useState({ total: 0, reviewed: 0 });
 
   // Redirect non-reviewers
   useEffect(() => {
@@ -90,70 +78,90 @@ export default function ContentEditorPage() {
 
   async function loadPackContent(packId: string) {
     setIsLoading(true);
-    const supabase = createClient();
+    setCurrentIndex(0);
 
-    // Get pack words (includes type='phrase')
-    const wordsResult = await supabase
-      .from("words")
-      .select("*")
-      .eq("pack_id", packId)
-      .order("english");
+    try {
+      // Get unreviewed words with sentences
+      const unreviewedWords = await ContentReviewService.getUnreviewedWords(packId);
+      setWords(unreviewedWords);
 
-    if (wordsResult.error) {
-      console.error("Error loading words:", wordsResult.error);
+      // Get stats
+      const packStats = await ContentReviewService.getPackWordCount(packId);
+      setStats(packStats);
+    } catch (error) {
+      console.error("Error loading content:", error);
       setWords([]);
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setWords(wordsResult.data || []);
-    setIsLoading(false);
   }
 
-  const handleCellClick = (id: string, field: string, value: string) => {
-    setEditingCell({ id, field, value });
-  };
+  const handleApprove = useCallback(
+    async (updates: Partial<Word>) => {
+      const currentWord = words[currentIndex];
+      if (!currentWord) return;
 
-  const handleCellChange = (value: string) => {
-    if (editingCell) {
-      setEditingCell({ ...editingCell, value });
+      try {
+        await ContentReviewService.updateAndApproveWord(currentWord.id, updates);
+
+        // Remove from list and move to next
+        const newWords = words.filter((_, i) => i !== currentIndex);
+        setWords(newWords);
+
+        // Update stats
+        setStats((prev) => ({ ...prev, reviewed: prev.reviewed + 1 }));
+
+        // Adjust index if needed
+        if (currentIndex >= newWords.length && newWords.length > 0) {
+          setCurrentIndex(newWords.length - 1);
+        }
+      } catch (error) {
+        console.error("Error approving word:", error);
+      }
+    },
+    [words, currentIndex]
+  );
+
+  const handleSkip = useCallback(() => {
+    if (currentIndex < words.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     }
-  };
+  }, [currentIndex, words.length]);
 
-  const handleCellSave = async () => {
-    if (!editingCell) return;
-    setSaving(true);
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("words")
-      .update({ [editingCell.field]: editingCell.value })
-      .eq("id", editingCell.id);
-
-    if (error) {
-      console.error("Error saving:", error);
-    } else {
-      setWords(words.map((w) =>
-        w.id === editingCell.id ? { ...w, [editingCell.field]: editingCell.value } : w
-      ));
+  const handlePrevious = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
     }
+  }, [currentIndex]);
 
-    setEditingCell(null);
-    setSaving(false);
-  };
-
-  const handleCellCancel = () => {
-    setEditingCell(null);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleCellSave();
-    } else if (e.key === "Escape") {
-      handleCellCancel();
+  const handleNext = useCallback(() => {
+    if (currentIndex < words.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     }
-  };
+  }, [currentIndex, words.length]);
 
+  const handleSentenceApprove = useCallback(
+    async (sentenceId: string, updates: Partial<Sentence>) => {
+      try {
+        await ContentReviewService.updateAndApproveSentence(sentenceId, updates);
+
+        // Update local state to mark sentence as reviewed
+        setWords((prev) =>
+          prev.map((word) => ({
+            ...word,
+            sentences: word.sentences.map((s) =>
+              s.id === sentenceId
+                ? { ...s, ...updates, reviewed_at: new Date().toISOString() }
+                : s
+            ),
+          }))
+        );
+      } catch (error) {
+        console.error("Error approving sentence:", error);
+      }
+    },
+    []
+  );
 
   // Loading state
   if (isAuthLoading || isRolesLoading) {
@@ -168,74 +176,15 @@ export default function ContentEditorPage() {
     return null;
   }
 
-  const renderEditableCell = (id: string, field: string, value: string, isArabic = false) => {
-    const isEditing = editingCell?.id === id && editingCell?.field === field;
-
-    if (isEditing) {
-      return (
-        <div className="flex items-center gap-1">
-          <Input
-            value={editingCell.value}
-            onChange={(e) => handleCellChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className={`h-8 ${isArabic ? "font-arabic text-right" : ""}`}
-            dir={isArabic ? "rtl" : "ltr"}
-            autoFocus
-          />
-          <Button size="sm" variant="ghost" onClick={handleCellSave} disabled={saving}>
-            <Check className="h-4 w-4 text-green-600" />
-          </Button>
-          <Button size="sm" variant="ghost" onClick={handleCellCancel}>
-            <X className="h-4 w-4 text-gray-400" />
-          </Button>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        className={`cursor-pointer hover:bg-gray-50 px-2 py-1 rounded ${isArabic ? "font-arabic text-right" : ""}`}
-        onClick={() => handleCellClick(id, field, value || "")}
-        dir={isArabic ? "rtl" : "ltr"}
-      >
-        {value || <span className="text-gray-300 italic">empty</span>}
-      </div>
-    );
-  };
-
-  const renderWordsTable = (wordsList: StarterPackWord[]) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-12">#</TableHead>
-          <TableHead>Arabic</TableHead>
-          <TableHead>English</TableHead>
-          <TableHead>Transliteration</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Notes</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {wordsList.map((word, index) => (
-          <TableRow key={word.id}>
-            <TableCell className="text-gray-400">{index + 1}</TableCell>
-            <TableCell>{renderEditableCell(word.id, "arabic", word.arabic, true)}</TableCell>
-            <TableCell>{renderEditableCell(word.id, "english", word.english)}</TableCell>
-            <TableCell>{renderEditableCell(word.id, "transliteration", word.transliteration || "")}</TableCell>
-            <TableCell>{renderEditableCell(word.id, "type", word.type || "")}</TableCell>
-            <TableCell className="max-w-[200px] truncate">{renderEditableCell(word.id, "notes", word.notes || "")}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+  const currentWord = words[currentIndex];
+  const progressPercent = stats.total > 0 ? (stats.reviewed / stats.total) * 100 : 0;
 
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30">
         <SidebarTrigger />
         <Separator orientation="vertical" className="mr-2 h-4" />
-        <h1 className="font-semibold">Content editor</h1>
+        <h1 className="font-semibold">Content Review</h1>
 
         <div className="ml-4">
           <Select value={selectedPack || ""} onValueChange={setSelectedPack}>
@@ -252,23 +201,43 @@ export default function ContentEditorPage() {
           </Select>
         </div>
 
-        <div className="ml-auto text-sm text-gray-500">
-          <span>{words.length} words</span>
+        <div className="ml-auto flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">
+            {stats.reviewed} / {stats.total} reviewed
+          </div>
+          <div className="w-32">
+            <Progress value={progressPercent} className="h-2" />
+          </div>
         </div>
       </header>
 
-      <div className="p-4">
+      <div className="p-4 max-w-2xl mx-auto">
         {isLoading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
           </div>
         ) : words.length === 0 ? (
-          <p className="text-gray-500 text-sm py-4">No words in this pack.</p>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
-            {renderWordsTable(words)}
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
+            <h2 className="text-xl font-semibold mb-2">All done!</h2>
+            <p className="text-muted-foreground">
+              All words in this pack have been reviewed.
+            </p>
           </div>
-        )}
+        ) : currentWord ? (
+          <WordReviewCard
+            word={currentWord}
+            onApprove={handleApprove}
+            onSkip={handleSkip}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSentenceApprove={handleSentenceApprove}
+            hasPrevious={currentIndex > 0}
+            hasNext={currentIndex < words.length - 1}
+            currentIndex={currentIndex}
+            totalCount={words.length}
+          />
+        ) : null}
       </div>
     </>
   );
