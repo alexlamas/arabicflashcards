@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Copy, Play, ChevronRight } from "lucide-react";
 import { DashboardPackCard } from "@/app/components/DashboardPackCard";
 import { WelcomeBanner } from "@/app/components/WelcomeBanner";
-import { StarterPack } from "@/app/services/starterPackService";
+import { StarterPackService, StarterPack } from "@/app/services/starterPackService";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -102,59 +102,12 @@ function ColorSwatch({ name, hex, className }: { name: string; hex: string; clas
   );
 }
 
-// Mock packs for demos (no image_url to show fallback icons)
-const mockPacks: StarterPack[] = [
-  {
-    id: "1",
-    name: "Greetings",
-    description: "Essential greetings and polite phrases",
-    language: "lebanese",
-    level: "beginner",
-    is_active: true,
-    image_url: null,
-    icon: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    name: "Numbers",
-    description: "Learn to count in Lebanese",
-    language: "lebanese",
-    level: "beginner",
-    is_active: true,
-    image_url: null,
-    icon: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    name: "Common foods",
-    description: "Food and drink vocabulary",
-    language: "lebanese",
-    level: "intermediate",
-    is_active: true,
-    image_url: null,
-    icon: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    name: "Family members",
-    description: "Family and relationship terms",
-    language: "lebanese",
-    level: "advanced",
-    is_active: true,
-    image_url: null,
-    icon: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
 export default function DesignSystemPage() {
+  const [packs, setPacks] = useState<StarterPack[]>([]);
+
+  useEffect(() => {
+    StarterPackService.getAvailablePacks().then(setPacks);
+  }, []);
   // Theme colors from NotionLandingPage
   const theme = {
     primary: "#47907d",
@@ -293,54 +246,58 @@ export default function DesignSystemPage() {
             path="app/components/DashboardPackCard.tsx"
             description="Reusable pack card component for the dashboard"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <StateLabel label="Installed (with progress)" />
-                <DashboardPackCard
-                  pack={mockPacks[0]}
-                  variant="installed"
-                  progress={{ learned: 5, total: 8 }}
-                  onClick={() => {}}
-                />
-              </div>
+            {packs.length >= 4 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <StateLabel label="Installed (with progress)" />
+                  <DashboardPackCard
+                    pack={packs[0]}
+                    variant="installed"
+                    progress={{ learned: 5, total: 8 }}
+                    onClick={() => {}}
+                  />
+                </div>
 
-              <div>
-                <StateLabel label="With Review Button" />
-                <DashboardPackCard
-                  pack={mockPacks[1]}
-                  variant="installed"
-                  progress={{ learned: 3, total: 10 }}
-                  onClick={() => {}}
-                  actionSlot={
-                    <Link href="#">
-                      <Button size="sm" className="gap-1" style={{ backgroundColor: theme.primary }}>
-                        <Play className="w-3 h-3" />5
-                      </Button>
-                    </Link>
-                  }
-                />
-              </div>
+                <div>
+                  <StateLabel label="With Review Button" />
+                  <DashboardPackCard
+                    pack={packs[1]}
+                    variant="installed"
+                    progress={{ learned: 3, total: 10 }}
+                    onClick={() => {}}
+                    actionSlot={
+                      <Link href="#">
+                        <Button size="sm" className="gap-1" style={{ backgroundColor: theme.primary }}>
+                          <Play className="w-3 h-3" />5
+                        </Button>
+                      </Link>
+                    }
+                  />
+                </div>
 
-              <div>
-                <StateLabel label="Available (not installed)" />
-                <DashboardPackCard
-                  pack={mockPacks[2]}
-                  variant="available"
-                  progress={{ learned: 0, total: 10 }}
-                  onClick={() => {}}
-                />
-              </div>
+                <div>
+                  <StateLabel label="Available (not installed)" />
+                  <DashboardPackCard
+                    pack={packs[2]}
+                    variant="available"
+                    progress={{ learned: 0, total: 10 }}
+                    onClick={() => {}}
+                  />
+                </div>
 
-              <div>
-                <StateLabel label="Completed (100%)" />
-                <DashboardPackCard
-                  pack={mockPacks[3]}
-                  variant="installed"
-                  progress={{ learned: 8, total: 8 }}
-                  onClick={() => {}}
-                />
+                <div>
+                  <StateLabel label="Completed (100%)" />
+                  <DashboardPackCard
+                    pack={packs[3]}
+                    variant="installed"
+                    progress={{ learned: 8, total: 8 }}
+                    onClick={() => {}}
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-gray-500">Loading packs...</div>
+            )}
           </ComponentSection>
         </div>
 
