@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Copy, Play, ChevronRight } from "lucide-react";
+import { Check, Copy, ChevronRight, Play } from "lucide-react";
 import { DashboardPackCard } from "@/app/components/DashboardPackCard";
 import { WelcomeBanner } from "@/app/components/WelcomeBanner";
 import { StarterPackService, StarterPack } from "@/app/services/starterPackService";
@@ -259,19 +259,12 @@ export default function DesignSystemPage() {
                 </div>
 
                 <div>
-                  <StateLabel label="With Review Button" />
+                  <StateLabel label="In Progress" />
                   <DashboardPackCard
                     pack={packs[1]}
                     variant="installed"
                     progress={{ learned: 3, total: 10 }}
                     onClick={() => {}}
-                    actionSlot={
-                      <Link href="#">
-                        <Button size="sm" className="gap-1" style={{ backgroundColor: theme.primary }}>
-                          <Play className="w-3 h-3" />5
-                        </Button>
-                      </Link>
-                    }
                   />
                 </div>
 
