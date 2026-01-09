@@ -39,6 +39,16 @@ export default function NewLandingPage() {
   const isHowItWorksInView = useInView(howItWorksRef, { once: false, amount: 0.3 });
   const [showFeedback, setShowFeedback] = useState(false);
   const [timerProgress, setTimerProgress] = useState(0);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  // Track scroll to hide chevron
+  useEffect(() => {
+    const handleScroll = () => {
+      setHasScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Show feedback overlay after step 3 loads
   useEffect(() => {
@@ -230,8 +240,8 @@ export default function NewLandingPage() {
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: [0.4, 0.7, 0.4] }}
-        transition={{ delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ opacity: hasScrolled ? 0 : [0.4, 0.7, 0.4] }}
+        transition={hasScrolled ? { duration: 0.3 } : { delay: 1.2, duration: 2, repeat: Infinity, ease: "easeInOut" }}
         className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
         onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       >
