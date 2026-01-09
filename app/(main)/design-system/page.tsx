@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Copy, Play, TrendingUp, ChevronRight } from "lucide-react";
-import { BookOpen } from "@phosphor-icons/react";
+import { Check, Copy, Play, ChevronRight } from "lucide-react";
 import { DashboardPackCard } from "@/app/components/DashboardPackCard";
+import { WelcomeBanner } from "@/app/components/WelcomeBanner";
 import { StarterPack } from "@/app/services/starterPackService";
 import Link from "next/link";
 import Image from "next/image";
@@ -189,7 +189,6 @@ export default function DesignSystemPage() {
                 "Colors",
                 "Logo",
                 "DashboardPackCard",
-                "StatCard",
                 "ProgressBar",
                 "WelcomeBanner",
                 "Button",
@@ -345,79 +344,6 @@ export default function DesignSystemPage() {
           </ComponentSection>
         </div>
 
-        {/* Stat Cards */}
-        <div id="statcard">
-          <ComponentSection
-            name="StatCard"
-            path="app/components/Dashboard.tsx (inline)"
-            description="Statistics cards showing learning progress"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <StateLabel label="Learned" />
-                <div className="bg-white border rounded-xl p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Check className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">24</p>
-                      <p className="text-sm text-gray-500">Learned</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <StateLabel label="Learning" />
-                <div className="bg-white border rounded-xl p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">12</p>
-                      <p className="text-sm text-gray-500">Learning</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <StateLabel label="This Week" />
-                <div className="bg-white border rounded-xl p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">+8</p>
-                      <p className="text-sm text-gray-500">This week</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <StateLabel label="Loading State" />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white border rounded-xl p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg animate-pulse" />
-                      <div className="space-y-2">
-                        <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
-                        <div className="h-4 w-16 bg-gray-100 rounded animate-pulse" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </ComponentSection>
-        </div>
-
         {/* Progress Bar */}
         <div id="progressbar">
           <ComponentSection
@@ -461,55 +387,23 @@ export default function DesignSystemPage() {
         <div id="welcomebanner">
           <ComponentSection
             name="WelcomeBanner"
-            path="app/components/Dashboard.tsx (inline)"
+            path="app/components/WelcomeBanner.tsx"
             description="Hero banner on the dashboard"
           >
             <div className="space-y-4">
               <div>
                 <StateLabel label="With Reviews Available" />
-                <div className="relative overflow-hidden rounded-2xl p-8 text-white bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                  <div className="absolute top-4 right-6 text-6xl font-arabic text-white/10 select-none">يلا</div>
-                  <div className="relative z-10">
-                    <h1 className="text-2xl font-bold mb-2">Welcome back, Alex!</h1>
-                    <p className="text-white/80 mb-5">
-                      You have <span className="text-white font-semibold">12 words</span> ready for review.
-                    </p>
-                    <Button className="bg-white text-teal-700 hover:bg-white/90 font-medium">
-                      <Play className="w-4 h-4 mr-2" />
-                      Start review
-                    </Button>
-                  </div>
-                </div>
+                <WelcomeBanner firstName="Alex" reviewCount={12} />
               </div>
 
               <div>
                 <StateLabel label="All Caught Up" />
-                <div className="relative overflow-hidden rounded-2xl p-8 text-gray-800 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 border border-amber-200/50">
-                  <div className="absolute -right-4 top-1/2 -translate-y-1/2 text-[120px] font-arabic text-amber-900/[0.04] select-none leading-none">ممتاز</div>
-                  <div className="relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 rounded-full mb-4">
-                      <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                      <span className="text-xs font-medium text-amber-700">All caught up</span>
-                    </div>
-                    <h1 className="text-2xl font-bold mb-2 text-gray-900">Beautiful progress, Alex!</h1>
-                    <p className="text-gray-600 max-w-md">
-                      No words waiting for review. Your dedication is paying off.
-                    </p>
-                  </div>
-                </div>
+                <WelcomeBanner firstName="Alex" reviewCount={0} />
               </div>
 
               <div>
                 <StateLabel label="Loading" />
-                <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-gray-100 to-gray-50 border">
-                  <div className="space-y-4">
-                    <div className="h-8 w-48 bg-gray-200 rounded-md animate-pulse" />
-                    <div className="h-5 w-64 bg-gray-200 rounded-md animate-pulse" />
-                    <div className="h-10 w-32 bg-gray-200 rounded-md animate-pulse mt-2" />
-                  </div>
-                </div>
+                <WelcomeBanner firstName="Alex" reviewCount={0} isLoading />
               </div>
             </div>
           </ComponentSection>
