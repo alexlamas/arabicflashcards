@@ -88,8 +88,8 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, isLoad
           <Image
             src={fluency.logo}
             alt="Yalla Flash"
-            width={64}
-            height={64}
+            width={96}
+            height={96}
             className="flex-shrink-0"
             onError={(e) => {
               // Fallback to default logo if level-specific one doesn't exist

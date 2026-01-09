@@ -201,17 +201,22 @@ export default function ContentEditorPage() {
           </Select>
         </div>
 
-        <div className="ml-auto flex items-center gap-4">
-          <div className="text-sm text-muted-foreground">
-            {stats.reviewed} / {stats.total} reviewed
-          </div>
-          <div className="w-32">
-            <Progress value={progressPercent} className="h-2" />
-          </div>
-        </div>
       </header>
 
       <div className="p-4 max-w-2xl mx-auto">
+        {/* Progress section */}
+        {!isLoading && stats.total > 0 && (
+          <div className="mb-6 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="font-medium">Review Progress</span>
+              <span className="text-muted-foreground">
+                {stats.reviewed} of {stats.total} words approved
+              </span>
+            </div>
+            <Progress value={progressPercent} className="h-3" />
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
