@@ -21,15 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   StarterPack,
   StarterPackWord,
-  StarterPackPhrase,
-  ReviewStatus,
 } from "../../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
-import { Check, X, Loader2, RotateCcw } from "lucide-react";
+import { Check, X, Loader2 } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
@@ -47,9 +44,7 @@ export default function ContentEditorPage() {
   const [packs, setPacks] = useState<StarterPack[]>([]);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
   const [words, setWords] = useState<StarterPackWord[]>([]);
-  const [phrases, setPhrases] = useState<StarterPackPhrase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("words");
   const [editingCell, setEditingCell] = useState<EditingCell>(null);
   const [saving, setSaving] = useState(false);
 
@@ -79,7 +74,7 @@ export default function ContentEditorPage() {
   async function loadPacks() {
     const supabase = createClient();
     const { data, error } = await supabase
-      .from("starter_packs")
+      .from("packs")
       .select("*")
       .order("name");
 
@@ -97,24 +92,21 @@ export default function ContentEditorPage() {
     setIsLoading(true);
     const supabase = createClient();
 
-    const [wordsResult, phrasesResult] = await Promise.all([
-      supabase
-        .from("starter_pack_words")
-        .select("*")
-        .eq("pack_id", packId)
-        .order("order_index"),
-      supabase
-        .from("starter_pack_phrases")
-        .select("*")
-        .eq("pack_id", packId)
-        .order("order_index"),
-    ]);
+    // Get pack words (includes type='phrase')
+    const wordsResult = await supabase
+      .from("words")
+      .select("*")
+      .eq("pack_id", packId)
+      .order("english");
 
-    if (wordsResult.error) console.error("Error loading words:", wordsResult.error);
-    if (phrasesResult.error) console.error("Error loading phrases:", phrasesResult.error);
+    if (wordsResult.error) {
+      console.error("Error loading words:", wordsResult.error);
+      setWords([]);
+      setIsLoading(false);
+      return;
+    }
 
     setWords(wordsResult.data || []);
-    setPhrases(phrasesResult.data || []);
     setIsLoading(false);
   }
 
@@ -133,25 +125,17 @@ export default function ContentEditorPage() {
     setSaving(true);
 
     const supabase = createClient();
-    const table = activeTab === "words" ? "starter_pack_words" : "starter_pack_phrases";
-
     const { error } = await supabase
-      .from(table)
+      .from("words")
       .update({ [editingCell.field]: editingCell.value })
       .eq("id", editingCell.id);
 
     if (error) {
       console.error("Error saving:", error);
     } else {
-      if (activeTab === "words") {
-        setWords(words.map((w) =>
-          w.id === editingCell.id ? { ...w, [editingCell.field]: editingCell.value } : w
-        ));
-      } else {
-        setPhrases(phrases.map((p) =>
-          p.id === editingCell.id ? { ...p, [editingCell.field]: editingCell.value } : p
-        ));
-      }
+      setWords(words.map((w) =>
+        w.id === editingCell.id ? { ...w, [editingCell.field]: editingCell.value } : w
+      ));
     }
 
     setEditingCell(null);
@@ -162,31 +146,6 @@ export default function ContentEditorPage() {
     setEditingCell(null);
   };
 
-  const handleStatusChange = async (id: string, status: ReviewStatus, type: "words" | "phrases") => {
-    const supabase = createClient();
-    const table = type === "words" ? "starter_pack_words" : "starter_pack_phrases";
-
-    const { error } = await supabase
-      .from(table)
-      .update({ review_status: status })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error updating status:", error);
-      return;
-    }
-
-    if (type === "words") {
-      setWords(words.map((w) =>
-        w.id === id ? { ...w, review_status: status } : w
-      ));
-    } else {
-      setPhrases(phrases.map((p) =>
-        p.id === id ? { ...p, review_status: status } : p
-      ));
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleCellSave();
@@ -195,11 +154,6 @@ export default function ContentEditorPage() {
     }
   };
 
-  // Split words and phrases by status
-  const needsReviewWords = words.filter((w) => !w.review_status || w.review_status === "needs_review");
-  const approvedWords = words.filter((w) => w.review_status === "approved");
-  const needsReviewPhrases = phrases.filter((p) => !p.review_status || p.review_status === "needs_review");
-  const approvedPhrases = phrases.filter((p) => p.review_status === "approved");
 
   // Loading state
   if (isAuthLoading || isRolesLoading) {
@@ -249,7 +203,7 @@ export default function ContentEditorPage() {
     );
   };
 
-  const renderWordsTable = (wordsList: StarterPackWord[], showApproveButton: boolean) => (
+  const renderWordsTable = (wordsList: StarterPackWord[]) => (
     <Table>
       <TableHeader>
         <TableRow>
@@ -259,7 +213,6 @@ export default function ContentEditorPage() {
           <TableHead>Transliteration</TableHead>
           <TableHead>Type</TableHead>
           <TableHead>Notes</TableHead>
-          <TableHead className="w-32"></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -271,78 +224,6 @@ export default function ContentEditorPage() {
             <TableCell>{renderEditableCell(word.id, "transliteration", word.transliteration || "")}</TableCell>
             <TableCell>{renderEditableCell(word.id, "type", word.type || "")}</TableCell>
             <TableCell className="max-w-[200px] truncate">{renderEditableCell(word.id, "notes", word.notes || "")}</TableCell>
-            <TableCell>
-              {showApproveButton ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-green-600 border-green-300 hover:bg-green-50"
-                  onClick={() => handleStatusChange(word.id, "approved", "words")}
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  Approve
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-gray-500"
-                  onClick={() => handleStatusChange(word.id, "needs_review", "words")}
-                >
-                  <RotateCcw className="h-4 w-4 mr-1" />
-                  Request review
-                </Button>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-
-  const renderPhrasesTable = (phrasesList: StarterPackPhrase[], showApproveButton: boolean) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-12">#</TableHead>
-          <TableHead>Arabic</TableHead>
-          <TableHead>English</TableHead>
-          <TableHead>Transliteration</TableHead>
-          <TableHead>Notes</TableHead>
-          <TableHead className="w-32"></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {phrasesList.map((phrase, index) => (
-          <TableRow key={phrase.id}>
-            <TableCell className="text-gray-400">{index + 1}</TableCell>
-            <TableCell>{renderEditableCell(phrase.id, "arabic", phrase.arabic, true)}</TableCell>
-            <TableCell>{renderEditableCell(phrase.id, "english", phrase.english)}</TableCell>
-            <TableCell>{renderEditableCell(phrase.id, "transliteration", phrase.transliteration || "")}</TableCell>
-            <TableCell className="max-w-[200px] truncate">{renderEditableCell(phrase.id, "notes", phrase.notes || "")}</TableCell>
-            <TableCell>
-              {showApproveButton ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-green-600 border-green-300 hover:bg-green-50"
-                  onClick={() => handleStatusChange(phrase.id, "approved", "phrases")}
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  Approve
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-gray-500"
-                  onClick={() => handleStatusChange(phrase.id, "needs_review", "phrases")}
-                >
-                  <RotateCcw className="h-4 w-4 mr-1" />
-                  Request review
-                </Button>
-              )}
-            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -372,105 +253,22 @@ export default function ContentEditorPage() {
         </div>
 
         <div className="ml-auto text-sm text-gray-500">
-          {activeTab === "words" ? (
-            <>
-              <span className="text-amber-600">{needsReviewWords.length} needs review</span>
-              <span className="mx-2">|</span>
-              <span className="text-green-600">{approvedWords.length} approved</span>
-            </>
-          ) : (
-            <>
-              <span className="text-amber-600">{needsReviewPhrases.length} needs review</span>
-              <span className="mx-2">|</span>
-              <span className="text-green-600">{approvedPhrases.length} approved</span>
-            </>
-          )}
+          <span>{words.length} words</span>
         </div>
       </header>
 
       <div className="p-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="words">Words ({words.length})</TabsTrigger>
-            <TabsTrigger value="phrases">Phrases ({phrases.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="words" className="mt-0 space-y-8">
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              </div>
-            ) : (
-              <>
-                {/* Needs review Section */}
-                <div>
-                  <h2 className="text-lg font-medium mb-3 text-amber-600">
-                    Needs review ({needsReviewWords.length})
-                  </h2>
-                  {needsReviewWords.length === 0 ? (
-                    <p className="text-gray-500 text-sm py-4">All words have been reviewed!</p>
-                  ) : (
-                    <div className="border rounded-lg overflow-hidden">
-                      {renderWordsTable(needsReviewWords, true)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Approved Section */}
-                <div>
-                  <h2 className="text-lg font-medium mb-3 text-green-600">
-                    Approved ({approvedWords.length})
-                  </h2>
-                  {approvedWords.length === 0 ? (
-                    <p className="text-gray-500 text-sm py-4">No approved words yet.</p>
-                  ) : (
-                    <div className="border rounded-lg overflow-hidden">
-                      {renderWordsTable(approvedWords, false)}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="phrases" className="mt-0 space-y-8">
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              </div>
-            ) : (
-              <>
-                {/* Needs review Section */}
-                <div>
-                  <h2 className="text-lg font-medium mb-3 text-amber-600">
-                    Needs review ({needsReviewPhrases.length})
-                  </h2>
-                  {needsReviewPhrases.length === 0 ? (
-                    <p className="text-gray-500 text-sm py-4">All phrases have been reviewed!</p>
-                  ) : (
-                    <div className="border rounded-lg overflow-hidden">
-                      {renderPhrasesTable(needsReviewPhrases, true)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Approved Section */}
-                <div>
-                  <h2 className="text-lg font-medium mb-3 text-green-600">
-                    Approved ({approvedPhrases.length})
-                  </h2>
-                  {approvedPhrases.length === 0 ? (
-                    <p className="text-gray-500 text-sm py-4">No approved phrases yet.</p>
-                  ) : (
-                    <div className="border rounded-lg overflow-hidden">
-                      {renderPhrasesTable(approvedPhrases, false)}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          </div>
+        ) : words.length === 0 ? (
+          <p className="text-gray-500 text-sm py-4">No words in this pack.</p>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            {renderWordsTable(words)}
+          </div>
+        )}
       </div>
     </>
   );

@@ -11,6 +11,12 @@ import ReviewTimeline from "./review/ReviewTimeline";
 import { useWords } from "../contexts/WordsContext";
 // import { useUserRoles } from "../hooks/useUserRoles"; // No longer needed - all users can manage their words
 
+interface TabConfig {
+  key: string;
+  label: string;
+  count?: number;
+}
+
 export function Header({
   variant = "default",
   session,
@@ -19,6 +25,9 @@ export function Header({
   title,
   hideArabic = false,
   setHideArabic,
+  tabs,
+  activeTab,
+  onTabChange,
 }: {
   variant?: "default" | "review";
   session?: Session | null;
@@ -27,6 +36,9 @@ export function Header({
   title?: string;
   hideArabic?: boolean;
   setHideArabic?: (value: boolean) => void;
+  tabs?: TabConfig[];
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }) {
   // Remove admin checks - all users can manage their own words
   const showSearch = typeof setSearchTerm === "function";
@@ -40,7 +52,24 @@ export function Header({
           <Separator orientation="vertical" className="mr-2 h-4" />
         </>
       )}
-      {title && <h1 className="font-semibold hidden text-lg mr-4">{title}</h1>}
+      {title && !tabs && <h1 className="font-semibold text-lg mr-4">{title}</h1>}
+      {tabs && onTabChange && (
+        <div className="flex gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => onTabChange(tab.key)}
+              className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                activeTab === tab.key
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+              }`}
+            >
+              {tab.label}{tab.count !== undefined ? ` (${tab.count})` : ""}
+            </button>
+          ))}
+        </div>
+      )}
       {variant === "review" && <ReviewTimeline />}
       {showSearch && (
         <>

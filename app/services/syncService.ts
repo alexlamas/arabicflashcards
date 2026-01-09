@@ -74,19 +74,19 @@ export class SyncService {
         }
         await SpacedRepetitionService.processReview(
           action.payload.userId,
-          action.payload.wordEnglish,
+          action.payload.wordId,
           action.payload.rating
         );
         break;
       }
-      
+
       case "START_LEARNING": {
         if (!this.isStartLearningPayload(action.payload)) {
           throw new Error("Invalid START_LEARNING payload");
         }
         await SpacedRepetitionService.startLearning(
           action.payload.userId,
-          action.payload.wordEnglish
+          action.payload.wordId
         );
         break;
       }
@@ -107,13 +107,13 @@ export class SyncService {
   }
 
   private static isUpdateProgressPayload(payload: unknown): payload is UpdateProgressPayload {
-    return typeof payload === "object" && payload !== null && 
-      "userId" in payload && "wordEnglish" in payload && "rating" in payload;
+    return typeof payload === "object" && payload !== null &&
+      "userId" in payload && "wordId" in payload && "rating" in payload;
   }
 
   private static isStartLearningPayload(payload: unknown): payload is StartLearningPayload {
-    return typeof payload === "object" && payload !== null && 
-      "userId" in payload && "wordEnglish" in payload;
+    return typeof payload === "object" && payload !== null &&
+      "userId" in payload && "wordId" in payload;
   }
 
   static async syncPendingActions(): Promise<SyncResult> {

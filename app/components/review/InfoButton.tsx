@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { ExampleSentence } from "../../types/word";
+import React, { useState, useEffect } from "react";
+import { Sentence } from "../../types/word";
+import { SentenceService } from "../../services/sentenceService";
 
 interface InfoButtonProps {
   word: {
+    id: string;
     english: string;
     arabic: string;
-    example_sentences?: ExampleSentence[];
     notes?: string;
   };
 }
@@ -13,19 +14,23 @@ interface InfoButtonProps {
 export default function InfoButton({ word }: InfoButtonProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [sentences, setSentences] = useState<Sentence[]>([]);
 
-  const hasSavedSentences =
-    word.example_sentences && word.example_sentences.length > 0;
+  useEffect(() => {
+    if (word.id) {
+      SentenceService.getSentencesForWord(word.id).then(setSentences);
+    }
+  }, [word.id]);
+
+  const hasSentences = sentences.length > 0;
   const hasNotes = !!word.notes;
-  const hasInfo = hasSavedSentences || hasNotes;
+  const hasInfo = hasSentences || hasNotes;
 
   if (!hasInfo) {
     return null;
   }
 
-  const currentSentence = hasSavedSentences
-    ? word.example_sentences![currentIndex]
-    : null;
+  const currentSentence = hasSentences ? sentences[currentIndex] : null;
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -36,10 +41,7 @@ export default function InfoButton({ word }: InfoButtonProps) {
   };
 
   const handleClick = () => {
-    if (
-      hasSavedSentences &&
-      currentIndex < word.example_sentences!.length - 1
-    ) {
+    if (hasSentences && currentIndex < sentences.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
       setCurrentIndex(0);
@@ -47,11 +49,11 @@ export default function InfoButton({ word }: InfoButtonProps) {
   };
 
   const getOverlayText = () => {
-    if (hasSavedSentences && word.example_sentences!.length > 1 && isHovered) {
-      return `Example ${currentIndex + 1} of ${word.example_sentences!.length}`;
+    if (hasSentences && sentences.length > 1 && isHovered) {
+      return `Example ${currentIndex + 1} of ${sentences.length}`;
     }
-    if (hasSavedSentences && hasNotes) return "Show examples & notes";
-    if (hasSavedSentences) return "Show examples";
+    if (hasSentences && hasNotes) return "Show examples & notes";
+    if (hasSentences) return "Show examples";
     return "Show notes";
   };
 
@@ -69,7 +71,7 @@ export default function InfoButton({ word }: InfoButtonProps) {
         }`}
       >
         <div className="space-y-3 p-0">
-          {hasSavedSentences && currentSentence && (
+          {hasSentences && currentSentence && (
             <div className="p-3 bg-white group-hover:bg-neutral-100 transition-all rounded-lg border border-transparent group-hover:border-gray-100 font-medium select-none">
               {currentSentence.arabic && (
                 <p className="text-3xl font-arabic text-black/90 mb-2 font-medium">

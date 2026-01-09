@@ -33,7 +33,6 @@ import {
 import {
   StarterPack,
   StarterPackWord,
-  StarterPackPhrase,
 } from "../../services/starterPackService";
 import {
   Pencil,
@@ -46,7 +45,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
-type PackWithCounts = StarterPack & { word_count: number; phrase_count: number };
+type PackWithCounts = StarterPack & { word_count: number };
 
 export default function AdminPage() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -63,16 +62,13 @@ export default function AdminPage() {
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
   const [packContents, setPackContents] = useState<{
     words: StarterPackWord[];
-    phrases: StarterPackPhrase[];
   } | null>(null);
 
   // Editing state
   const [editingPack, setEditingPack] = useState<PackWithCounts | null>(null);
   const [editingWord, setEditingWord] = useState<StarterPackWord | null>(null);
-  const [editingPhrase, setEditingPhrase] = useState<StarterPackPhrase | null>(null);
   const [isCreatingPack, setIsCreatingPack] = useState(false);
   const [isAddingWord, setIsAddingWord] = useState(false);
-  const [isAddingPhrase, setIsAddingPhrase] = useState(false);
 
   // Form states
   const [packForm, setPackForm] = useState({
@@ -87,15 +83,6 @@ export default function AdminPage() {
     transliteration: "",
     type: "noun",
     notes: "",
-    example_sentences: null as unknown,
-    order_index: 0,
-  });
-  const [phraseForm, setPhraseForm] = useState({
-    arabic: "",
-    english: "",
-    transliteration: "",
-    notes: "",
-    order_index: 0,
   });
 
   const [saving, setSaving] = useState(false);
@@ -120,14 +107,10 @@ export default function AdminPage() {
     setIsLoading(true);
     try {
       if (activeTab === "users") {
-        console.log("Loading users...");
         const usersData = await AdminService.getAllUsers();
-        console.log("Users loaded:", usersData);
         setUsers(usersData);
       } else if (activeTab === "words") {
-        console.log("Loading words...");
         const wordsData = await AdminService.getAllWords();
-        console.log("Words loaded:", wordsData);
         setWords(wordsData);
       } else if (activeTab === "packs") {
         const packsData = await AdminService.getAllStarterPacks();
@@ -135,7 +118,6 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Error loading data:", err);
-      // RLS policies may be restricting access - handled in UI with empty state
     } finally {
       setIsLoading(false);
     }
@@ -206,7 +188,7 @@ export default function AdminPage() {
     try {
       await AdminService.addStarterPackWord(expandedPack, wordForm);
       setIsAddingWord(false);
-      setWordForm({ arabic: "", english: "", transliteration: "", type: "noun", notes: "", example_sentences: null, order_index: 0 });
+      setWordForm({ arabic: "", english: "", transliteration: "", type: "noun", notes: "" });
       loadPackContents(expandedPack);
       loadData();
     } catch (error) {
@@ -239,52 +221,6 @@ export default function AdminPage() {
       loadData();
     } catch (error) {
       console.error("Error deleting word:", error);
-    }
-  }
-
-  // Phrase CRUD
-  async function handleAddPhrase() {
-    if (!expandedPack) return;
-    setSaving(true);
-    try {
-      await AdminService.addStarterPackPhrase(expandedPack, {
-        ...phraseForm,
-        linked_word_indices: null,
-      });
-      setIsAddingPhrase(false);
-      setPhraseForm({ arabic: "", english: "", transliteration: "", notes: "", order_index: 0 });
-      loadPackContents(expandedPack);
-      loadData();
-    } catch (error) {
-      console.error("Error adding phrase:", error);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleUpdatePhrase() {
-    if (!editingPhrase || !expandedPack) return;
-    setSaving(true);
-    try {
-      await AdminService.updateStarterPackPhrase(editingPhrase.id, phraseForm);
-      setEditingPhrase(null);
-      loadPackContents(expandedPack);
-    } catch (error) {
-      console.error("Error updating phrase:", error);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDeletePhrase(phraseId: string) {
-    if (!expandedPack) return;
-    if (!confirm("Delete this phrase?")) return;
-    try {
-      await AdminService.deleteStarterPackPhrase(phraseId);
-      loadPackContents(expandedPack);
-      loadData();
-    } catch (error) {
-      console.error("Error deleting phrase:", error);
     }
   }
 
@@ -386,7 +322,7 @@ export default function AdminPage() {
                         <div>
                           <div className="font-medium">{pack.name}</div>
                           <div className="text-sm text-gray-500">
-                            {pack.word_count} words, {pack.phrase_count} phrases
+                            {pack.word_count} words
                             {!pack.is_active && (
                               <span className="ml-2 text-orange-500">(inactive)</span>
                             )}
@@ -424,7 +360,7 @@ export default function AdminPage() {
                     {expandedPack === pack.id && packContents && (
                       <div className="border-t p-4 bg-gray-50">
                         {/* Words Section */}
-                        <div className="mb-6">
+                        <div>
                           <div className="flex justify-between items-center mb-2">
                             <h4 className="font-medium">Words</h4>
                             <Button size="sm" variant="outline" onClick={() => setIsAddingWord(true)}>
@@ -464,8 +400,6 @@ export default function AdminPage() {
                                               transliteration: word.transliteration || "",
                                               type: word.type || "noun",
                                               notes: word.notes || "",
-                                              example_sentences: word.example_sentences,
-                                              order_index: word.order_index,
                                             });
                                           }}
                                         >
@@ -476,67 +410,6 @@ export default function AdminPage() {
                                           variant="ghost"
                                           className="text-red-500"
                                           onClick={() => handleDeleteWord(word.id)}
-                                        >
-                                          <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          )}
-                        </div>
-
-                        {/* Phrases Section */}
-                        <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-medium">Phrases</h4>
-                            <Button size="sm" variant="outline" onClick={() => setIsAddingPhrase(true)}>
-                              <Plus className="h-3 w-3 mr-1" /> Add Phrase
-                            </Button>
-                          </div>
-                          {packContents.phrases.length === 0 ? (
-                            <p className="text-sm text-gray-500">No phrases yet</p>
-                          ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Arabic</TableHead>
-                                  <TableHead>English</TableHead>
-                                  <TableHead>Transliteration</TableHead>
-                                  <TableHead className="w-20"></TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {packContents.phrases.map((phrase) => (
-                                  <TableRow key={phrase.id}>
-                                    <TableCell className="font-arabic">{phrase.arabic}</TableCell>
-                                    <TableCell>{phrase.english}</TableCell>
-                                    <TableCell>{phrase.transliteration}</TableCell>
-                                    <TableCell>
-                                      <div className="flex gap-1">
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => {
-                                            setEditingPhrase(phrase);
-                                            setPhraseForm({
-                                              arabic: phrase.arabic,
-                                              english: phrase.english,
-                                              transliteration: phrase.transliteration || "",
-                                              notes: phrase.notes || "",
-                                              order_index: phrase.order_index,
-                                            });
-                                          }}
-                                        >
-                                          <Pencil className="h-3 w-3" />
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="text-red-500"
-                                          onClick={() => handleDeletePhrase(phrase.id)}
                                         >
                                           <Trash2 className="h-3 w-3" />
                                         </Button>
@@ -574,7 +447,6 @@ export default function AdminPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Words</TableHead>
-                    <TableHead>Phrases</TableHead>
                     <TableHead>Last Review</TableHead>
                     <TableHead>Joined</TableHead>
                   </TableRow>
@@ -591,7 +463,6 @@ export default function AdminPage() {
                         )}
                       </TableCell>
                       <TableCell>{user.word_count}</TableCell>
-                      <TableCell>{user.phrase_count}</TableCell>
                       <TableCell>
                         {user.last_review_date
                           ? new Date(user.last_review_date).toLocaleDateString()
@@ -648,237 +519,149 @@ export default function AdminPage() {
         </div>
       </Tabs>
 
-        {/* Edit Pack Dialog */}
-        <Dialog open={!!editingPack} onOpenChange={() => setEditingPack(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Starter Pack</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Name</Label>
-                <Input
-                  value={packForm.name}
-                  onChange={(e) => setPackForm({ ...packForm, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  value={packForm.description}
-                  onChange={(e) => setPackForm({ ...packForm, description: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Level</Label>
-                <Input
-                  value={packForm.level}
-                  onChange={(e) => setPackForm({ ...packForm, level: e.target.value })}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={packForm.is_active}
-                  onCheckedChange={(checked) => setPackForm({ ...packForm, is_active: checked })}
-                />
-                <Label>Active</Label>
-              </div>
-              <Button onClick={handleUpdatePack} disabled={saving} className="w-full">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </Button>
+      {/* Edit Pack Dialog */}
+      <Dialog open={!!editingPack} onOpenChange={() => setEditingPack(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Starter Pack</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input
+                value={packForm.name}
+                onChange={(e) => setPackForm({ ...packForm, name: e.target.value })}
+              />
             </div>
-          </DialogContent>
-        </Dialog>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={packForm.description}
+                onChange={(e) => setPackForm({ ...packForm, description: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Level</Label>
+              <Input
+                value={packForm.level}
+                onChange={(e) => setPackForm({ ...packForm, level: e.target.value })}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={packForm.is_active}
+                onCheckedChange={(checked) => setPackForm({ ...packForm, is_active: checked })}
+              />
+              <Label>Active</Label>
+            </div>
+            <Button onClick={handleUpdatePack} disabled={saving} className="w-full">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Add Word Dialog */}
-        <Dialog open={isAddingWord} onOpenChange={setIsAddingWord}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Word</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Arabic</Label>
-                <Input
-                  value={wordForm.arabic}
-                  onChange={(e) => setWordForm({ ...wordForm, arabic: e.target.value })}
-                  className="font-arabic"
-                  dir="rtl"
-                />
-              </div>
-              <div>
-                <Label>English</Label>
-                <Input
-                  value={wordForm.english}
-                  onChange={(e) => setWordForm({ ...wordForm, english: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Transliteration</Label>
-                <Input
-                  value={wordForm.transliteration}
-                  onChange={(e) => setWordForm({ ...wordForm, transliteration: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Type</Label>
-                <Input
-                  value={wordForm.type}
-                  onChange={(e) => setWordForm({ ...wordForm, type: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Notes</Label>
-                <Textarea
-                  value={wordForm.notes}
-                  onChange={(e) => setWordForm({ ...wordForm, notes: e.target.value })}
-                />
-              </div>
-              <Button onClick={handleAddWord} disabled={saving} className="w-full">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
-              </Button>
+      {/* Add Word Dialog */}
+      <Dialog open={isAddingWord} onOpenChange={setIsAddingWord}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Word</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Arabic</Label>
+              <Input
+                value={wordForm.arabic}
+                onChange={(e) => setWordForm({ ...wordForm, arabic: e.target.value })}
+                className="font-arabic"
+                dir="rtl"
+              />
             </div>
-          </DialogContent>
-        </Dialog>
+            <div>
+              <Label>English</Label>
+              <Input
+                value={wordForm.english}
+                onChange={(e) => setWordForm({ ...wordForm, english: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Transliteration</Label>
+              <Input
+                value={wordForm.transliteration}
+                onChange={(e) => setWordForm({ ...wordForm, transliteration: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <Input
+                value={wordForm.type}
+                onChange={(e) => setWordForm({ ...wordForm, type: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                value={wordForm.notes}
+                onChange={(e) => setWordForm({ ...wordForm, notes: e.target.value })}
+              />
+            </div>
+            <Button onClick={handleAddWord} disabled={saving} className="w-full">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Edit Word Dialog */}
-        <Dialog open={!!editingWord} onOpenChange={() => setEditingWord(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Word</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Arabic</Label>
-                <Input
-                  value={wordForm.arabic}
-                  onChange={(e) => setWordForm({ ...wordForm, arabic: e.target.value })}
-                  className="font-arabic"
-                  dir="rtl"
-                />
-              </div>
-              <div>
-                <Label>English</Label>
-                <Input
-                  value={wordForm.english}
-                  onChange={(e) => setWordForm({ ...wordForm, english: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Transliteration</Label>
-                <Input
-                  value={wordForm.transliteration}
-                  onChange={(e) => setWordForm({ ...wordForm, transliteration: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Type</Label>
-                <Input
-                  value={wordForm.type}
-                  onChange={(e) => setWordForm({ ...wordForm, type: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Notes</Label>
-                <Textarea
-                  value={wordForm.notes}
-                  onChange={(e) => setWordForm({ ...wordForm, notes: e.target.value })}
-                />
-              </div>
-              <Button onClick={handleUpdateWord} disabled={saving} className="w-full">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </Button>
+      {/* Edit Word Dialog */}
+      <Dialog open={!!editingWord} onOpenChange={() => setEditingWord(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Word</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Arabic</Label>
+              <Input
+                value={wordForm.arabic}
+                onChange={(e) => setWordForm({ ...wordForm, arabic: e.target.value })}
+                className="font-arabic"
+                dir="rtl"
+              />
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Add Phrase Dialog */}
-        <Dialog open={isAddingPhrase} onOpenChange={setIsAddingPhrase}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Phrase</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Arabic</Label>
-                <Input
-                  value={phraseForm.arabic}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, arabic: e.target.value })}
-                  className="font-arabic"
-                  dir="rtl"
-                />
-              </div>
-              <div>
-                <Label>English</Label>
-                <Input
-                  value={phraseForm.english}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, english: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Transliteration</Label>
-                <Input
-                  value={phraseForm.transliteration}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, transliteration: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Notes</Label>
-                <Textarea
-                  value={phraseForm.notes}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, notes: e.target.value })}
-                />
-              </div>
-              <Button onClick={handleAddPhrase} disabled={saving} className="w-full">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
-              </Button>
+            <div>
+              <Label>English</Label>
+              <Input
+                value={wordForm.english}
+                onChange={(e) => setWordForm({ ...wordForm, english: e.target.value })}
+              />
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Phrase Dialog */}
-        <Dialog open={!!editingPhrase} onOpenChange={() => setEditingPhrase(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Phrase</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Arabic</Label>
-                <Input
-                  value={phraseForm.arabic}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, arabic: e.target.value })}
-                  className="font-arabic"
-                  dir="rtl"
-                />
-              </div>
-              <div>
-                <Label>English</Label>
-                <Input
-                  value={phraseForm.english}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, english: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Transliteration</Label>
-                <Input
-                  value={phraseForm.transliteration}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, transliteration: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Notes</Label>
-                <Textarea
-                  value={phraseForm.notes}
-                  onChange={(e) => setPhraseForm({ ...phraseForm, notes: e.target.value })}
-                />
-              </div>
-              <Button onClick={handleUpdatePhrase} disabled={saving} className="w-full">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </Button>
+            <div>
+              <Label>Transliteration</Label>
+              <Input
+                value={wordForm.transliteration}
+                onChange={(e) => setWordForm({ ...wordForm, transliteration: e.target.value })}
+              />
             </div>
-          </DialogContent>
-        </Dialog>
+            <div>
+              <Label>Type</Label>
+              <Input
+                value={wordForm.type}
+                onChange={(e) => setWordForm({ ...wordForm, type: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                value={wordForm.notes}
+                onChange={(e) => setWordForm({ ...wordForm, notes: e.target.value })}
+              />
+            </div>
+            <Button onClick={handleUpdateWord} disabled={saving} className="w-full">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

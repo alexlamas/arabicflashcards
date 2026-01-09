@@ -1,64 +1,31 @@
-# Arabic Flashcards - TODO
+# Arabic Flashcards - Roadmap
 
-Goal: Get the app ready for public launch.
+## MVP (ship this)
 
----
+- [ ] Fluency progress (% toward core 350)
+- [ ] Topic packs with unlock progression
+- [ ] Learn flow (new words in a pack)
+- [ ] Review flow (spaced repetition)
+- [ ] Search/add words (unified bar)
+- [ ] Word cards (word, transliteration, meaning)
+- [ ] Basic settings (daily goal, transliteration toggle)
 
-## Launch Blockers
+## V2 (near-term)
 
-These must be fixed before going public.
+- [ ] Audio pronunciation
+- [ ] Sentences alongside words
+- [ ] Pack detail view
+- [ ] "Caught up" empty state
+- [ ] Fluency milestone celebrations
+- [ ] Word detail (tap to expand)
 
-### Authentication
-- [x] Fix sign up flow
+## V3+ (later)
 
-### AI Features
-- [ ] Remove AI features for non-admin users (or hide behind feature flag)
-
-### Starter Packs / Collections
-- [ ] Fix installing collections
-- [ ] Improve starter pack content and quality
-- [ ] Add phrases from that book
-- [ ] Add Saifi content
-
----
-
-## Pre-Launch Polish
-
-Important for a good first impression, but not strictly blocking.
-
-### Landing Page
-- [ ] Better logged out page - focus on features, less branding
-- [ ] Explain product features clearly
-- [ ] Add screenshots or demo
-
-### New User Experience
-- [ ] Improve onboarding flow after sign up
-- [ ] Homepage shows words ready for review
-- [ ] Clear stats and progress indicators
-
-### Review Experience
-- [ ] Progress bar for daily review session
-- [ ] Better review timeline display
-
----
-
-## Post-Launch
-
-Features to add after public launch.
-
-### Engagement
-- [ ] Email reminders when words not reviewed for 3 days
-
-### Premium Features
-- [ ] Photo upload for words
-- [ ] AI sentence generation (premium tier)
-- [ ] Payments integration
-
----
-
-## Testing
-
-- [ ] User testing before launch
-- [ ] Test sign up flow end-to-end
-- [ ] Test starter pack installation
-- [ ] Test review flow on mobile
+- [ ] Streaks + motivation
+- [ ] Weekly/monthly stats
+- [ ] Onboarding for new users
+- [ ] Social (share progress, leaderboards)
+- [ ] Offline mode
+- [ ] Spaced repetition tuning (easy/hard buttons)
+- [ ] Import word lists
+- [ ] AI-generated example sentences

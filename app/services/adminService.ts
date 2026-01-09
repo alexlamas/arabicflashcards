@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
-import { StarterPack, StarterPackWord, StarterPackPhrase } from "./starterPackService";
+import { Pack, PackWord } from "./packService";
 
 export interface AdminUser {
   id: string;
@@ -7,7 +7,6 @@ export interface AdminUser {
   created_at: string;
   email_confirmed: boolean;
   word_count: number;
-  phrase_count: number;
   last_review_date: string | null;
 }
 
@@ -46,6 +45,7 @@ export class AdminService {
     const { data, error } = await supabase
       .from("words")
       .select("id, user_id, arabic, english, transliteration, type, created_at")
+      .not("user_id", "is", null) // Only custom words, not pack words
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -58,61 +58,51 @@ export class AdminService {
   }
 
   /**
-   * Get all starter packs (including inactive ones)
+   * Get all packs (including inactive ones)
    */
-  static async getAllStarterPacks(): Promise<(StarterPack & { word_count: number; phrase_count: number })[]> {
+  static async getAllStarterPacks(): Promise<(Pack & { word_count: number })[]> {
     const supabase = createClient();
 
     const { data: packs, error: packsError } = await supabase
-      .from("starter_packs")
+      .from("packs")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (packsError) throw packsError;
 
-    // Get word counts
+    // Get word counts per pack
     const { data: wordCounts, error: wordCountError } = await supabase
-      .from("starter_pack_words")
-      .select("pack_id");
+      .from("words")
+      .select("pack_id")
+      .not("pack_id", "is", null);
 
     if (wordCountError) throw wordCountError;
 
-    // Get phrase counts
-    const { data: phraseCounts, error: phraseCountError } = await supabase
-      .from("starter_pack_phrases")
-      .select("pack_id");
-
-    if (phraseCountError) throw phraseCountError;
-
     // Count per pack
     const wordCountMap = new Map<string, number>();
-    const phraseCountMap = new Map<string, number>();
-
     for (const w of wordCounts || []) {
-      wordCountMap.set(w.pack_id, (wordCountMap.get(w.pack_id) || 0) + 1);
-    }
-    for (const p of phraseCounts || []) {
-      phraseCountMap.set(p.pack_id, (phraseCountMap.get(p.pack_id) || 0) + 1);
+      if (w.pack_id) {
+        wordCountMap.set(w.pack_id, (wordCountMap.get(w.pack_id) || 0) + 1);
+      }
     }
 
     return (packs || []).map(pack => ({
       ...pack,
-      word_count: wordCountMap.get(pack.id) || 0,
-      phrase_count: phraseCountMap.get(pack.id) || 0
+      word_count: wordCountMap.get(pack.id) || 0
     }));
   }
 
   /**
-   * Update a starter pack
+   * Update a pack
    */
   static async updateStarterPack(
     packId: string,
-    updates: Partial<Pick<StarterPack, "name" | "description" | "level" | "icon" | "is_active">>
-  ): Promise<StarterPack> {
+    updates: Partial<Pick<Pack, "name" | "description" | "level" | "icon" | "is_active">>
+  ): Promise<Pack> {
     const supabase = createClient();
 
     const { data, error } = await supabase
-      .from("starter_packs")
+      .from("packs")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", packId)
       .select()
@@ -123,32 +113,36 @@ export class AdminService {
   }
 
   /**
-   * Delete a starter pack
+   * Delete a pack
    */
   static async deleteStarterPack(packId: string): Promise<void> {
     const supabase = createClient();
 
-    // Delete words first
-    await supabase
-      .from("starter_pack_words")
-      .delete()
+    // Get word IDs for this pack
+    const { data: packWords } = await supabase
+      .from("words")
+      .select("id")
       .eq("pack_id", packId);
 
-    // Delete phrases
-    await supabase
-      .from("starter_pack_phrases")
-      .delete()
-      .eq("pack_id", packId);
+    const wordIds = (packWords || []).map(w => w.id);
 
-    // Delete user_starter_packs references
+    // Delete word progress for pack words
+    if (wordIds.length > 0) {
+      await supabase
+        .from("word_progress")
+        .delete()
+        .in("word_id", wordIds);
+    }
+
+    // Delete pack words
     await supabase
-      .from("user_starter_packs")
+      .from("words")
       .delete()
       .eq("pack_id", packId);
 
     // Delete pack
     const { error } = await supabase
-      .from("starter_packs")
+      .from("packs")
       .delete()
       .eq("id", packId);
 
@@ -156,47 +150,37 @@ export class AdminService {
   }
 
   /**
-   * Get pack contents (words and phrases)
+   * Get pack contents (words)
    */
   static async getPackContents(packId: string): Promise<{
-    words: StarterPackWord[];
-    phrases: StarterPackPhrase[];
+    words: PackWord[];
   }> {
     const supabase = createClient();
 
     const { data: words, error: wordsError } = await supabase
-      .from("starter_pack_words")
+      .from("words")
       .select("*")
       .eq("pack_id", packId)
-      .order("order_index");
+      .order("english");
 
     if (wordsError) throw wordsError;
 
-    const { data: phrases, error: phrasesError } = await supabase
-      .from("starter_pack_phrases")
-      .select("*")
-      .eq("pack_id", packId)
-      .order("order_index");
-
-    if (phrasesError) throw phrasesError;
-
     return {
-      words: words || [],
-      phrases: phrases || []
+      words: words || []
     };
   }
 
   /**
-   * Update a word in a starter pack
+   * Update a pack word
    */
   static async updateStarterPackWord(
     wordId: string,
-    updates: Partial<Pick<StarterPackWord, "arabic" | "english" | "transliteration" | "type" | "notes">>
-  ): Promise<StarterPackWord> {
+    updates: Partial<Pick<PackWord, "arabic" | "english" | "transliteration" | "type" | "notes">>
+  ): Promise<PackWord> {
     const supabase = createClient();
 
     const { data, error } = await supabase
-      .from("starter_pack_words")
+      .from("words")
       .update(updates)
       .eq("id", wordId)
       .select()
@@ -207,13 +191,20 @@ export class AdminService {
   }
 
   /**
-   * Delete a word from a starter pack
+   * Delete a pack word
    */
   static async deleteStarterPackWord(wordId: string): Promise<void> {
     const supabase = createClient();
 
+    // Delete word progress
+    await supabase
+      .from("word_progress")
+      .delete()
+      .eq("word_id", wordId);
+
+    // Delete word
     const { error } = await supabase
-      .from("starter_pack_words")
+      .from("words")
       .delete()
       .eq("id", wordId);
 
@@ -221,17 +212,21 @@ export class AdminService {
   }
 
   /**
-   * Add a word to a starter pack
+   * Add a word to a pack
    */
   static async addStarterPackWord(
     packId: string,
-    word: Omit<StarterPackWord, "id" | "pack_id" | "created_at">
-  ): Promise<StarterPackWord> {
+    word: Omit<PackWord, "id" | "pack_id" | "created_at">
+  ): Promise<PackWord> {
     const supabase = createClient();
 
     const { data, error } = await supabase
-      .from("starter_pack_words")
-      .insert({ ...word, pack_id: packId })
+      .from("words")
+      .insert({
+        ...word,
+        pack_id: packId,
+        user_id: null
+      })
       .select()
       .single();
 
@@ -240,60 +235,7 @@ export class AdminService {
   }
 
   /**
-   * Update a phrase in a starter pack
-   */
-  static async updateStarterPackPhrase(
-    phraseId: string,
-    updates: Partial<Pick<StarterPackPhrase, "arabic" | "english" | "transliteration" | "notes">>
-  ): Promise<StarterPackPhrase> {
-    const supabase = createClient();
-
-    const { data, error } = await supabase
-      .from("starter_pack_phrases")
-      .update(updates)
-      .eq("id", phraseId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Delete a phrase from a starter pack
-   */
-  static async deleteStarterPackPhrase(phraseId: string): Promise<void> {
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("starter_pack_phrases")
-      .delete()
-      .eq("id", phraseId);
-
-    if (error) throw error;
-  }
-
-  /**
-   * Add a phrase to a starter pack
-   */
-  static async addStarterPackPhrase(
-    packId: string,
-    phrase: Omit<StarterPackPhrase, "id" | "pack_id" | "created_at">
-  ): Promise<StarterPackPhrase> {
-    const supabase = createClient();
-
-    const { data, error } = await supabase
-      .from("starter_pack_phrases")
-      .insert({ ...phrase, pack_id: packId })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Create a new starter pack
+   * Create a new pack
    */
   static async createStarterPack(pack: {
     name: string;
@@ -302,11 +244,11 @@ export class AdminService {
     level?: string;
     icon?: string;
     is_active?: boolean;
-  }): Promise<StarterPack> {
+  }): Promise<Pack> {
     const supabase = createClient();
 
     const { data, error } = await supabase
-      .from("starter_packs")
+      .from("packs")
       .insert({
         name: pack.name,
         description: pack.description || null,

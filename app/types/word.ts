@@ -1,28 +1,40 @@
 export type WordType = "noun" | "verb" | "adjective" | "phrase";
 
-export interface ExampleSentence {
+export interface Sentence {
+  id: string;
+  arabic: string;
+  transliteration: string;
+  english: string;
+  notes?: string | null;
+  user_id?: string | null;
+  pack_id?: string | null;
+  created_at?: string;
+}
+
+// For creating/editing sentences (without id)
+export interface SentenceInput {
   arabic?: string;
   transliteration: string;
   english: string;
 }
 
 export interface Word {
-  id?: string;
+  id: string;
   english: string;
   arabic: string;
   transliteration: string;
   type: WordType | string;
   status?: ProgressState;
   next_review_date?: string;
-  example_sentences?: ExampleSentence[];
   notes?: string;
-  source_pack_id?: string | null;
+  pack_id?: string | null;
+  user_id?: string | null;
 }
 
 export type ProgressState = "learned" | "learning" | "new";
 export type ProgressMap = Record<string, ProgressState>;
 
 export interface WordProgress {
-  word_english: string;
+  word_id: string;
   status: ProgressState;
 }

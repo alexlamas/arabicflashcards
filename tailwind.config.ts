@@ -80,6 +80,47 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      animation: {
+        "meteor-effect": "meteor 5s linear infinite",
+        "float-slow": "float-slow 20s ease-in-out infinite",
+        "float-medium": "float-medium 15s ease-in-out infinite",
+        "float-fast": "float-fast 10s ease-in-out infinite",
+        "float-reverse": "float-reverse 12s ease-in-out infinite",
+        spotlight: "spotlight 2s ease 0.75s 1 forwards",
+      },
+      keyframes: {
+        meteor: {
+          "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+          "70%": { opacity: "1" },
+          "100%": {
+            transform: "rotate(215deg) translateX(-500px)",
+            opacity: "0",
+          },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(30px, -30px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+        },
+        "float-medium": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "50%": { transform: "translate(-40px, -20px) scale(1.15)" },
+        },
+        "float-fast": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "25%": { transform: "translate(20px, -15px) scale(1.05)" },
+          "50%": { transform: "translate(-15px, 10px) scale(0.95)" },
+          "75%": { transform: "translate(10px, 20px) scale(1.1)" },
+        },
+        "float-reverse": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "50%": { transform: "translate(25px, 15px) scale(1.2)" },
+        },
+        spotlight: {
+          "0%": { opacity: "0", transform: "translate(-72%, -62%) scale(0.5)" },
+          "100%": { opacity: "1", transform: "translate(-50%, -40%) scale(1)" },
+        },
+      },
     },
   },
   plugins: [tailwindcssAnimate],

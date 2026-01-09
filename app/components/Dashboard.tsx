@@ -2,36 +2,27 @@
 
 import { useWords } from "../contexts/WordsContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useProfile } from "../contexts/ProfileContext";
 import { useEffect, useState, useMemo } from "react";
-import { StarterPackService, StarterPack } from "../services/starterPackService";
-import { Button } from "@/components/ui/button";
-import { Target, TrendingUp, Check, Sparkles, ChevronRight } from "lucide-react";
 import {
-  BookOpen,
-  Package,
-  Coffee,
-  ChatCircle,
-  ForkKnife,
-  Airplane,
-  Heart,
-  House,
-  Star,
-  HandWaving,
-  ShoppingCart,
-  Briefcase,
-  Buildings,
-  Heartbeat,
-  CalendarBlank,
-  Clock,
-  SunHorizon,
-  Lightning,
-  Palette,
-  MusicNote,
-  Smiley,
-  User,
-} from "@phosphor-icons/react";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { GearSix, SignOut } from "@phosphor-icons/react";
+import { StarterPackService, StarterPack } from "../services/starterPackService";
+import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Play, TrendingUp, Check, Sparkles } from "lucide-react";
+import { BookOpen } from "@phosphor-icons/react";
 import Link from "next/link";
+import Image from "next/image";
 import { PackPreviewModal } from "./PackPreviewModal";
+import { DashboardPackCard } from "./DashboardPackCard";
+import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
+import { SettingsModal } from "./SettingsModal";
 
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
@@ -43,40 +34,9 @@ const LEVEL_CONFIG: Record<PackLevel, { label: string; color: string; bgColor: s
 
 const LEVEL_ORDER: PackLevel[] = ["beginner", "intermediate", "advanced"];
 
-// Icon mapping based on pack name keywords
-const getPackIcon = (packName: string) => {
-  const name = packName.toLowerCase();
-
-  // Specific pack name mappings
-  if (name.includes("greeting") || name.includes("hello")) return HandWaving;
-  if (name.includes("food") || name.includes("eat") || name.includes("drink") || name.includes("restaurant")) return ForkKnife;
-  if (name.includes("travel") || name.includes("transport") || name.includes("airport")) return Airplane;
-  if (name.includes("family") || name.includes("people") || name.includes("relationship")) return Heart;
-  if (name.includes("home") || name.includes("house") || name.includes("room")) return House;
-  if (name.includes("essential") || name.includes("basic") || name.includes("common") || name.includes("core")) return Star;
-  if (name.includes("shop") || name.includes("market") || name.includes("buy")) return ShoppingCart;
-  if (name.includes("work") || name.includes("job") || name.includes("business") || name.includes("office")) return Briefcase;
-  if (name.includes("city") || name.includes("place") || name.includes("location") || name.includes("building")) return Buildings;
-  if (name.includes("health") || name.includes("body") || name.includes("medical")) return Heartbeat;
-  if (name.includes("time") || name.includes("day") || name.includes("week") || name.includes("schedule")) return CalendarBlank;
-  if (name.includes("daily") || name.includes("routine") || name.includes("morning") || name.includes("night")) return SunHorizon;
-  if (name.includes("action") || name.includes("verb") || name.includes("do")) return Lightning;
-  if (name.includes("color") || name.includes("colour") || name.includes("describe") || name.includes("adjective")) return Palette;
-  if (name.includes("music") || name.includes("art") || name.includes("culture")) return MusicNote;
-  if (name.includes("emotion") || name.includes("feeling") || name.includes("mood")) return Smiley;
-  if (name.includes("phrase") || name.includes("expression") || name.includes("conversation") || name.includes("chat")) return ChatCircle;
-  if (name.includes("abstract") || name.includes("concept")) return Clock;
-  if (name.includes("personal") || name.includes("introduction") || name.includes("about")) return User;
-  if (name.includes("cafe") || name.includes("coffee") || name.includes("beverage")) return Coffee;
-
-  // Fallback based on level with some variety
-  const fallbackIcons = [Star, BookOpen, Package, Lightning, ChatCircle];
-  const hash = packName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return fallbackIcons[hash % fallbackIcons.length];
-};
-
 export function Dashboard() {
-  const { session } = useAuth();
+  const { session, handleLogout } = useAuth();
+  const { firstName: profileFirstName } = useProfile();
   const {
     words,
     totalWords,
@@ -89,18 +49,20 @@ export function Dashboard() {
   const [availablePacks, setAvailablePacks] = useState<StarterPack[]>([]);
   const [installedPackIds, setInstalledPackIds] = useState<string[]>([]);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
+  const [packSentenceCounts, setPackSentenceCounts] = useState<Record<string, number>>({});
   const [loadingPacks, setLoadingPacks] = useState(true);
   const [installingPackId, setInstallingPackId] = useState<string | null>(null);
   const [uninstallingPackId, setUninstallingPackId] = useState<string | null>(null);
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const learningCount = totalWords - learnedCount;
   const progressPercent = totalWords > 0 ? Math.round((learnedCount / totalWords) * 100) : 0;
 
   // Count personal words (words without a source pack)
   const myWordsCount = useMemo(() => {
-    return words.filter(w => !w.source_pack_id).length;
+    return words.filter(w => !w.pack_id).length;
   }, [words]);
 
   // Calculate progress for each installed pack
@@ -110,17 +72,40 @@ export function Dashboard() {
     const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     installedPackIds.forEach(packId => {
-      const packWords = words.filter(w => w.source_pack_id === packId);
+      // Use packWordCounts for total (from database), not filtered user words
+      const total = packWordCounts[packId] || 0;
+
+      // Count learned from user's words with progress on this pack
+      const packWords = words.filter(w => w.pack_id === packId);
       const learnedWords = packWords.filter(w =>
         w.next_review_date && new Date(w.next_review_date) > oneMonthFromNow
       );
+
       progress[packId] = {
-        total: packWords.length,
+        total,
         learned: learnedWords.length,
       };
     });
 
     return progress;
+  }, [words, installedPackIds, packWordCounts]);
+
+  // Calculate due words count for each installed pack
+  const packDueCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const now = new Date();
+
+    installedPackIds.forEach(packId => {
+      const packWords = words.filter(w => w.pack_id === packId);
+      const dueWords = packWords.filter(w =>
+        w.next_review_date &&
+        new Date(w.next_review_date) <= now &&
+        (w.status === "learning" || w.status === "learned")
+      );
+      counts[packId] = dueWords.length;
+    });
+
+    return counts;
   }, [words, installedPackIds]);
 
   useEffect(() => {
@@ -134,6 +119,21 @@ export function Dashboard() {
         setAvailablePacks(packs);
         setInstalledPackIds(installed);
         setPackWordCounts(wordCounts);
+
+        // Fetch sentence counts per pack
+        const supabase = createClient();
+        const { data: sentenceData } = await supabase
+          .from("sentences")
+          .select("pack_id")
+          .not("pack_id", "is", null);
+
+        const sentenceCounts: Record<string, number> = {};
+        (sentenceData || []).forEach(row => {
+          if (row.pack_id) {
+            sentenceCounts[row.pack_id] = (sentenceCounts[row.pack_id] || 0) + 1;
+          }
+        });
+        setPackSentenceCounts(sentenceCounts);
       } catch (error) {
         console.error("Error loading packs:", error);
       } finally {
@@ -201,10 +201,45 @@ export function Dashboard() {
     setIsPreviewOpen(true);
   };
 
-  const firstName = session?.user?.email?.split("@")[0] || "there";
+  // Use profile first name, fallback to email prefix
+  const firstName = profileFirstName || session?.user?.email?.split("@")[0] || "there";
+  const displayName = profileFirstName || session?.user?.email?.split("@")[0] || "User";
 
   return (
     <div className="p-6 lg:pt-24 max-w-4xl mx-auto space-y-8 w-full">
+      {/* Top right avatar dropdown */}
+      {session && (
+        <div className="absolute top-4 right-4 lg:top-6 lg:right-6 z-20">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+                <Image
+                  src="/avatar-pomegranate.png"
+                  alt="Avatar"
+                  width={28}
+                  height={28}
+                  className="rounded-full"
+                />
+                <span className="text-sm font-medium text-gray-700">{displayName}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem disabled className="text-xs text-gray-500">
+                {session.user.email}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                <GearSix className="w-4 h-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                <SignOut className="w-4 h-4 mr-2" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
       {/* Welcome & Review CTA */}
       {isWordsLoading ? (
         <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-gray-100 to-gray-50 border">
@@ -215,39 +250,42 @@ export function Dashboard() {
           </div>
         </div>
       ) : reviewCount > 0 ? (
-        <div className="relative overflow-hidden rounded-2xl p-8 text-white bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-          <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-white/5 rounded-full" />
-          <div className="absolute top-4 right-6 text-6xl font-arabic text-white/10 select-none">
-            يلا
-          </div>
-          <div className="relative z-10">
-            <h1 className="text-2xl font-bold mb-2">
-              Welcome back, {firstName}!
-            </h1>
-            <p className="text-white/80 mb-5">
-              You have <span className="text-white font-semibold">{reviewCount} words</span> ready for review.
-            </p>
-            <Link href="/review">
-              <Button className="bg-white text-teal-700 hover:bg-white/90 font-medium shadow-lg shadow-black/10">
-                <Target className="w-4 h-4 mr-2" />
-                Start review
-              </Button>
-            </Link>
+        <div className="relative overflow-hidden rounded-2xl p-8 bg-gray-50 border border-gray-200">
+          <DottedGlowBackground
+            gap={16}
+            radius={1.5}
+            color="rgba(0,0,0,0.15)"
+            glowColor="rgba(16, 185, 129, 0.8)"
+            opacity={0.8}
+            speedScale={0.5}
+          />
+          <div className="relative z-10 flex items-start gap-6">
+            <Image
+              src="/logo.svg"
+              alt="Yalla Flash"
+              width={64}
+              height={64}
+              className="flex-shrink-0"
+            />
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold mb-2 text-gray-900">Welcome back, {firstName}!</h1>
+              <p className="text-gray-600 mb-5">
+                You have <span className="text-gray-900 font-semibold">{reviewCount} words</span> ready for review.
+              </p>
+              <Link href="/review">
+                <Button className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">
+                  <Play className="w-4 h-4 mr-2" />
+                  Start review
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       ) : (
         <div className="relative overflow-hidden rounded-2xl p-8 text-gray-800 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 border border-amber-200/50">
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-          <div className="absolute -right-4 top-1/2 -translate-y-1/2 text-[120px] font-arabic text-amber-900/[0.04] select-none leading-none">
-            ممتاز
-          </div>
-          <div className="absolute top-4 right-12 w-20 h-20 rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/40 blur-xl" />
-          <div className="absolute bottom-4 right-32 w-16 h-16 rounded-full bg-gradient-to-br from-rose-200/40 to-pink-200/40 blur-xl" />
-          <div className="absolute top-8 right-40 w-8 h-8 rounded-full bg-gradient-to-br from-yellow-200/60 to-amber-200/60 blur-md" />
+         
+          
+          
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 rounded-full mb-4">
               <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
@@ -350,7 +388,7 @@ export function Dashboard() {
                 <p className="text-sm text-gray-500">{myWordsCount} personal words & expressions</p>
               </div>
             </div>
-            <Link href="/learning">
+            <Link href="/learning?filter=personal">
               <Button variant="outline" size="sm">View all</Button>
             </Link>
           </div>
@@ -364,41 +402,27 @@ export function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {installedPacks.map((pack) => {
               const progress = packProgress[pack.id] || { total: 0, learned: 0 };
-              const percent = progress.total > 0 ? Math.round((progress.learned / progress.total) * 100) : 0;
-              const config = LEVEL_CONFIG[(pack.level as PackLevel) || "beginner"];
+              const dueCount = packDueCounts[pack.id] || 0;
 
-              const PackIcon = getPackIcon(pack.name);
               return (
-                <button
+                <DashboardPackCard
                   key={pack.id}
+                  pack={pack}
+                  variant="installed"
+                  progress={progress}
+                  sentenceCount={packSentenceCounts[pack.id] || 0}
                   onClick={() => openPackPreview(pack)}
-                  className="bg-white border rounded-xl p-5 text-left hover:border-gray-300 hover:shadow-sm transition-all group"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${config.bgColor}`}>
-                        <PackIcon className={`w-5 h-5 ${config.color}`} />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{pack.name}</h3>
-                        <span className={`text-xs ${config.color}`}>{config.label}</span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">{progress.learned}/{progress.total} learned</span>
-                      <span className="font-medium">{percent}%</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                </button>
+                  actionSlot={
+                    dueCount > 0 ? (
+                      <Link href={`/review?pack=${pack.id}`}>
+                        <Button size="sm" className="gap-1">
+                          <Play className="w-3 h-3" />
+                          {dueCount}
+                        </Button>
+                      </Link>
+                    ) : undefined
+                  }
+                />
               );
             })}
           </div>
@@ -423,28 +447,15 @@ export function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {packs.map((pack) => {
                 const wordCount = packWordCounts[pack.id] || 0;
-                const PackIcon = getPackIcon(pack.name);
                 return (
-                  <button
+                  <DashboardPackCard
                     key={pack.id}
+                    pack={pack}
+                    variant="available"
+                    progress={{ learned: 0, total: wordCount }}
+                    sentenceCount={packSentenceCounts[pack.id] || 0}
                     onClick={() => openPackPreview(pack)}
-                    className="bg-white border rounded-xl p-5 text-left hover:border-gray-300 hover:shadow-sm transition-all group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${config.bgColor}`}>
-                          <PackIcon className={`w-5 h-5 ${config.color}`} />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{pack.name}</h3>
-                          <p className="text-sm text-gray-500">
-                            {wordCount} {wordCount === 1 ? "word" : "words"}
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                    </div>
-                  </button>
+                  />
                 );
               })}
             </div>
@@ -473,6 +484,12 @@ export function Dashboard() {
         onUninstall={handleUninstallPack}
         isInstalling={installingPackId === selectedPack?.id}
         isUninstalling={uninstallingPackId === selectedPack?.id}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

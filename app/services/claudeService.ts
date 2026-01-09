@@ -1,15 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { getTransliterationPrompt } from "@/app/config/transliterationRules";
 
 const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const MODEL = "claude-3-opus-20240229";
+const MODEL = "claude-sonnet-4-20250514";
 
 export class ClaudeService {
   private static async createMessage(prompt: string, temperature = 0.7) {
-    if (!process.env.CLAUDE_API_KEY) {
-      throw new Error("CLAUDE_API_KEY is not configured");
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
     
     const message = await anthropic.messages.create({
@@ -92,8 +93,9 @@ Guidelines:
 - Preserve the original meaning and structure when possible
 - Only correct clear grammatical errors or unnatural phrasing
 - Ensure consistency between all three versions (Arabic, transliteration, English)
-- Use numbers in transliteration for Arabic sounds (e.g., "3" for ع)
 - Be culturally appropriate
+
+${getTransliterationPrompt()}
 
 Return ONLY a JSON object with this exact structure:
 {
@@ -120,8 +122,9 @@ Guidelines:
 - Ensure the sentence is grammatically correct and natural in Lebanese Arabic
 - Use the context provided to choose the correct meaning if the word has multiple meanings
 - Be culturally appropriate
-- Use numbers in transliteration for Arabic sounds (e.g., "3" for ع)
 - Vary sentence structures for creativity
+
+${getTransliterationPrompt()}
 
 Return ONLY a JSON object with this exact structure:
 {

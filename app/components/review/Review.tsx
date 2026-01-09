@@ -20,7 +20,11 @@ import {
 } from "@phosphor-icons/react";
 import { ArrowRight } from "lucide-react";
 
-export function Review() {
+interface ReviewProps {
+  packId?: string;
+}
+
+export function Review({ packId }: ReviewProps) {
   const { session } = useAuth();
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -44,7 +48,8 @@ export function Review() {
     try {
       const words = await SpacedRepetitionService.getDueWords(
         session.user.id,
-        1
+        1,
+        packId
       );
       setCurrentWord(words?.[0] || null);
       setIsFlipped(false);
@@ -54,7 +59,7 @@ export function Review() {
     } finally {
       setIsLoading(false);
     }
-  }, [session]);
+  }, [session, packId]);
 
   // Load the first word when component mounts
 
@@ -93,13 +98,13 @@ export function Review() {
       () =>
         SpacedRepetitionService.processReview(
           session.user.id,
-          currentWord.english,
+          currentWord.id,
           rating
         ),
       () =>
         offlineHelpers.updateProgress(
           session.user.id,
-          currentWord.english,
+          currentWord.id,
           rating
         )
     );
@@ -141,15 +146,15 @@ export function Review() {
     fetchReviewCount();
     window.dispatchEvent(new CustomEvent("wordProgressUpdated"));
 
-    // Keep the animation visible a bit longer
+    // Keep the animation visible briefly
     setTimeout(() => {
       setFeedbackAnimation({ isPlaying: false, text: "", color: "" });
-    }, 1800);
+    }, 800);
 
-    // Load next word slightly earlier to overlap with fade-out
+    // Load next word quickly
     setTimeout(async () => {
       await loadNextWord();
-    }, 1600);
+    }, 700);
   };
 
   if (error) {
@@ -184,27 +189,22 @@ export function Review() {
 
   if (!currentWord) {
     if (!session) return null;
-    return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} />;
+    return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} packId={packId} />;
   }
 
   return (
     <div className="max-w-2xl w-full mx-auto px-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+      <Card
+        className="p-6 cursor-pointer shadow-md relative overflow-hidden"
+        onClick={() => setIsFlipped(!isFlipped)}
       >
-        <Card
-          className="p-6 cursor-pointer shadow-md relative overflow-hidden"
-          onClick={() => setIsFlipped(!isFlipped)}
-        >
-          <CardContent className="min-h-[200px] flex items-center justify-center relative z-10">
-            <motion.div
-              key={isFlipped ? "back" : "front"}
-              initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+        <CardContent className="min-h-[200px] flex items-center justify-center relative z-10">
+          <motion.div
+            key={`${currentWord.id}-${isFlipped ? "back" : "front"}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
               {!isFlipped ? (
                 <h3 className="text-2xl font-semibold select-none">
                   {currentWord.english}
@@ -230,7 +230,7 @@ export function Review() {
                 animate={{ x: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{
-                  duration: 0.4,
+                  duration: 0.2,
                   ease: [0.23, 1, 0.32, 1],
                 }}
               >
@@ -244,8 +244,8 @@ export function Review() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{
-                  delay: 0.3,
-                  duration: 0.2,
+                  delay: 0.15,
+                  duration: 0.1,
                 }}
               >
                 <div className="relative flex flex-col items-center">
@@ -253,10 +253,10 @@ export function Review() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{
-                      delay: 0.35,
-                      duration: 0.3,
+                      delay: 0.18,
+                      duration: 0.15,
                       type: "spring",
-                      stiffness: 300,
+                      stiffness: 400,
                       damping: 25,
                     }}
                     className="text-white text-3xl font-bold flex items-center gap-3"
@@ -289,11 +289,11 @@ export function Review() {
                   </motion.div>
                   {feedbackAnimation.nextReviewText && (
                     <motion.div
-                      initial={{ opacity: 0, filter: "blur(4px)" }}
-                      animate={{ opacity: 1, filter: "blur(0px)" }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                       transition={{
-                        delay: 0.25,
-                        duration: 0.15,
+                        delay: 0.2,
+                        duration: 0.1,
                         ease: "easeOut",
                       }}
                       className="absolute top-full mt-2 text-white/90 text-sm font-medium"
@@ -306,7 +306,6 @@ export function Review() {
             </>
           )}
         </Card>
-      </motion.div>
 
       {!isFlipped ? (
         <div className="w-full pt-4">
@@ -333,7 +332,7 @@ export function Review() {
             show: {
               opacity: 1,
               transition: {
-                staggerChildren: 0.08,
+                staggerChildren: 0.03,
               },
             },
           }}
@@ -342,13 +341,12 @@ export function Review() {
         >
           <motion.div
             variants={{
-              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
+              hidden: { y: 8, opacity: 0 },
               show: {
                 y: 0,
                 opacity: 1,
-                filter: "blur(0px)",
                 transition: {
-                  duration: 0.4,
+                  duration: 0.15,
                   ease: "easeOut",
                 },
               },
@@ -365,13 +363,12 @@ export function Review() {
           </motion.div>
           <motion.div
             variants={{
-              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
+              hidden: { y: 8, opacity: 0 },
               show: {
                 y: 0,
                 opacity: 1,
-                filter: "blur(0px)",
                 transition: {
-                  duration: 0.4,
+                  duration: 0.15,
                   ease: "easeOut",
                 },
               },
@@ -388,13 +385,12 @@ export function Review() {
           </motion.div>
           <motion.div
             variants={{
-              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
+              hidden: { y: 8, opacity: 0 },
               show: {
                 y: 0,
                 opacity: 1,
-                filter: "blur(0px)",
                 transition: {
-                  duration: 0.4,
+                  duration: 0.15,
                   ease: "easeOut",
                 },
               },
@@ -411,13 +407,12 @@ export function Review() {
           </motion.div>
           <motion.div
             variants={{
-              hidden: { y: 16, opacity: 0, filter: "blur(4px)" },
+              hidden: { y: 8, opacity: 0 },
               show: {
                 y: 0,
                 opacity: 1,
-                filter: "blur(0px)",
                 transition: {
-                  duration: 0.4,
+                  duration: 0.15,
                   ease: "easeOut",
                 },
               },

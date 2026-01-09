@@ -32,21 +32,21 @@ export class OfflineQueue {
     };
   }
 
-  static createProgressAction(userId: string, wordEnglish: string, rating: number): OfflineAction {
+  static createProgressAction(userId: string, wordId: string, rating: number): OfflineAction {
     return {
       id: this.generateActionId(),
       type: "UPDATE_PROGRESS",
-      payload: { userId, wordEnglish, rating } as UpdateProgressPayload,
+      payload: { userId, wordId, rating } as UpdateProgressPayload,
       timestamp: Date.now(),
       retries: 0,
     };
   }
 
-  static createStartLearningAction(userId: string, wordEnglish: string): OfflineAction {
+  static createStartLearningAction(userId: string, wordId: string): OfflineAction {
     return {
       id: this.generateActionId(),
       type: "START_LEARNING",
-      payload: { userId, wordEnglish } as StartLearningPayload,
+      payload: { userId, wordId } as StartLearningPayload,
       timestamp: Date.now(),
       retries: 0,
     };

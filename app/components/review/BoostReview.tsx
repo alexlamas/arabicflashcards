@@ -12,11 +12,13 @@ import { createClient } from "@/utils/supabase/client";
 interface BoostReviewProps {
   userId: string;
   loadNextWord: () => void;
+  packId?: string;
 }
 
 export default function BoostReview({
   userId,
   loadNextWord,
+  packId,
 }: BoostReviewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,24 +29,43 @@ export default function BoostReview({
 
     try {
       const supabase = createClient();
-      const { data: words } = await supabase
+
+      // Build query for words not yet due
+      let query = supabase
         .from("word_progress")
-        .select("id, word_english")
+        .select(`
+          id,
+          word_id,
+          words!inner(pack_id)
+        `)
         .eq("user_id", userId)
         .gt("next_review_date", new Date().toISOString())
         .order("next_review_date", { nullsFirst: true })
-        .limit(5);
+        .limit(packId ? 20 : 5);
 
-      if (!words || words.length === 0) {
+      // Apply pack filter
+      if (packId === "my-words") {
+        query = query.is("words.pack_id", null);
+      } else if (packId) {
+        query = query.eq("words.pack_id", packId);
+      }
+
+      const { data: progressWords } = await query;
+
+      if (!progressWords || progressWords.length === 0) {
         setError(
-          "No words available to boost. Try adding more words to your learning list."
+          packId
+            ? "No words available to boost in this pack."
+            : "No words available to boost. Try adding more words to your learning list."
         );
         return;
       }
 
-      const wordIds = words.map((w) => w.id);
+      // Limit to 5 words
+      const wordsToBoost = progressWords.slice(0, 5);
+      const wordIds = wordsToBoost.map((w) => w.id);
 
-      // Then perform the actual update
+      // Perform the actual update
       const now = new Date().toISOString();
       await Promise.all(
         wordIds.map((id) =>

@@ -2,9 +2,10 @@ import { createClient } from "@/utils/supabase/client";
 import { getOnlineStatus } from "../utils/connectivity";
 import { OfflineStorage } from "./offlineStorage";
 import { calculateDueWords, countDueWords } from "../utils/dueWordsCalculator";
+import type { Word } from "../types/word";
 
 export class SpacedRepetitionService {
-  static async startLearning(userId: string, wordEnglish: string) {
+  static async startLearning(userId: string, wordId: string) {
     const supabase = createClient();
     try {
       const now = new Date().toISOString();
@@ -13,7 +14,7 @@ export class SpacedRepetitionService {
       const { error } = await supabase.from("word_progress").upsert(
         {
           user_id: userId,
-          word_english: wordEnglish,
+          word_id: wordId,
           status: "learning",
           interval: 0,
           ease_factor: 2.5,
@@ -22,7 +23,7 @@ export class SpacedRepetitionService {
           updated_at: now,
         },
         {
-          onConflict: "user_id,word_english",
+          onConflict: "user_id,word_id",
         }
       );
 
@@ -38,92 +39,110 @@ export class SpacedRepetitionService {
     }
   }
 
-  static async getDueWords(userId: string, limit: number = 20) {
+  static async getDueWords(userId: string, limit: number = 20, packId?: string) {
     // If offline, use cached words
     if (!getOnlineStatus()) {
       const cachedWords = OfflineStorage.getWords();
-      const dueWords = calculateDueWords(cachedWords, limit);
-      return dueWords.map((word) => ({
-        ...word,
-        word_english: word.english,
-      }));
+      const dueWords = calculateDueWords(cachedWords, limit, packId);
+      return dueWords;
     }
 
     const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
-      const { data, error } = await supabase
+      // Build query with join to words table
+      let query = supabase
         .from("word_progress")
-        .select("word_english, next_review_date")
+        .select(`
+          word_id,
+          next_review_date,
+          words!inner (
+            id,
+            english,
+            arabic,
+            transliteration,
+            type,
+            notes,
+            pack_id
+          )
+        `)
         .eq("user_id", userId)
         .in("status", ["learning", "learned"])
         .lte("next_review_date", now)
         .order("next_review_date")
         .limit(limit);
 
+      // Apply pack filter
+      if (packId === "my-words") {
+        query = query.is("words.pack_id", null);
+      } else if (packId) {
+        query = query.eq("words.pack_id", packId);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
 
       if (!data?.length) return [];
 
-      const { data: words, error: wordsError } = await supabase
-        .from("words")
-        .select("id, english, arabic, transliteration, type, example_sentences, notes")
-        .in(
-          "english",
-          data.map((p) => p.word_english)
-        );
-
-      if (wordsError) throw wordsError;
-
-      return (
-        words?.map((word) => ({
+      // Flatten the response
+      return data.map((item) => {
+        const word = item.words as unknown as Word;
+        return {
           ...word,
-          word_english: word.english,
-        })) || []
-      );
+          word_id: item.word_id,
+        };
+      });
     } catch (error) {
       console.error("Error in getDueWords:", error);
       // Fallback to offline data on error
       const cachedWords = OfflineStorage.getWords();
-      const dueWords = calculateDueWords(cachedWords, limit);
-      return dueWords.map((word) => ({
-        ...word,
-        word_english: word.english,
-      }));
+      const dueWords = calculateDueWords(cachedWords, limit, packId);
+      return dueWords;
     }
   }
-  static async getDueWordsCount(userId: string): Promise<number> {
+
+  static async getDueWordsCount(userId: string, packId?: string): Promise<number> {
     // If offline, use cached words
     if (!getOnlineStatus()) {
       const cachedWords = OfflineStorage.getWords();
-      return countDueWords(cachedWords);
+      return countDueWords(cachedWords, packId);
     }
 
     const supabase = createClient();
     try {
       const now = new Date().toISOString();
 
-      const { count, error } = await supabase
+      // Build query with optional pack filter via join
+      let query = supabase
         .from("word_progress")
-        .select("*", { count: "exact", head: true })
+        .select("word_id, words!inner(pack_id)", { count: "exact", head: true })
         .eq("user_id", userId)
         .in("status", ["learning", "learned"])
         .lte("next_review_date", now);
 
-      if (error) throw error;
+      if (packId === "my-words") {
+        query = query.is("words.pack_id", null);
+      } else if (packId) {
+        query = query.eq("words.pack_id", packId);
+      }
 
+      const { count, error } = await query;
+
+      if (error) throw error;
       return count || 0;
     } catch (error) {
       console.error("Error getting due words count:", error);
       // Fallback to offline data on error
       const cachedWords = OfflineStorage.getWords();
-      return countDueWords(cachedWords);
+      return countDueWords(cachedWords, packId);
     }
   }
+
   static async processReview(
     userId: string,
-    wordEnglish: string,
+    wordId: string,
     rating: number
   ) {
     const supabase = createClient();
@@ -132,7 +151,7 @@ export class SpacedRepetitionService {
         .from("word_progress")
         .select("interval, ease_factor, review_count")
         .eq("user_id", userId)
-        .eq("word_english", wordEnglish)
+        .eq("word_id", wordId)
         .maybeSingle();
 
       if (fetchError) throw fetchError;
@@ -149,7 +168,7 @@ export class SpacedRepetitionService {
         .upsert(
           {
             user_id: userId,
-            word_english: wordEnglish,
+            word_id: wordId,
             status: rating >= 2 ? "learned" : "learning",
             interval: interval,
             ease_factor: easeFactor,
@@ -158,7 +177,7 @@ export class SpacedRepetitionService {
             updated_at: new Date().toISOString(),
           },
           {
-            onConflict: "user_id,word_english",
+            onConflict: "user_id,word_id",
           }
         );
 

@@ -22,32 +22,33 @@ app/
 │   ├── review/          # Flashcard review session
 │   ├── learning/        # Words currently being learned
 │   ├── learned/         # Mastered words
-│   ├── archive/         # Archived words
-│   ├── phrases/         # Phrase learning
 │   ├── this-week/       # Weekly progress
 │   ├── this-month/      # Monthly progress
+│   ├── content-editor/  # Content editor (reviewer role)
+│   ├── admin/           # Admin panel (admin role)
 │   └── memory-game/     # Memory matching game
 ├── api/                 # API routes
 │   ├── generate-sentence/  # AI sentence generation
 │   ├── generate-hint/      # AI hints
-│   ├── phrases/            # CRUD for phrases
 │   └── words/              # Word creation
 ├── components/          # UI components
 │   ├── review/          # Review-specific components
 │   └── ...              # Shared components
 ├── contexts/            # React contexts
 │   ├── AuthContext.tsx  # Authentication state
-│   └── WordsContext.tsx # Word data state
+│   ├── WordsContext.tsx # Word data state
+│   └── ProfileContext.tsx # User profile state
 ├── services/            # Business logic
 │   ├── wordService.ts         # Word CRUD operations
-│   ├── phraseService.ts       # Phrase CRUD operations
+│   ├── sentenceService.ts     # Sentence CRUD operations
+│   ├── packService.ts         # Vocabulary pack operations
+│   ├── adminService.ts        # Admin operations
 │   ├── spacedRepetitionService.ts  # SRS algorithm
-│   ├── offlineStorage.ts      # IndexedDB caching
+│   ├── offlineStorage.ts      # localStorage caching
 │   ├── syncService.ts         # Offline sync
 │   └── claudeService.ts       # AI integration
 ├── types/               # TypeScript types
-│   ├── word.ts          # Word & progress types
-│   └── phrase.ts        # Phrase types
+│   └── word.ts          # Word & progress types
 └── utils/               # Utility functions
 
 components/              # shadcn/ui components
@@ -62,16 +63,26 @@ utils/supabase/          # Supabase client setup
 **Word**
 - `id`, `arabic`, `english`, `transliteration`
 - `type`: noun | verb | adjective | phrase
-- `status`: new | learning | learned | archived
-- `next_review_date`: SRS scheduling
-- `example_sentences`: AI-generated examples
+- `pack_id`: Links to vocabulary pack (null for custom words)
+- `user_id`: Owner for custom words (null for pack words)
 - `notes`: User notes
-- `user_id`: Owner (multi-user support)
 
-**Phrase**
-- Similar to Word but for longer expressions
+**Sentence** (example sentences, linked to words via `word_sentences`)
+- `id`, `arabic`, `transliteration`, `english`
+- `user_id`: Owner
+- `pack_id`: Links to vocabulary pack (for pack sentences)
+- Sentences can link to multiple words, and words can have multiple sentences
 
-**ProgressState**: `new` -> `learning` -> `learned` (or `archived`)
+**Word Progress** (in `word_progress` table)
+- `word_id`: Links to word
+- `user_id`: Owner
+- `status`: new | learning | learned
+- `next_review_date`: SRS scheduling
+- `interval`, `ease_factor`, `review_count`: SRS state
+
+**ProgressState**: `new` -> `learning` -> `learned`
+
+Note: Phrases (short multi-word expressions) are stored as words with `type='phrase'`. Full example sentences are in the `sentences` table.
 
 ### Spaced Repetition
 
@@ -86,11 +97,13 @@ The app uses a spaced repetition system (see `spacedRepetitionService.ts`):
 - Multi-user support with user isolation
 - Role-based access (`user_roles` table) for admin features
 
-### Starter Packs
+### Vocabulary Packs
 
-Pre-built vocabulary sets that new users can install:
-- Stored in `starter_packs`, `starter_pack_words`, `starter_pack_phrases`
-- Users track installed packs in `user_starter_packs`
+Pre-built vocabulary sets that users can learn:
+- Pack metadata stored in `packs` table
+- Pack words stored in `words` table with `pack_id` set (and `user_id` null)
+- User progress tracked in `word_progress` table linking `user_id` to `word_id`
+- See `packService.ts` for pack operations
 
 ## Development
 
@@ -122,10 +135,12 @@ ANTHROPIC_API_KEY=your_anthropic_key (for AI features)
 See `supabase/MIGRATION_INSTRUCTIONS.md` for database setup and migrations.
 
 Key tables:
-- `words` - Vocabulary items
-- `phrases` - Phrase items
-- `word_progress` - User progress tracking
-- `starter_packs` - Pre-built word collections
+- `words` - Vocabulary items (both custom and pack words, including phrases with type='phrase')
+- `sentences` - Example sentences showing words in context
+- `word_sentences` - Join table linking words to sentences (many-to-many)
+- `word_progress` - User progress tracking (links user_id to word_id)
+- `packs` - Vocabulary pack metadata
+- `user_profiles` - User profile data
 - `user_roles` - Admin/user role management
 
 ## Common Tasks

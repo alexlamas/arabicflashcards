@@ -3,6 +3,7 @@
 import { AppSidebar } from "../components/AppSidebar";
 import { AuthProvider } from "../providers/AuthProvider";
 import { WordsProvider } from "../providers/WordsProvider";
+import { ProfileProvider } from "../contexts/ProfileContext";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 import { AuthDialog } from "../components/AuthDialog";
@@ -55,9 +56,11 @@ export default function MainLayout({
 }) {
   return (
     <AuthProvider>
-      <WordsProvider>
-        <AuthenticatedLayout>{children}</AuthenticatedLayout>
-      </WordsProvider>
+      <ProfileProvider>
+        <WordsProvider>
+          <AuthenticatedLayout>{children}</AuthenticatedLayout>
+        </WordsProvider>
+      </ProfileProvider>
     </AuthProvider>
   );
 }

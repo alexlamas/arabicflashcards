@@ -11,7 +11,8 @@ import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface ReviewItem {
   id: string;
-  word_english: string;
+  word_id: string;
+  english: string;
   next_review_date: Date;
 }
 
@@ -25,10 +26,15 @@ export default function ReviewTimeline() {
     try {
       const supabase = createClient();
 
-      // Fetch ALL reviews to calculate 90th percentile
+      // Fetch ALL reviews with word details
       const { data: allReviews, error } = await supabase
         .from("word_progress")
-        .select("id, next_review_date, word_english")
+        .select(`
+          id,
+          word_id,
+          next_review_date,
+          words!inner(english)
+        `)
         .eq("user_id", session.user.id)
         .in("status", ["learning", "learned"])
         .not("next_review_date", "is", null)
@@ -38,7 +44,8 @@ export default function ReviewTimeline() {
 
       const timeline = (allReviews || []).map((item) => ({
         id: item.id,
-        word_english: item.word_english,
+        word_id: item.word_id,
+        english: (item.words as unknown as { english: string }).english,
         next_review_date: new Date(item.next_review_date),
       }));
 
@@ -216,7 +223,7 @@ export default function ReviewTimeline() {
                 </TooltipTrigger>
                 <TooltipContent className="bg-transparent">
                   <div className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-white/80 border border-black/5 shadow-sm">
-                    {item.word_english} - {formatTime(item.next_review_date)}
+                    {item.english} - {formatTime(item.next_review_date)}
                   </div>
                 </TooltipContent>
               </Tooltip>

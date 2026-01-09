@@ -5,8 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Word } from "../types/word";
-import { Phrase } from "../types/phrase";
+import { Word, Sentence } from "../types/word";
 import { WordNotes } from "./WordNotes";
 import {
   NoteBlankIcon,
@@ -20,7 +19,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { WordService } from "../services/wordService";
-import { PhraseService } from "../services/phraseService";
+import { SentenceService } from "../services/sentenceService";
 import { useWords } from "../contexts/WordsContext";
 
 interface WordDetailModalProps {
@@ -47,32 +46,21 @@ export function WordDetailModal({
   const canEdit = !!session?.user;
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [linkedPhrases, setLinkedPhrases] = useState<Phrase[]>([]);
+  const [sentences, setSentences] = useState<Sentence[]>([]);
   const { handleOfflineAction } = useOfflineSync();
   const { handleWordDeleted } = useWords();
 
+  // Fetch sentences when word changes
   useEffect(() => {
     if (word?.id && isOpen) {
-      loadLinkedPhrases();
+      SentenceService.getSentencesForWord(word.id).then(setSentences);
+    } else {
+      setSentences([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [word?.id, isOpen]);
 
-  const loadLinkedPhrases = async () => {
-    if (!word?.id) return;
-    try {
-      const phrases = await PhraseService.getPhrasesForWord(word.id);
-      setLinkedPhrases(phrases);
-    } catch (error) {
-      console.error("Error loading linked phrases:", error);
-    }
-  };
-
   if (!word) return null;
-
-  const hasPhrases = linkedPhrases.length > 0;
-  const hasSentences =
-    word.example_sentences && word.example_sentences.length > 0;
+  const hasSentences = sentences.length > 0;
   const hasNotes = !!word.notes;
 
   const handleWordUpdate = (updatedWord: Word) => {
@@ -158,53 +146,19 @@ export function WordDetailModal({
             <div className="text-lg text-gray-600">{word.transliteration}</div>
           </div>
 
-          {/* Linked Phrases */}
-          {hasPhrases && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                Example Phrases
-                <span className="text-sm font-normal bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
-                  {linkedPhrases.length}
-                </span>
-              </h3>
-              <div className="space-y-4">
-                {linkedPhrases.map((phrase) => (
-                  <div
-                    key={phrase.id}
-                    className="bg-violet-50 rounded-lg p-5 border border-violet-100"
-                  >
-                    <div className="space-y-2">
-                      {phrase.arabic && (
-                        <p className="text-2xl font-arabic text-black">
-                          {phrase.arabic}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-600">
-                        {phrase.transliteration}
-                      </p>
-                      <p className="text-base text-black mt-2">
-                        {phrase.english}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Legacy Example Sentences (for backwards compatibility) */}
-          {!hasPhrases && hasSentences && (
+          {/* Example Sentences */}
+          {hasSentences && (
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 Example Sentences
                 <span className="text-sm font-normal bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
-                  {word.example_sentences!.length}
+                  {sentences.length}
                 </span>
               </h3>
               <div className="space-y-4">
-                {word.example_sentences!.map((sentence, index) => (
+                {sentences.map((sentence) => (
                   <div
-                    key={index}
+                    key={sentence.id}
                     className="bg-violet-50 rounded-lg p-5 border border-violet-100"
                   >
                     <div className="space-y-2">
@@ -235,7 +189,7 @@ export function WordDetailModal({
           )}
 
           {/* Empty state */}
-          {!hasPhrases && !hasSentences && !hasNotes && (
+          {!hasSentences && !hasNotes && (
             <div
               className="relative text-center py-8 text-gray-500 hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
               onClick={() => canEdit && setIsEditOpen(true)}

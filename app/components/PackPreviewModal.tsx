@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +11,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   StarterPackService,
   StarterPack,
 } from "../services/starterPackService";
-import { Word } from "../types/word";
+import { Word, Sentence } from "../types/word";
+import { createClient } from "@/utils/supabase/client";
 import { Loader2, Plus, Check, Trash2 } from "lucide-react";
 import {
   Package,
@@ -93,12 +94,15 @@ interface PackPreviewModalProps {
 }
 
 interface DisplayWord {
+  id: string;
   arabic: string;
   english: string;
   transliteration: string | null;
   type: string | null;
   isLearned?: boolean;
 }
+
+type TabType = "words" | "sentences";
 
 export function PackPreviewModal({
   pack,
@@ -112,8 +116,10 @@ export function PackPreviewModal({
   isUninstalling,
 }: PackPreviewModalProps) {
   const [words, setWords] = useState<DisplayWord[]>([]);
+  const [sentences, setSentences] = useState<Sentence[]>([]);
   const [loading, setLoading] = useState(false);
   const [learnedCount, setLearnedCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabType>("words");
 
   useEffect(() => {
     if (!pack || !isOpen) return;
@@ -123,28 +129,51 @@ export function PackPreviewModal({
     async function loadWords() {
       setLoading(true);
       try {
-        if (isInstalled && userWords.length > 0) {
-          // For installed packs, show user's words with this source_pack_id
-          const packWords = userWords.filter(w => w.source_pack_id === packId);
+        // Always fetch pack words from the database
+        const { words: packWords } = await StarterPackService.getPackContents(packId);
 
-          // Calculate learned count based on next_review_date > 30 days
+        // Fetch pack-level sentences
+        const supabase = createClient();
+        const { data: packSentences } = await supabase
+          .from("sentences")
+          .select("*")
+          .eq("pack_id", packId)
+          .order("english");
+
+        setSentences(packSentences || []);
+
+        if (isInstalled && userWords.length > 0) {
+          // For installed packs, augment with user's progress
           const now = new Date();
           const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-          const wordsWithProgress: DisplayWord[] = packWords.map(w => ({
-            arabic: w.arabic,
-            english: w.english,
-            transliteration: w.transliteration,
-            type: w.type,
-            isLearned: w.next_review_date ? new Date(w.next_review_date) > oneMonthFromNow : false,
-          }));
+          // Create a map of user's words by english (for progress lookup)
+          const userWordMap = new Map(
+            userWords
+              .filter(w => w.pack_id === packId)
+              .map(w => [w.id, w])
+          );
+
+          const wordsWithProgress: DisplayWord[] = packWords.map(w => {
+            const userWord = userWordMap.get(w.id);
+            return {
+              id: w.id,
+              arabic: w.arabic,
+              english: w.english,
+              transliteration: w.transliteration,
+              type: w.type,
+              isLearned: userWord?.next_review_date
+                ? new Date(userWord.next_review_date) > oneMonthFromNow
+                : false,
+            };
+          });
 
           setWords(wordsWithProgress);
           setLearnedCount(wordsWithProgress.filter(w => w.isLearned).length);
         } else {
-          // For uninstalled packs, fetch from starter_pack_words
-          const { words: packWords } = await StarterPackService.getPackContents(packId);
+          // For uninstalled packs, just show the words
           setWords(packWords.map(w => ({
+            id: w.id,
             arabic: w.arabic,
             english: w.english,
             transliteration: w.transliteration,
@@ -170,12 +199,23 @@ export function PackPreviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="max-w-2xl h-[85vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${levelConfig.bgColor}`}>
-              <PackIcon className={`w-5 h-5 ${levelConfig.color}`} />
-            </div>
+            {pack.image_url ? (
+              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 relative">
+                <Image
+                  src={pack.image_url}
+                  alt={pack.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${levelConfig.bgColor}`}>
+                <PackIcon className={`w-5 h-5 ${levelConfig.color}`} />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-xl">{pack.name}</DialogTitle>
               {pack.description && (
@@ -203,54 +243,96 @@ export function PackPreviewModal({
           </div>
         )}
 
-        {/* Word count for uninstalled packs */}
-        {!isInstalled && !loading && (
-          <div className="pb-2">
-            <span className="text-sm text-gray-500">{words.length} words</span>
-          </div>
-        )}
+        {/* Tabs */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => setActiveTab("words")}
+            className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+              activeTab === "words"
+                ? "bg-neutral-900 text-white"
+                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+            }`}
+          >
+            Words ({words.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("sentences")}
+            className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+              activeTab === "sentences"
+                ? "bg-neutral-900 text-white"
+                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+            }`}
+          >
+            Sentences ({sentences.length})
+          </button>
+        </div>
 
-        {/* Words list */}
-        <ScrollArea className="flex-1 -mx-6 px-6">
+        {/* Content list */}
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6 mt-3">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
             </div>
-          ) : words.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No words in this pack
-            </div>
-          ) : (
-            <div className="space-y-2 pb-4">
-              {words.map((word, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center justify-between p-3 rounded-lg border ${
-                    word.isLearned ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-100"
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium truncate">{word.english}</span>
-                      {word.type && (
-                        <span className="text-xs text-gray-400 shrink-0">{word.type}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-lg font-arabic">{word.arabic}</span>
-                      {word.transliteration && (
-                        <span className="text-sm text-gray-500">{word.transliteration}</span>
+          ) : activeTab === "words" ? (
+            words.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No words in this pack
+              </div>
+            ) : (
+              <div className="space-y-2 pb-4">
+                {words.map((word, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg border ${
+                      word.isLearned ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-100"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium truncate">{word.english}</span>
+                          {word.type && (
+                            <span className="text-xs text-gray-400 shrink-0">{word.type}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-lg font-arabic">{word.arabic}</span>
+                          {word.transliteration && (
+                            <span className="text-sm text-gray-500">{word.transliteration}</span>
+                          )}
+                        </div>
+                      </div>
+                      {word.isLearned && (
+                        <Check className="w-4 h-4 text-green-600 shrink-0 ml-2" />
                       )}
                     </div>
                   </div>
-                  {word.isLearned && (
-                    <Check className="w-4 h-4 text-green-600 shrink-0 ml-2" />
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
+          ) : (
+            sentences.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No sentences in this pack
+              </div>
+            ) : (
+              <div className="space-y-2 pb-4">
+                {sentences.map((sentence) => (
+                  <div
+                    key={sentence.id}
+                    className="p-3 rounded-lg border bg-gray-50 border-gray-100"
+                  >
+                    <p className="font-arabic text-lg text-gray-800">{sentence.arabic}</p>
+                    {sentence.transliteration && (
+                      <p className="text-gray-500 text-sm mt-0.5">{sentence.transliteration}</p>
+                    )}
+                    <p className="text-gray-700 mt-1">{sentence.english}</p>
+                  </div>
+                ))}
+              </div>
+            )
           )}
-        </ScrollArea>
+        </div>
 
         {/* Action buttons */}
         <DialogFooter className="pt-4 border-t sm:justify-between">

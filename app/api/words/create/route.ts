@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ClaudeService } from "@/app/services/claudeService";
 import { WordType } from "@/app/types/word";
+import { getTransliterationPrompt } from "@/app/config/transliterationRules";
 
 export async function POST(req: Request) {
   try {
@@ -77,13 +78,13 @@ export async function POST(req: Request) {
       }
 
       // Then create word_progress entry to mark it as learning by default
-      if (user) {
+      if (user && wordData) {
         const { error: progressError } = await supabase
           .from("word_progress")
           .insert([
             {
               user_id: user.id,
-              word_english: word.english,
+              word_id: wordData.id,
               status: "learning",
               interval: 0,
               ease_factor: 2.5,
@@ -128,17 +129,20 @@ export async function POST(req: Request) {
     }
 
     // Otherwise generate a new translation
-    const prompt = `Translate this word to Lebanese arabic, unless it is already given in arabic: ${text}
-    
-    Make sure to provide the response as a JSON object with these fields:
-    {
-      "english": "the English word/phrase",
-      "arabic": "the Arabic word/phrase in Arabic script",
-      "transliteration": "Arabic pronunciation using English letters and numbers for Arabic sounds (e.g. 3 for ع)",
-      "type": "one of: noun, verb, adjective, phrase"
-    }
-    
-    Do not provide any additional text or explanations.`;
+    const transliterationRules = getTransliterationPrompt();
+    const prompt = `Translate this word to Lebanese Arabic, unless it is already given in Arabic: ${text}
+
+${transliterationRules}
+
+Provide the response as a JSON object with these fields:
+{
+  "english": "the English word/phrase",
+  "arabic": "the Arabic word/phrase in Arabic script",
+  "transliteration": "Arabic pronunciation following the transliteration rules above",
+  "type": "one of: noun, verb, adjective, phrase"
+}
+
+Do not provide any additional text or explanations.`;
 
     const rawResponse = await ClaudeService.chatCompletion(prompt);
 

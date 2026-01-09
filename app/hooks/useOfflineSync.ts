@@ -120,15 +120,15 @@ export const offlineHelpers = {
     }
   },
 
-  startLearning: (userId: string, wordEnglish: string) => {
+  startLearning: (userId: string, wordId: string) => {
     // Queue the START_LEARNING action for sync
-    OfflineStorage.addAction(OfflineQueue.createStartLearningAction(userId, wordEnglish));
+    OfflineStorage.addAction(OfflineQueue.createStartLearningAction(userId, wordId));
   },
 
-  updateProgress: (userId: string, wordEnglish: string, rating: number) => {
+  updateProgress: (userId: string, wordId: string, rating: number) => {
     const words = OfflineStorage.getWords();
-    const wordIndex = words.findIndex(w => w.english === wordEnglish);
-    
+    const wordIndex = words.findIndex(w => w.id === wordId);
+
     if (wordIndex !== -1) {
       const { status, nextReviewDate } = calculateNextReview(rating);
       const updatedWord = {
@@ -138,7 +138,7 @@ export const offlineHelpers = {
       };
       OfflineStorage.updateWord(words[wordIndex].id!, updatedWord);
     }
-    
-    OfflineStorage.addAction(OfflineQueue.createProgressAction(userId, wordEnglish, rating));
+
+    OfflineStorage.addAction(OfflineQueue.createProgressAction(userId, wordId, rating));
   },
 };

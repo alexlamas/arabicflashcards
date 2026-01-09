@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PencilSimple, Spinner } from "@phosphor-icons/react";
-import { Word, WordType, ExampleSentence } from "../types/word";
+import { Word, WordType } from "../types/word";
 import { WordService } from "../services/wordService";
 import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
 import { ExampleSentenceManager } from "./ExampleSentenceManager";
@@ -34,20 +34,18 @@ interface EditWordProps {
 export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChange }: EditWordProps) {
   const { handleOfflineAction } = useOfflineSync();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-  
+
   // Use controlled or uncontrolled pattern
   const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
   const setOpen = onOpenChange || setUncontrolledOpen;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasUnsavedSentences, setHasUnsavedSentences] = useState(false);
   const [formData, setFormData] = useState<Partial<Word>>({
     english: word.english,
     arabic: word.arabic,
     transliteration: word.transliteration,
     type: word.type,
     notes: word.notes || "",
-    example_sentences: word.example_sentences || [],
   });
 
   const wordTypes: WordType[] = ["noun", "verb", "adjective", "phrase"];
@@ -59,9 +57,7 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
       formData.arabic !== word.arabic ||
       formData.transliteration !== word.transliteration ||
       formData.type !== word.type ||
-      formData.notes !== (word.notes || "") ||
-      JSON.stringify(formData.example_sentences) !== JSON.stringify(word.example_sentences || []) ||
-      hasUnsavedSentences
+      formData.notes !== (word.notes || "")
     );
   };
 
@@ -82,7 +78,6 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
       if (updatedWord) {
         onWordUpdate(updatedWord);
         setOpen(false);
-        setHasUnsavedSentences(false);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update word");
@@ -170,18 +165,11 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
             </div>
 
             <ExampleSentenceManager
-              sentences={formData.example_sentences || []}
-              onChange={(sentences: ExampleSentence[]) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  example_sentences: sentences,
-                }))
-              }
+              wordId={word.id}
               wordArabic={formData.arabic || word.arabic}
               wordEnglish={formData.english || word.english}
               wordType={formData.type || word.type}
               wordNotes={formData.notes || word.notes}
-              onUnsavedChanges={setHasUnsavedSentences}
             />
           </div>
 
@@ -195,9 +183,9 @@ export function EditWord({ word, onWordUpdate, open: controlledOpen, onOpenChang
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !hasChanges()}>
+            <Button type="submit" disabled={loading}>
               {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
-              Save changes
+              {hasChanges() ? "Save changes" : "Done"}
             </Button>
           </div>
         </form>

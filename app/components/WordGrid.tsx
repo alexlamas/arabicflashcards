@@ -89,14 +89,14 @@ export function WordGrid({
       async () => {
         const { count } = await SpacedRepetitionService.startLearning(
           session.user.id,
-          word.english
+          word.id
         );
         window.dispatchEvent(
           new CustomEvent("wordProgressUpdated", { detail: { count } })
         );
         return count;
       },
-      () => offlineHelpers.startLearning(session.user.id, word.english)
+      () => offlineHelpers.startLearning(session.user.id, word.id)
     );
 
     onWordUpdate(updatedWord);

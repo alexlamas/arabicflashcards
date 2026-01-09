@@ -13,13 +13,13 @@ export interface UpdateWordPayload {
 
 export interface UpdateProgressPayload {
   userId: string;
-  wordEnglish: string;
+  wordId: string;
   rating: number;
 }
 
 export interface StartLearningPayload {
   userId: string;
-  wordEnglish: string;
+  wordId: string;
 }
 
 export type OfflineActionPayload = 
