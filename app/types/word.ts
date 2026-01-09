@@ -9,6 +9,8 @@ export interface Sentence {
   user_id?: string | null;
   pack_id?: string | null;
   created_at?: string;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
 }
 
 // For creating/editing sentences (without id)
@@ -29,6 +31,8 @@ export interface Word {
   notes?: string;
   pack_id?: string | null;
   user_id?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
 }
 
 export type ProgressState = "learned" | "learning" | "new";

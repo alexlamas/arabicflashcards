@@ -59,6 +59,15 @@ export function Dashboard() {
     return words.filter(w => !w.pack_id).length;
   }, [words]);
 
+  // Count learned words (next_review_date > 1 month away) for fluency level
+  const learnedCount = useMemo(() => {
+    const now = new Date();
+    const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    return words.filter(w =>
+      w.next_review_date && new Date(w.next_review_date) > oneMonthFromNow
+    ).length;
+  }, [words]);
+
   // Calculate progress for each installed pack
   const packProgress = useMemo(() => {
     const progress: Record<string, { total: number; learned: number }> = {};
@@ -220,6 +229,7 @@ export function Dashboard() {
       <WelcomeBanner
         firstName={firstName}
         reviewCount={reviewCount}
+        learnedCount={learnedCount}
         isLoading={isWordsLoading}
       />
 

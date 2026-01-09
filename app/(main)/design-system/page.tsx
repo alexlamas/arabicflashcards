@@ -379,22 +379,37 @@ export default function DesignSystemPage() {
           <ComponentSection
             name="WelcomeBanner"
             path="app/components/WelcomeBanner.tsx"
-            description="Hero banner on the dashboard"
+            description="Hero banner with fluency level display"
           >
             <div className="space-y-4">
               <div>
-                <StateLabel label="With Reviews Available" />
-                <WelcomeBanner firstName="Alex" reviewCount={12} />
+                <StateLabel label="Tourist Level (0-49 words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={8} learnedCount={12} />
               </div>
 
               <div>
-                <StateLabel label="All Caught Up" />
-                <WelcomeBanner firstName="Alex" reviewCount={0} />
+                <StateLabel label="Visitor Level (50-149 words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={15} learnedCount={87} />
+              </div>
+
+              <div>
+                <StateLabel label="Resident Level (150-349 words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={5} learnedCount={220} />
+              </div>
+
+              <div>
+                <StateLabel label="Local Level (350+ words)" />
+                <WelcomeBanner firstName="Alex" reviewCount={3} learnedCount={400} />
+              </div>
+
+              <div>
+                <StateLabel label="All Caught Up (Visitor)" />
+                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={87} />
               </div>
 
               <div>
                 <StateLabel label="Loading" />
-                <WelcomeBanner firstName="Alex" reviewCount={0} isLoading />
+                <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={0} isLoading />
               </div>
             </div>
           </ComponentSection>
