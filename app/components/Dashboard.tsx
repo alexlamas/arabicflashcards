@@ -377,14 +377,12 @@ export function Dashboard() {
 
       {/* My Words Section */}
       {myWordsCount > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Personal vocabulary</h2>
-          <Link href="/my-words" className="block">
+        <Link href="/my-words" className="block">
             <div className="bg-white border rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-                    <PencilLine className="w-6 h-6 text-amber-600" />
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                    <PencilLine className="w-6 h-6 text-gray-600" />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">My words</h3>
@@ -396,8 +394,7 @@ export function Dashboard() {
                 </Button>
               </div>
             </div>
-          </Link>
-        </div>
+        </Link>
       )}
 
       {/* Installed Packs Section */}
