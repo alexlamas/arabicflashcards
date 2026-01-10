@@ -172,7 +172,7 @@ export default async function PackPreviewPage({
 
       <div className="min-h-screen bg-white">
         {/* Navigation */}
-        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4">
+        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
           <div className="h-12 flex items-center bg-white border border-gray-200 rounded-full shadow-sm px-4 pr-1.5 gap-2">
             <Link href="/new" className="flex items-center gap-2">
               <Image
