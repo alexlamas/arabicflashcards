@@ -5,7 +5,7 @@ import { vi } from "vitest";
  * Supports: .from().select().eq().order().single().insert().update().delete()
  */
 export function createSupabaseMock() {
-  const mockResult = { data: null, error: null };
+  const mockResult: { data: unknown; error: unknown; count?: number | null } = { data: null, error: null };
 
   const chainableMock = {
     from: vi.fn(() => chainableMock),
@@ -18,6 +18,10 @@ export function createSupabaseMock() {
     neq: vi.fn(() => chainableMock),
     in: vi.fn(() => chainableMock),
     not: vi.fn(() => chainableMock),
+    lte: vi.fn(() => chainableMock),
+    gte: vi.fn(() => chainableMock),
+    lt: vi.fn(() => chainableMock),
+    gt: vi.fn(() => chainableMock),
     is: vi.fn(() => chainableMock),
     or: vi.fn(() => chainableMock),
     order: vi.fn(() => chainableMock),
@@ -54,6 +58,11 @@ export function createSupabaseMock() {
         data: { user },
         error: null,
       });
+    },
+    setCountResult: (count: number | null, error: unknown = null) => {
+      mockResult.count = count;
+      mockResult.data = null;
+      mockResult.error = error;
     },
   };
 }

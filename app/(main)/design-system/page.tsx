@@ -107,13 +107,6 @@ export default function DesignSystemPage() {
   useEffect(() => {
     StarterPackService.getAvailablePacks().then(setPacks);
   }, []);
-  // Brand colors - using Tailwind emerald/teal
-  const brandColors = {
-    emerald500: "#10b981",
-    emerald300: "#6ee7b7",
-    teal500: "#14b8a6",
-  };
-
   const ratingColors = {
     forgot: { bg: "#fef2f2", border: "#fecaca", text: "#b91c1c" },
     struggled: { bg: "#fffbeb", border: "#fde68a", text: "#b45309" },
@@ -166,12 +159,17 @@ export default function DesignSystemPage() {
             description="Theme colors used throughout the app"
           >
             <div>
-              <StateLabel label="Primary Theme" />
+              <StateLabel label="Brand Colors" />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <ColorSwatch name="primary" hex="#47907d" />
-                <ColorSwatch name="primaryLight" hex="#e8f3f0" />
-                <ColorSwatch name="white" hex="#ffffff" className="border" />
+                <ColorSwatch name="emerald-500" hex="#10b981" />
+                <ColorSwatch name="emerald-300" hex="#6ee7b7" />
+                <ColorSwatch name="teal-500" hex="#14b8a6" />
                 <ColorSwatch name="gray-900" hex="#111827" />
+              </div>
+              <div className="mt-4">
+                <p className="text-xs font-medium text-gray-500 mb-2">Gradient (Perfect/Primary Actions)</p>
+                <div className="h-12 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500" />
+                <p className="text-xs text-gray-500 mt-1">from-emerald-500 to-teal-500</p>
               </div>
             </div>
 
@@ -212,26 +210,32 @@ export default function DesignSystemPage() {
         <div id="logo">
           <ComponentSection
             name="Logo"
-            path="public/logo.svg"
-            description="The cedar tree logo used throughout the app"
+            path="public/logo-*.svg"
+            description="Level-specific logos used in the WelcomeBanner"
           >
-            <div className="flex items-center gap-8 flex-wrap">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <StateLabel label="Large (128px)" />
+                <StateLabel label="Tourist (0-49 words)" />
                 <div className="bg-white border p-4 rounded-xl inline-block">
-                  <Image src="/logo.svg" alt="Logo" width={128} height={128} />
+                  <Image src="/logo-tourist.svg" alt="Tourist" width={96} height={96} />
                 </div>
               </div>
               <div>
-                <StateLabel label="Medium (64px)" />
+                <StateLabel label="Visitor (50-149 words)" />
                 <div className="bg-white border p-4 rounded-xl inline-block">
-                  <Image src="/logo.svg" alt="Logo" width={64} height={64} />
+                  <Image src="/logo-visitor.svg" alt="Visitor" width={96} height={96} />
                 </div>
               </div>
               <div>
-                <StateLabel label="Small (32px)" />
+                <StateLabel label="Resident (150-349 words)" />
                 <div className="bg-white border p-4 rounded-xl inline-block">
-                  <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+                  <Image src="/logo-resident.svg" alt="Resident" width={96} height={96} />
+                </div>
+              </div>
+              <div>
+                <StateLabel label="Local (350+ words)" />
+                <div className="bg-white border p-4 rounded-xl inline-block">
+                  <Image src="/logo-local.svg" alt="Local" width={96} height={96} />
                 </div>
               </div>
             </div>
@@ -350,7 +354,7 @@ export default function DesignSystemPage() {
               <div>
                 <StateLabel label="Variants" />
                 <div className="flex flex-wrap gap-3">
-                  <Button style={{ backgroundColor: theme.primary }}>Primary</Button>
+                  <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white">Primary</Button>
                   <Button variant="secondary">Secondary</Button>
                   <Button variant="outline">Outline</Button>
                   <Button variant="ghost">Ghost</Button>
@@ -362,16 +366,16 @@ export default function DesignSystemPage() {
               <div>
                 <StateLabel label="Sizes" />
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button size="sm" style={{ backgroundColor: theme.primary }}>Small</Button>
-                  <Button size="default" style={{ backgroundColor: theme.primary }}>Default</Button>
-                  <Button size="lg" style={{ backgroundColor: theme.primary }}>Large</Button>
+                  <Button size="sm" className="bg-emerald-500 text-white">Small</Button>
+                  <Button size="default" className="bg-emerald-500 text-white">Default</Button>
+                  <Button size="lg" className="bg-emerald-500 text-white">Large</Button>
                 </div>
               </div>
 
               <div>
                 <StateLabel label="With Icons" />
                 <div className="flex flex-wrap gap-3">
-                  <Button style={{ backgroundColor: theme.primary }}>
+                  <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
                     <Play className="w-4 h-4 mr-2" />
                     Start review
                   </Button>
@@ -385,8 +389,8 @@ export default function DesignSystemPage() {
               <div>
                 <StateLabel label="States" />
                 <div className="flex flex-wrap gap-3">
-                  <Button disabled style={{ backgroundColor: theme.primary }}>Disabled</Button>
-                  <Button className="pointer-events-none opacity-70" style={{ backgroundColor: theme.primary }}>
+                  <Button disabled className="bg-emerald-500 text-white">Disabled</Button>
+                  <Button className="pointer-events-none opacity-70 bg-emerald-500 text-white">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                     Loading...
                   </Button>
@@ -441,8 +445,7 @@ export default function DesignSystemPage() {
                     Remembered
                   </Button>
                   <Button
-                    className="flex items-center w-full font-semibold text-white"
-                    style={{ backgroundColor: theme.primary }}
+                    className="flex items-center w-full font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500"
                   >
                     Perfect
                   </Button>

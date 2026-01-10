@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
-import { PlayCircleIcon } from "@phosphor-icons/react";
+import { PlayCircleIcon, Sun } from "@phosphor-icons/react";
 
 // Fluency level thresholds and configuration
 const FLUENCY_LEVELS = [
@@ -152,30 +152,35 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
   }
 
   return (
-    <div className="relative overflow-hidden p-8 text-gray-800 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
-      <div className="relative z-10 flex items-start gap-6">
+    <div className="relative overflow-hidden p-5 py-6 pr-12 bg-gradient-to-br from-sky-50 to-blue-50">
+      <DottedGlowBackground
+        gap={16}
+        radius={1.5}
+        color="rgba(56, 189, 248, 0.3)"
+        glowColor="rgba(56, 189, 248, 0.2)"
+        opacity={0.8}
+        speedScale={0.5}
+      />
+      <div className="relative z-10 flex items-center gap-4">
         <Image
           src={fluency.logo}
           alt="Yalla Flash"
-          width={96}
-          height={96}
-          className="flex-shrink-0"
+          width={120}
+          height={120}
+          className="flex-shrink-0 -m-4"
           onError={(e) => {
             e.currentTarget.src = "/logo.svg";
           }}
         />
-        <div className="flex-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 rounded-full mb-3">
-            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-amber-700">All caught up</span>
+        <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-semibold font-pphatton mt-2 text-heading">Mabrouk, {firstName}!</h1>
+            <p className="text-sm text-subtle py-1">{levelSubtitle}</p>
           </div>
-          <h1 className="text-2xl font-bold mb-1 text-heading">
-            {fluency.greeting}, {firstName}!
-          </h1>
-          <p className="text-sm text-subtle mb-3">{levelSubtitle}</p>
-          <p className="text-body max-w-md">
-            No words waiting for review — check back soon.
-          </p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-sky-100 border border-sky-200 rounded-full">
+            <Sun className="w-4 h-4 text-sky-500" weight="fill" />
+            <span className="text-sm font-medium text-sky-700">All caught up</span>
+          </div>
         </div>
       </div>
     </div>
