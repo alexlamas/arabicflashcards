@@ -97,17 +97,31 @@ const resourceCategories: ResourceCategory[] = [
           "Lebanese Arabic video series with real conversations and cultural content.",
         image: "/resources/beirut.jpg",
       },
+      {
+        name: "Globetrot with Arabic",
+        url: "https://www.youtube.com/@GlobetrotwithArabic",
+        description:
+          "YouTube channel with Lebanese Arabic lessons and vocabulary.",
+        image: "/resources/globetrot.jpg",
+      },
     ],
   },
   {
     title: "Books",
     resources: [
       {
-        name: "Saifi Arabic",
+        name: "Saifi Arabic (books)",
         url: "https://store.saifiarabic.com/",
         description:
           "Lebanese Arabic textbooks and learning materials from the Saifi Institute in Beirut.",
         image: "/resources/saifi-books.png",
+      },
+      {
+        name: "Conversational Arabic Quick and Easy",
+        url: "https://www.amazon.co.uk/dp/1500125652",
+        description:
+          "A practical phrasebook for learning Lebanese Arabic with everyday expressions and conversations.",
+        image: "/resources/conversational-arabic.jpg",
       },
     ],
   },
@@ -200,7 +214,7 @@ export default function ResourcesPage() {
         {/* Hero */}
         <div className="max-w-4xl mx-auto px-4 pt-28 pb-12">
           <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Lebanese Arabic Resources
+            Other learning resources
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl">
             A curated collection of resources for learning Lebanese Arabic.
