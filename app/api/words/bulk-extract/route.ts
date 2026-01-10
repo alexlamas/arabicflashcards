@@ -112,27 +112,23 @@ Return ONLY a JSON array with this exact structure:
 No additional text or explanations. Just the JSON array.`;
 
     // Build message content based on whether we have text or image
-    type MessageContent =
-      | string
-      | Array<
-          | { type: "text"; text: string }
-          | {
-              type: "image";
-              source: { type: "base64"; media_type: string; data: string };
-            }
-        >;
+    type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
-    let content: MessageContent;
+    let content: Anthropic.MessageCreateParams["messages"][0]["content"];
 
     if (image) {
       // Determine media type from base64 prefix or default to jpeg
-      let mediaType = "image/jpeg";
+      let mediaType: ImageMediaType = "image/jpeg";
       let imageData = image;
 
       if (image.startsWith("data:")) {
         const match = image.match(/^data:([^;]+);base64,(.+)$/);
         if (match) {
-          mediaType = match[1];
+          const detectedType = match[1];
+          if (detectedType === "image/png" || detectedType === "image/jpeg" ||
+              detectedType === "image/gif" || detectedType === "image/webp") {
+            mediaType = detectedType;
+          }
           imageData = match[2];
         }
       }
