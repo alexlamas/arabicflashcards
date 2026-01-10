@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Shuffle, DownloadSimple, Sun, Moon, Circle, Square } from "@phosphor-icons/react";
 import html2canvas from "html2canvas";
 
-const EXAMPLE_IMAGE = "https://illustrations.popsy.co/amber/cup-of-tea.svg";
+const EXAMPLE_IMAGE = "/instagram-example.webp";
 
 export default function InstagramTemplate() {
   const [arabic, setArabic] = useState("قهوة");

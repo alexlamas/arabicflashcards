@@ -1,26 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Pencil, X } from "lucide-react";
+import { Check, CheckCircle2 } from "lucide-react";
 import type { Sentence } from "@/app/types/word";
-import { Badge } from "@/components/ui/badge";
 
 interface SentenceReviewCardProps {
   sentence: Sentence;
   onApprove: (updates: Partial<Sentence>) => Promise<void>;
+  onUnapprove?: () => Promise<void>;
 }
 
-export function SentenceReviewCard({ sentence, onApprove }: SentenceReviewCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export function SentenceReviewCard({ sentence, onApprove, onUnapprove }: SentenceReviewCardProps) {
   const [arabic, setArabic] = useState(sentence.arabic);
   const [english, setEnglish] = useState(sentence.english);
   const [transliteration, setTransliteration] = useState(sentence.transliteration);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isReviewed = !!sentence.reviewed_at;
+
+  // Reset form when sentence changes
+  useEffect(() => {
+    setArabic(sentence.arabic);
+    setEnglish(sentence.english);
+    setTransliteration(sentence.transliteration);
+  }, [sentence.id, sentence.arabic, sentence.english, sentence.transliteration]);
 
   const handleApprove = async () => {
     if (isSubmitting) return;
@@ -31,113 +38,71 @@ export function SentenceReviewCard({ sentence, onApprove }: SentenceReviewCardPr
       if (english !== sentence.english) updates.english = english;
       if (transliteration !== sentence.transliteration) updates.transliteration = transliteration;
       await onApprove(updates);
-      setIsEditing(false);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    setArabic(sentence.arabic);
-    setEnglish(sentence.english);
-    setTransliteration(sentence.transliteration);
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.ctrlKey) {
-      e.preventDefault();
-      handleApprove();
-    }
-    if (e.key === "Escape") {
-      e.preventDefault();
-      handleCancel();
-    }
-  };
-
-  if (isReviewed && !isEditing) {
-    return (
-      <Card className="bg-muted/50">
-        <CardContent className="py-3 px-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="space-y-1 flex-1 min-w-0">
-              <p className="font-arabic text-lg text-right" dir="rtl">
-                {sentence.arabic}
-              </p>
-              <p className="text-sm text-muted-foreground">{sentence.transliteration}</p>
-              <p className="text-sm">{sentence.english}</p>
-            </div>
-            <Badge variant="secondary" className="shrink-0">
-              <Check className="h-3 w-3 mr-1" />
-              Reviewed
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!isEditing) {
-    return (
-      <Card>
-        <CardContent className="py-3 px-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="space-y-1 flex-1 min-w-0">
-              <p className="font-arabic text-lg text-right" dir="rtl">
-                {sentence.arabic}
-              </p>
-              <p className="text-sm text-muted-foreground">{sentence.transliteration}</p>
-              <p className="text-sm">{sentence.english}</p>
-            </div>
-            <div className="flex gap-1 shrink-0">
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleApprove} disabled={isSubmitting}>
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Editing mode
   return (
-    <Card className="border-primary">
-      <CardContent className="py-3 px-4 space-y-2" onKeyDown={handleKeyDown}>
-        <div className="space-y-1">
+    <Card>
+      <CardContent className="pt-4 space-y-3">
+        {/* Status indicator */}
+        {isReviewed && (
+          <div className="flex justify-end">
+            <button
+              onClick={onUnapprove}
+              className="inline-flex items-center gap-1.5 text-emerald-600 bg-green-50 px-2 py-1 pr-3 rounded-full text-xs font-medium hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+              title="Click to unapprove"
+            >
+              <CheckCircle2 className="size-3" />
+              Approved
+            </button>
+          </div>
+        )}
+
+        {/* Arabic */}
+        <div className="space-y-1.5">
+          <Label htmlFor={`arabic-${sentence.id}`} className="text-xs">Arabic</Label>
           <Input
+            id={`arabic-${sentence.id}`}
             value={arabic}
             onChange={(e) => setArabic(e.target.value)}
             dir="rtl"
-            className="font-arabic text-right"
-            placeholder="Arabic"
+            className="font-arabic !text-2xl text-right h-12"
           />
         </div>
-        <div className="space-y-1">
+
+        {/* English */}
+        <div className="space-y-1.5">
+          <Label htmlFor={`english-${sentence.id}`} className="text-xs">English</Label>
           <Input
-            value={transliteration}
-            onChange={(e) => setTransliteration(e.target.value)}
-            placeholder="Transliteration"
-          />
-        </div>
-        <div className="space-y-1">
-          <Input
+            id={`english-${sentence.id}`}
             value={english}
             onChange={(e) => setEnglish(e.target.value)}
-            placeholder="English"
           />
         </div>
-        <div className="flex gap-2 justify-end">
-          <Button variant="ghost" size="sm" onClick={handleCancel}>
-            <X className="h-4 w-4 mr-1" />
-            Cancel
-          </Button>
-          <Button size="sm" onClick={handleApprove} disabled={isSubmitting}>
-            <Check className="h-4 w-4 mr-1" />
-            {isSubmitting ? "Saving..." : "Approve (Ctrl+Enter)"}
+
+        {/* Transliteration */}
+        <div className="space-y-1.5">
+          <Label htmlFor={`translit-${sentence.id}`} className="text-xs">Transliteration</Label>
+          <Input
+            id={`translit-${sentence.id}`}
+            value={transliteration}
+            onChange={(e) => setTransliteration(e.target.value)}
+          />
+        </div>
+
+        {/* Action button */}
+        <div className="pt-2">
+          <Button
+            onClick={handleApprove}
+            disabled={isSubmitting}
+            variant="outline"
+            className="w-full"
+            size="sm"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            {isSubmitting ? "Saving..." : isReviewed ? "Update" : "Approve"}
           </Button>
         </div>
       </CardContent>
