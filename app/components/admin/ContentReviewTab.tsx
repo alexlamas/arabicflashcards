@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { StarterPack } from "../../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2, ChevronDown, ChevronLeft, ChevronRight, Check, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
-import { WordReviewCard } from "../content-review/WordReviewCard";
 import {
   ContentReviewService,
   WordWithSentences,
@@ -20,11 +19,27 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PackWithStats extends StarterPack {
   total: number;
   reviewed: number;
 }
+
+type ReviewableItem =
+  | { type: "word"; data: WordWithSentences }
+  | { type: "sentence"; data: Sentence; parentWord: WordWithSentences };
+
+const WORD_TYPES = ["noun", "verb", "adjective", "adverb", "pronoun", "particle", "phrase"] as const;
 
 export function ContentReviewTab() {
   const { toast } = useToast();
@@ -36,7 +51,44 @@ export function ContentReviewTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPacks, setIsLoadingPacks] = useState(true);
   const [isPackSelectorOpen, setIsPackSelectorOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const filter = "all";
+
+  // Form state
+  const [formArabic, setFormArabic] = useState("");
+  const [formEnglish, setFormEnglish] = useState("");
+  const [formTransliteration, setFormTransliteration] = useState("");
+  const [formType, setFormType] = useState("noun");
+
+  // Flatten words and sentences into a single reviewable list
+  const reviewableItems: ReviewableItem[] = useMemo(() => {
+    const items: ReviewableItem[] = [];
+    for (const word of words) {
+      items.push({ type: "word", data: word });
+      for (const sentence of word.sentences) {
+        items.push({ type: "sentence", data: sentence, parentWord: word });
+      }
+    }
+    return items;
+  }, [words]);
+
+  const currentItem = reviewableItems[currentIndex];
+
+  // Update form when current item changes
+  useEffect(() => {
+    if (!currentItem) return;
+
+    if (currentItem.type === "word") {
+      setFormArabic(currentItem.data.arabic);
+      setFormEnglish(currentItem.data.english);
+      setFormTransliteration(currentItem.data.transliteration || "");
+      setFormType(currentItem.data.type || "noun");
+    } else {
+      setFormArabic(currentItem.data.arabic);
+      setFormEnglish(currentItem.data.english);
+      setFormTransliteration(currentItem.data.transliteration || "");
+    }
+  }, [currentItem]);
 
   // Load packs with stats
   useEffect(() => {
@@ -106,18 +158,24 @@ export function ContentReviewTab() {
     );
   };
 
-  const handleApprove = useCallback(
-    async (updates: Partial<Word>) => {
-      const currentWord = words[currentIndex];
-      if (!currentWord || !selectedPack) return;
+  const handleApprove = useCallback(async () => {
+    if (!currentItem || !selectedPack || isSubmitting) return;
+    setIsSubmitting(true);
 
-      try {
-        await ContentReviewService.updateAndApproveWord(currentWord.id, updates);
+    try {
+      if (currentItem.type === "word") {
+        const updates: Partial<Word> = {};
+        if (formArabic !== currentItem.data.arabic) updates.arabic = formArabic;
+        if (formEnglish !== currentItem.data.english) updates.english = formEnglish;
+        if (formTransliteration !== currentItem.data.transliteration) updates.transliteration = formTransliteration;
+        if (formType !== currentItem.data.type) updates.type = formType;
 
-        const wasNewlyApproved = !currentWord.reviewed_at;
+        await ContentReviewService.updateAndApproveWord(currentItem.data.id, updates);
+
+        const wasNewlyApproved = !currentItem.data.reviewed_at;
         setWords((prev) =>
-          prev.map((w, i) =>
-            i === currentIndex
+          prev.map((w) =>
+            w.id === currentItem.data.id
               ? { ...w, ...updates, reviewed_at: new Date().toISOString() }
               : w
           )
@@ -126,82 +184,100 @@ export function ContentReviewTab() {
         if (wasNewlyApproved) {
           updatePackStats(selectedPack, 1);
         }
+      } else {
+        const updates: Partial<Sentence> = {};
+        if (formArabic !== currentItem.data.arabic) updates.arabic = formArabic;
+        if (formEnglish !== currentItem.data.english) updates.english = formEnglish;
+        if (formTransliteration !== currentItem.data.transliteration) updates.transliteration = formTransliteration;
 
-        if (currentIndex < words.length - 1) {
-          setCurrentIndex(currentIndex + 1);
-        }
-      } catch {
-        toast({
-          variant: "destructive",
-          title: "Failed to approve word",
-        });
-      }
-    },
-    [words, currentIndex, selectedPack, toast]
-  );
-
-  const handleUnapprove = useCallback(async () => {
-    const currentWord = words[currentIndex];
-    if (!currentWord || !selectedPack) return;
-
-    try {
-      await ContentReviewService.unapproveWord(currentWord.id);
-
-      setWords((prev) =>
-        prev.map((w, i) =>
-          i === currentIndex
-            ? { ...w, reviewed_at: null, reviewed_by: null }
-            : w
-        )
-      );
-
-      updatePackStats(selectedPack, -1);
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Failed to unapprove word",
-      });
-    }
-  }, [words, currentIndex, selectedPack, toast]);
-
-  const handlePrevious = useCallback(() => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  }, [currentIndex]);
-
-  const handleNext = useCallback(() => {
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  }, [currentIndex, words.length]);
-
-  const handleSentenceApprove = useCallback(
-    async (sentenceId: string, updates: Partial<Sentence>) => {
-      try {
-        await ContentReviewService.updateAndApproveSentence(sentenceId, updates);
+        await ContentReviewService.updateAndApproveSentence(currentItem.data.id, updates);
 
         setWords((prev) =>
           prev.map((word) => ({
             ...word,
             sentences: word.sentences.map((s) =>
-              s.id === sentenceId
+              s.id === currentItem.data.id
                 ? { ...s, ...updates, reviewed_at: new Date().toISOString() }
                 : s
             ),
           }))
         );
-      } catch {
-        toast({
-          variant: "destructive",
-          title: "Failed to approve sentence",
-        });
       }
-    },
-    [toast]
-  );
 
-  const currentWord = words[currentIndex];
+      // Auto-advance to next
+      if (currentIndex < reviewableItems.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: `Failed to approve ${currentItem.type}`,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [currentItem, selectedPack, isSubmitting, formArabic, formEnglish, formTransliteration, formType, currentIndex, reviewableItems.length, toast]);
+
+  const handleUnapprove = useCallback(async () => {
+    if (!currentItem || !selectedPack) return;
+
+    try {
+      if (currentItem.type === "word") {
+        await ContentReviewService.unapproveWord(currentItem.data.id);
+        setWords((prev) =>
+          prev.map((w) =>
+            w.id === currentItem.data.id
+              ? { ...w, reviewed_at: null, reviewed_by: null }
+              : w
+          )
+        );
+        updatePackStats(selectedPack, -1);
+      } else {
+        await ContentReviewService.unapproveSentence(currentItem.data.id);
+        setWords((prev) =>
+          prev.map((word) => ({
+            ...word,
+            sentences: word.sentences.map((s) =>
+              s.id === currentItem.data.id
+                ? { ...s, reviewed_at: null, reviewed_by: null }
+                : s
+            ),
+          }))
+        );
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: `Failed to unapprove ${currentItem.type}`,
+      });
+    }
+  }, [currentItem, selectedPack, toast]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLSelectElement) return;
+
+      if (e.key === "Enter" && !e.shiftKey && !(e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        handleApprove();
+      }
+
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
+        e.preventDefault();
+        setCurrentIndex(currentIndex - 1);
+      }
+
+      if (e.key === "ArrowRight" && currentIndex < reviewableItems.length - 1) {
+        e.preventDefault();
+        setCurrentIndex(currentIndex + 1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleApprove, currentIndex, reviewableItems.length]);
+
   const selectedPackData = packs.find((p) => p.id === selectedPack);
 
   const renderPackItem = (pack: PackWithStats, isSelected: boolean = false) => {
@@ -241,6 +317,12 @@ export function ContentReviewTab() {
       </div>
     );
   };
+
+  const isReviewed = currentItem?.type === "word"
+    ? !!currentItem.data.reviewed_at
+    : currentItem?.type === "sentence"
+      ? !!currentItem.data.reviewed_at
+      : false;
 
   return (
     <div className="max-w-3xl mx-auto px-6">
@@ -313,23 +395,130 @@ export function ContentReviewTab() {
         <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
-      ) : words.length === 0 ? (
+      ) : reviewableItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-muted-foreground">No words in this pack.</p>
+          <p className="text-muted-foreground">No content in this pack.</p>
         </div>
-      ) : currentWord ? (
-        <WordReviewCard
-          word={currentWord}
-          onApprove={handleApprove}
-          onUnapprove={handleUnapprove}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSentenceApprove={handleSentenceApprove}
-          hasPrevious={currentIndex > 0}
-          hasNext={currentIndex < words.length - 1}
-          currentIndex={currentIndex}
-          totalCount={words.length}
-        />
+      ) : currentItem ? (
+        <div className="space-y-4">
+          {/* Progress indicator */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="capitalize">{currentItem.type} {currentIndex + 1} of {reviewableItems.length}</span>
+              {currentItem.type === "sentence" && (
+                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
+                  for &ldquo;{currentItem.parentWord.english}&rdquo;
+                </span>
+              )}
+              {isReviewed && (
+                <button
+                  onClick={handleUnapprove}
+                  className="inline-flex items-center gap-1.5 text-emerald-600 bg-green-50 px-2 py-1 pr-3 rounded-full text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                  title="Click to unapprove"
+                >
+                  <CheckCircle2 className="size-4" />
+                  Approved
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentIndex(currentIndex - 1)}
+                disabled={currentIndex === 0}
+                className="h-8 px-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentIndex(currentIndex + 1)}
+                disabled={currentIndex >= reviewableItems.length - 1}
+                className="h-8 px-2"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Review Card */}
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              {/* Arabic */}
+              <div className="space-y-2">
+                <Label htmlFor="arabic">Arabic</Label>
+                <Input
+                  id="arabic"
+                  value={formArabic}
+                  onChange={(e) => setFormArabic(e.target.value)}
+                  dir="rtl"
+                  className="font-arabic !text-4xl text-right h-14"
+                  autoFocus
+                />
+              </div>
+
+              {/* English */}
+              <div className="space-y-2">
+                <Label htmlFor="english">English</Label>
+                <Input
+                  id="english"
+                  value={formEnglish}
+                  onChange={(e) => setFormEnglish(e.target.value)}
+                />
+              </div>
+
+              {/* Transliteration */}
+              <div className="space-y-2">
+                <Label htmlFor="transliteration">Transliteration</Label>
+                <Input
+                  id="transliteration"
+                  value={formTransliteration}
+                  onChange={(e) => setFormTransliteration(e.target.value)}
+                />
+              </div>
+
+              {/* Type - only for words */}
+              {currentItem.type === "word" && (
+                <div className="space-y-2">
+                  <Label htmlFor="type">Type</Label>
+                  <Select value={formType} onValueChange={setFormType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WORD_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Action button */}
+              <div className="pt-4">
+                <Button
+                  onClick={handleApprove}
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  {isSubmitting ? "Saving..." : isReviewed ? "Update (Enter)" : "Approve (Enter)"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Keyboard shortcuts help */}
+          <div className="text-xs text-muted-foreground text-center">
+            <span>← → navigate</span>
+            <span className="mx-2">·</span>
+            <span>Enter to approve</span>
+          </div>
+        </div>
       ) : null}
     </div>
   );

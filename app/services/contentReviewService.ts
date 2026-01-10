@@ -116,6 +116,23 @@ export class ContentReviewService {
   }
 
   /**
+   * Unapprove a sentence (clear reviewed status)
+   */
+  static async unapproveSentence(sentenceId: string): Promise<void> {
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("sentences")
+      .update({
+        reviewed_at: null,
+        reviewed_by: null,
+      })
+      .eq("id", sentenceId);
+
+    if (error) throw error;
+  }
+
+  /**
    * Approve a word (mark as reviewed)
    */
   static async approveWord(wordId: string): Promise<void> {

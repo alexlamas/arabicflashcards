@@ -193,13 +193,11 @@ export default function InstagramTemplate() {
         </div>
 
         {/* Card Preview */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 w-full">
           <div
             ref={cardRef}
-            className="relative overflow-hidden"
+            className="relative overflow-hidden w-full max-w-[400px] aspect-square"
             style={{
-              width: 400,
-              height: 400,
               background: isDark
                 ? "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)"
                 : "#fafafa",
@@ -211,8 +209,8 @@ export default function InstagramTemplate() {
                 <div
                   className={`absolute overflow-hidden ${
                     isCircle
-                      ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] w-44 h-44 rounded-full"
-                      : "top-6 left-6 right-6 bottom-28 rounded-2xl"
+                      ? "top-[12%] left-1/2 -translate-x-1/2 w-[45%] aspect-square rounded-full"
+                      : "top-[6%] left-[6%] right-[6%] bottom-[28%] rounded-2xl"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -222,27 +220,31 @@ export default function InstagramTemplate() {
                 {/* Text */}
                 <div
                   className={`absolute left-0 right-0 ${
-                    isCircle ? "bottom-8 text-center px-8" : "bottom-0 p-6"
+                    isCircle
+                      ? `text-center px-[8%] ${showLogo ? "bottom-[16%]" : "bottom-[8%]"}`
+                      : "bottom-0 p-[6%]"
                   } ${!isCircle && isDark ? "bg-gradient-to-t from-black/90 to-transparent" : ""}`}
                 >
                   <h1
-                    className={`font-arabic mb-1 ${isCircle ? "text-4xl" : "text-4xl"} ${
+                    className={`font-arabic mb-1 text-[clamp(1.5rem,8vw,2.25rem)] ${
                       isDark ? "text-white" : "text-gray-900"
                     }`}
                     dir="rtl"
                   >
                     {arabic}
                   </h1>
-                  <p className={`text-base ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                  <p className={`text-[clamp(0.75rem,3.5vw,1rem)] ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                     {transliteration} · {english}
                   </p>
                 </div>
 
                 {/* Logo */}
                 {showLogo && (
-                  <div className="absolute bottom-5 right-6 flex items-center gap-2">
+                  <div className={`absolute flex items-center gap-2 ${
+                    isCircle ? "bottom-[5%] left-1/2 -translate-x-1/2" : "bottom-[5%] right-[6%]"
+                  }`}>
                     <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
-                    <span className={`font-pphatton font-bold text-sm ${isDark ? "text-white" : "text-gray-900"}`}>
+                    <span className={`font-pphatton font-bold text-[clamp(0.7rem,3vw,0.875rem)] ${isDark ? "text-white" : "text-gray-900"}`}>
                       Yalla Flash
                     </span>
                   </div>
@@ -250,31 +252,31 @@ export default function InstagramTemplate() {
               </>
             ) : (
               /* No image state */
-              <div className="h-full flex flex-col items-center justify-center px-10">
+              <div className="h-full flex flex-col items-center justify-center px-[10%]">
                 <p
-                  className={`text-sm uppercase tracking-widest mb-6 ${
+                  className={`text-[clamp(0.7rem,3vw,0.875rem)] uppercase tracking-widest mb-[6%] ${
                     isDark ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
                   Word of the Day
                 </p>
                 <h1
-                  className={`text-6xl font-arabic mb-3 ${isDark ? "text-white" : "text-gray-900"}`}
+                  className={`text-[clamp(2.5rem,12vw,3.75rem)] font-arabic mb-[3%] ${isDark ? "text-white" : "text-gray-900"}`}
                   dir="rtl"
                 >
                   {arabic}
                 </h1>
-                <p className={`text-xl mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                <p className={`text-[clamp(1rem,4vw,1.25rem)] mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                   {transliteration}
                 </p>
-                <p className={`text-xl font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                <p className={`text-[clamp(1rem,4vw,1.25rem)] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   {english}
                 </p>
 
                 {showLogo && (
-                  <div className="absolute bottom-6 flex items-center gap-2">
+                  <div className="absolute bottom-[6%] flex items-center gap-2">
                     <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
-                    <span className={`font-pphatton font-bold text-sm ${isDark ? "text-white" : "text-gray-900"}`}>
+                    <span className={`font-pphatton font-bold text-[clamp(0.7rem,3vw,0.875rem)] ${isDark ? "text-white" : "text-gray-900"}`}>
                       Yalla Flash
                     </span>
                   </div>
