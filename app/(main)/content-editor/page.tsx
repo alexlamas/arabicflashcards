@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { StarterPack } from "../../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 import { WordReviewCard } from "../../components/content-review/WordReviewCard";
 import {
@@ -53,12 +54,30 @@ export default function ContentEditorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReviewer]);
 
+  const loadPackContent = useCallback(async (packId: string, wordFilter: "unreviewed" | "reviewed" | "all") => {
+    setIsLoading(true);
+    setCurrentIndex(0);
+
+    try {
+      const filteredWords = await ContentReviewService.getWords(packId, wordFilter);
+      setWords(filteredWords);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to load content",
+      });
+      setWords([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
   // Load content when pack changes
   useEffect(() => {
     if (selectedPack) {
       loadPackContent(selectedPack, filter);
     }
-  }, [selectedPack, filter]);
+  }, [selectedPack, filter, loadPackContent]);
 
   async function loadPacksWithStats() {
     setIsLoadingPacks(true);
@@ -87,24 +106,6 @@ export default function ContentEditorPage() {
       setSelectedPack(packsWithStats[0].id);
     }
     setIsLoadingPacks(false);
-  }
-
-  async function loadPackContent(packId: string, wordFilter: "unreviewed" | "reviewed" | "all") {
-    setIsLoading(true);
-    setCurrentIndex(0);
-
-    try {
-      const filteredWords = await ContentReviewService.getWords(packId, wordFilter);
-      setWords(filteredWords);
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Failed to load content",
-      });
-      setWords([]);
-    } finally {
-      setIsLoading(false);
-    }
   }
 
   const updatePackStats = (packId: string, delta: number) => {
@@ -255,9 +256,11 @@ export default function ContentEditorPage() {
                   )}
                 >
                   {pack.image_url ? (
-                    <img
+                    <Image
                       src={pack.image_url}
                       alt={pack.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-lg object-cover shrink-0"
                     />
                   ) : (
