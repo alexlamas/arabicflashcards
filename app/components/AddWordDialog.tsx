@@ -808,21 +808,21 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     </div>
                   ) : (
                     // Display mode
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => toggleWordSelection(word.id)}
-                        disabled={word.isDuplicate}
+                    <div
+                      onClick={() => !word.isDuplicate && toggleWordSelection(word.id)}
+                      className={`flex items-center gap-3 ${!word.isDuplicate ? "cursor-pointer" : ""}`}
+                    >
+                      <div
                         className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 ${
                           word.isDuplicate
-                            ? "bg-gray-200 border-gray-300 cursor-not-allowed"
+                            ? "bg-gray-200 border-gray-300"
                             : selectedIds.has(word.id)
                             ? "bg-emerald-500 border-emerald-500"
-                            : "border-gray-300 hover:border-gray-400"
+                            : "border-gray-300"
                         }`}
                       >
                         {selectedIds.has(word.id) && <Check className="w-3 h-3 text-white" weight="bold" />}
-                      </button>
+                      </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -840,7 +840,10 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                       {!word.isDuplicate && (
                         <button
                           type="button"
-                          onClick={() => setEditingId(word.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingId(word.id);
+                          }}
                           className="p-1.5 text-subtle hover:text-body hover:bg-gray-100 rounded"
                         >
                           <PencilSimple className="w-4 h-4" />
