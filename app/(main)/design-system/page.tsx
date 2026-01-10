@@ -300,7 +300,7 @@ export default function DesignSystemPage() {
             {/* Segmented Progress Bar Preview */}
             <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-sm text-amber-800 font-medium mb-2">Note: Progress bar is segmented</p>
-              <p className="text-xs text-amber-700 mb-3">The fluency bar has 4 separate segments (Tourist → Visitor → Resident → Local), so gradients don't work well. Each segment needs a solid fill.</p>
+              <p className="text-xs text-amber-700 mb-3">The fluency bar has 4 separate segments (Tourist → Visitor → Resident → Local), so gradients don&apos;t work well. Each segment needs a solid fill.</p>
               <div className="flex gap-1">
                 <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
                   <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
