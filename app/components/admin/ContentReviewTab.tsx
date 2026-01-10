@@ -404,12 +404,7 @@ export function ContentReviewTab() {
           {/* Progress indicator */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="capitalize">{currentItem.type} {currentIndex + 1} of {reviewableItems.length}</span>
-              {currentItem.type === "sentence" && (
-                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
-                  for &ldquo;{currentItem.parentWord.english}&rdquo;
-                </span>
-              )}
+              <span>{currentIndex + 1} of {reviewableItems.length}</span>
               {isReviewed && (
                 <button
                   onClick={handleUnapprove}
