@@ -629,7 +629,7 @@ export function LandingPage() {
                     <div className="flex-1 bg-white border border-gray-200 rounded-full p-1 shadow-sm">
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <motion.div
-                          className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full"
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"
                           initial={{ width: '0%' }}
                           animate={{ width: activeStep === 2 ? '16.6%' : activeStep === 3 ? (showFeedback ? '33%' : '16.6%') : '0%' }}
                           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}

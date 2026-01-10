@@ -19,6 +19,7 @@
 
 ## V2 (near-term)
 
+- [ ] Placement test or manual word selection when installing packs (skip already-known words)
 - [ ] Audio pronunciation
 - [ ] Fluency progress (% toward core vocabulary)
 - [ ] Fluency milestone celebrations

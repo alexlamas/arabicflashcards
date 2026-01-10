@@ -47,7 +47,7 @@ import { useToast } from "@/hooks/use-toast";
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
 const LEVEL_CONFIG: Record<PackLevel, { color: string; bgColor: string }> = {
-  beginner: { color: "text-green-600", bgColor: "bg-green-100" },
+  beginner: { color: "text-emerald-600", bgColor: "bg-emerald-100" },
   intermediate: { color: "text-blue-600", bgColor: "bg-blue-100" },
   advanced: { color: "text-purple-600", bgColor: "bg-purple-100" },
 };
@@ -241,7 +241,7 @@ export function PackPreviewModal({
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2">
               <div
-                className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>

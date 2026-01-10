@@ -64,7 +64,7 @@ function NavLink({  active, badge, icon: Icon, children, onClick }: NavLinkProps
       <Icon className="h-4 w-4" />
       {children}
       {badge !== undefined && badge > 0 && (
-        <span className="text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center bg-emerald-600 text-white">
+        <span className="text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center bg-emerald-500 text-white">
           {badge}
         </span>
       )}

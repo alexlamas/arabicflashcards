@@ -16,7 +16,7 @@ import {
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
 const LEVEL_CONFIG: Record<PackLevel, { label: string; color: string; bgColor: string }> = {
-  beginner: { label: "Beginner", color: "text-green-600", bgColor: "bg-green-100" },
+  beginner: { label: "Beginner", color: "text-emerald-600", bgColor: "bg-emerald-100" },
   intermediate: { label: "Intermediate", color: "text-blue-600", bgColor: "bg-blue-100" },
   advanced: { label: "Advanced", color: "text-purple-600", bgColor: "bg-purple-100" },
 };
@@ -78,10 +78,7 @@ export function DashboardPackCard({
 
       <div className="p-3 flex-1 flex flex-col justify-between">
         <div className="flex items-start justify-between">
-          <div className="flex flex-col">
-            <h3 className="font-medium">{pack.name}</h3>
-            <span className={`text-sm ${config.color}`}>{config.label}</span>
-          </div>
+          <h3 className="font-medium">{pack.name}</h3>
           <ChevronRight className="w-4 h-4 text-disabled group-hover:text-subtle transition-colors" />
         </div>
 
@@ -95,7 +92,7 @@ export function DashboardPackCard({
             </div>
             <div className="w-full bg-gray-100 rounded-full h-1.5">
               <div
-                className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
+                className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500"
                 style={{ width: `${percent}%` }}
               />
             </div>

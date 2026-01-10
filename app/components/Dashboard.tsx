@@ -19,7 +19,7 @@ import { FluencyProgressBar } from "./FluencyProgressBar";
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
 const LEVEL_CONFIG: Record<PackLevel, { label: string; color: string; bgColor: string }> = {
-  beginner: { label: "Beginner", color: "text-green-600", bgColor: "bg-green-100" },
+  beginner: { label: "Beginner", color: "text-emerald-600", bgColor: "bg-emerald-100" },
   intermediate: { label: "Intermediate", color: "text-blue-600", bgColor: "bg-blue-100" },
   advanced: { label: "Advanced", color: "text-purple-600", bgColor: "bg-purple-100" },
 };

@@ -6,7 +6,7 @@ const FREE_MONTHLY_LIMIT = 20;
 /**
  * Get the current period string (YYYY-MM format)
  */
-function getCurrentPeriod(): string {
+export function getCurrentPeriod(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
