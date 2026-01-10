@@ -161,6 +161,18 @@ export function TopNav() {
             >
               Review
             </NavLink>
+            {(isAdmin || isReviewer) && (
+              <>
+                <div className="w-px h-5 bg-gray-200 mx-1" />
+                <NavLink
+                  active={pathname === "/admin"}
+                  icon={Cube}
+                  onClick={() => handleNavigate("/admin")}
+                >
+                  Admin
+                </NavLink>
+              </>
+            )}
           </div>
 
           {/* Spacer */}
@@ -200,19 +212,13 @@ export function TopNav() {
                   <ChatCircle className="w-4 h-4 mr-2" />
                   Send feedback
                 </DropdownMenuItem>
-                {(isAdmin || isReviewer) && (
+                {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
-                      <Cube className="w-4 h-4 mr-2" />
-                      Admin
+                    <DropdownMenuItem onClick={() => handleNavigate("/design-system")}>
+                      <Swatches className="w-4 h-4 mr-2" />
+                      Design system
                     </DropdownMenuItem>
-                    {isAdmin && (
-                      <DropdownMenuItem onClick={() => handleNavigate("/design-system")}>
-                        <Swatches className="w-4 h-4 mr-2" />
-                        Design system
-                      </DropdownMenuItem>
-                    )}
                   </>
                 )}
                 <DropdownMenuSeparator />
