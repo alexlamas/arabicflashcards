@@ -2,19 +2,94 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/client";
+import { Shuffle } from "@phosphor-icons/react";
 
 export default function InstagramTemplate() {
   const [arabic, setArabic] = useState("كتير");
   const [transliteration, setTransliteration] = useState("ktir");
   const [english, setEnglish] = useState("very / a lot");
   const [imageUrl, setImageUrl] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
+
+  const prompt = `${english}, simple illustration, black ink on white background`;
+
+  const shuffleWord = async () => {
+    setIsShuffling(true);
+    try {
+      const supabase = createClient();
+
+      // Get total count
+      const { count } = await supabase
+        .from("words")
+        .select("*", { count: "exact", head: true });
+
+      if (!count) return;
+
+      // Get random word
+      const randomOffset = Math.floor(Math.random() * count);
+      const { data } = await supabase
+        .from("words")
+        .select("arabic, english, transliteration")
+        .range(randomOffset, randomOffset)
+        .single();
+
+      if (data) {
+        setArabic(data.arabic);
+        setEnglish(data.english);
+        setTransliteration(data.transliteration || "");
+        setImageUrl("");
+      }
+    } catch (error) {
+      console.error("Error fetching random word:", error);
+    } finally {
+      setIsShuffling(false);
+    }
+  };
+
+  const generateImage = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await response.json();
+
+      if (data.imageUrl) {
+        setImageUrl(data.imageUrl);
+      } else {
+        alert(data.error || "Failed to generate image");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to generate image");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-md mx-auto space-y-6">
         {/* Controls */}
         <div className="bg-white rounded-xl p-4 space-y-4">
-          <h2 className="font-semibold text-gray-900">Word of the Day</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-gray-900">Word of the Day</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={shuffleWord}
+              disabled={isShuffling}
+            >
+              <Shuffle className="w-4 h-4 mr-1" />
+              {isShuffling ? "..." : "Shuffle"}
+            </Button>
+          </div>
           <div>
             <label className="text-sm text-gray-500">Arabic</label>
             <input
@@ -43,22 +118,17 @@ export default function InstagramTemplate() {
               className="w-full border rounded-lg px-3 py-2"
             />
           </div>
-          <div>
-            <label className="text-sm text-gray-500">Image URL (from Recraft)</label>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-              placeholder="Paste Recraft image URL..."
-            />
-          </div>
           <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">Recraft prompt:</p>
-            <p className="text-xs text-gray-700 font-mono">
-              {english}, simple illustration, black ink on white background
-            </p>
+            <p className="text-xs text-gray-500 mb-1">Prompt:</p>
+            <p className="text-xs text-gray-700 font-mono">{prompt}</p>
           </div>
+          <Button
+            onClick={generateImage}
+            disabled={isGenerating}
+            className="w-full"
+          >
+            {isGenerating ? "Generating..." : "Generate Image"}
+          </Button>
           <p className="text-xs text-gray-400">
             Screenshot the card below (1080x1080)
           </p>
@@ -66,66 +136,99 @@ export default function InstagramTemplate() {
 
         {/* Instagram Card - 1:1 aspect ratio */}
         <div
-          className="aspect-square bg-white rounded-2xl shadow-lg flex flex-col items-center justify-center p-12 relative overflow-hidden"
+          className="bg-white rounded-2xl shadow-lg relative overflow-hidden"
           style={{ width: 540, height: 540 }}
         >
-          {/* Subtle background texture */}
-          <div className="absolute inset-0 opacity-[0.02]">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle, #000 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            />
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-            {imageUrl ? (
-              <div className="w-40 h-40 mb-2">
+          {imageUrl ? (
+            <>
+              {/* Image as hero - top half */}
+              <div className="h-[55%] w-full overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imageUrl}
                   alt={english}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
-            ) : (
-              <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-4">
-                Word of the Day
-              </p>
-            )}
 
-            <h1
-              className="text-6xl font-arabic text-gray-900 leading-tight"
-              dir="rtl"
-            >
-              {arabic}
-            </h1>
+              {/* Content - bottom half */}
+              <div className="h-[45%] flex flex-col items-center justify-center px-8 pt-4 pb-6">
+                <h1
+                  className="text-5xl font-arabic text-gray-900 leading-tight mb-2"
+                  dir="rtl"
+                >
+                  {arabic}
+                </h1>
 
-            <p className="text-xl text-gray-500 font-light">
-              {transliteration}
-            </p>
+                <p className="text-lg text-gray-400 font-light mb-1">
+                  {transliteration}
+                </p>
 
-            <div className="w-12 h-px bg-gray-200" />
+                <p className="text-xl text-gray-700 font-medium">{english}</p>
 
-            <p className="text-xl text-gray-700 font-medium">{english}</p>
-          </div>
+                {/* Logo */}
+                <div className="absolute bottom-5 flex items-center gap-2">
+                  <Image
+                    src="/avatars/pomegranate.svg"
+                    alt="Yalla Flash"
+                    width={20}
+                    height={20}
+                  />
+                  <span className="font-pphatton font-bold text-gray-900 text-sm">
+                    Yalla Flash
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* No image - centered layout */}
+              <div className="absolute inset-0 opacity-[0.02]">
+                <div
+                  className="w-full h-full"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(circle, #000 1px, transparent 1px)",
+                    backgroundSize: "20px 20px",
+                  }}
+                />
+              </div>
 
-          {/* Logo at bottom */}
-          <div className="absolute bottom-8 flex items-center gap-2">
-            <Image
-              src="/avatars/pomegranate.svg"
-              alt="Yalla Flash"
-              width={24}
-              height={24}
-            />
-            <span className="font-pphatton font-bold text-gray-900">
-              Yalla Flash
-            </span>
-          </div>
+              <div className="h-full flex flex-col items-center justify-center px-12">
+                <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-8">
+                  Word of the Day
+                </p>
+
+                <h1
+                  className="text-6xl font-arabic text-gray-900 leading-tight mb-4"
+                  dir="rtl"
+                >
+                  {arabic}
+                </h1>
+
+                <p className="text-xl text-gray-500 font-light mb-3">
+                  {transliteration}
+                </p>
+
+                <div className="w-12 h-px bg-gray-200 mb-3" />
+
+                <p className="text-xl text-gray-700 font-medium">{english}</p>
+
+                {/* Logo */}
+                <div className="absolute bottom-8 flex items-center gap-2">
+                  <Image
+                    src="/avatars/pomegranate.svg"
+                    alt="Yalla Flash"
+                    width={24}
+                    height={24}
+                  />
+                  <span className="font-pphatton font-bold text-gray-900">
+                    Yalla Flash
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -164,7 +164,7 @@ export function WordDetailModal({
                     isPackWord={isPackWord}
                   />
                 )}
-                <DialogClose>
+                <DialogClose asChild>
                   <Button variant="ghost" size="icon" onClick={onClose}>
                     <XIcon weight="bold" />
                   </Button>
