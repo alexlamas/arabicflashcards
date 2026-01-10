@@ -314,9 +314,9 @@ export default function AdminPage() {
 
   const tabs: TabConfig[] = [
     { key: "review", label: "Review" },
-    { key: "packs", label: "Packs", count: packs.length },
-    { key: "words", label: "Words", count: words.length },
-    ...(isAdmin ? [{ key: "users", label: "Users", count: users.length }] : []),
+    { key: "packs", label: "Packs" },
+    { key: "words", label: "Words" },
+    ...(isAdmin ? [{ key: "users", label: "Users" }] : []),
   ];
 
   return (
