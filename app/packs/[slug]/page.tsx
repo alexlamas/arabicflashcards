@@ -261,11 +261,6 @@ export default async function PackPreviewPage({
                       {word.transliteration}
                     </div>
                   )}
-                  {word.type && (
-                    <div className="text-xs text-gray-400 mt-2 capitalize">
-                      {word.type}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
