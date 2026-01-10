@@ -9,7 +9,7 @@ interface ViewToggleProps {
 export function ViewToggle({ hideArabic, onChange }: ViewToggleProps) {
   return hideArabic ? (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={() => onChange(!hideArabic)}
       className="gap-2 rounded-full"
@@ -18,7 +18,7 @@ export function ViewToggle({ hideArabic, onChange }: ViewToggleProps) {
     </Button>
   ) : (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={() => onChange(!hideArabic)}
       className="gap-2 rounded-full"

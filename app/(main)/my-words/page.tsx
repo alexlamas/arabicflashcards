@@ -142,21 +142,21 @@ function MyWordsContent() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <SortAscending className="h-5 w-5" />
+                  <SortAscending className="h-5 w-5" weight="bold" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setSortBy("alphabetical")}>
-                  {sortBy === "alphabetical" && <Check className="h-4 w-4 mr-2" />}
-                  <span className={sortBy !== "alphabetical" ? "pl-6" : ""}>Alphabetical</span>
+                  <Check className={`h-4 w-4 mr-2 ${sortBy === "alphabetical" ? "opacity-100" : "opacity-0"}`} />
+                  Alphabetical
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSortBy("recent")}>
-                  {sortBy === "recent" && <Check className="h-4 w-4 mr-2" />}
-                  <span className={sortBy !== "recent" ? "pl-6" : ""}>Recently added</span>
+                  <Check className={`h-4 w-4 mr-2 ${sortBy === "recent" ? "opacity-100" : "opacity-0"}`} />
+                  Recently added
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSortBy("review")}>
-                  {sortBy === "review" && <Check className="h-4 w-4 mr-2" />}
-                  <span className={sortBy !== "review" ? "pl-6" : ""}>Review date</span>
+                  <Check className={`h-4 w-4 mr-2 ${sortBy === "review" ? "opacity-100" : "opacity-0"}`} />
+                  Review date
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

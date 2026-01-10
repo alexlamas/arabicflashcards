@@ -188,6 +188,7 @@ export default function DesignSystemPage() {
             <div className="flex flex-wrap gap-2">
               {[
                 "Colors",
+                "Gray Audit",
                 "Logo",
                 "DashboardPackCard",
                 "ProgressBreakdown",
@@ -251,6 +252,174 @@ export default function DesignSystemPage() {
                     <ColorSwatch name="text" hex="#15803d" />
                   </div>
                 </div>
+              </div>
+            </div>
+
+          </ComponentSection>
+        </div>
+
+        {/* Gray Text Audit */}
+        <div id="gray-audit">
+          <ComponentSection
+            name="Gray Text Audit"
+            path="Design System Audit"
+            description="Comparison of current gray usage vs proposed standardization"
+          >
+            {/* Current vs Proposed */}
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Current (Inconsistent) */}
+              <div className="space-y-4">
+                <StateLabel label="Current Usage (Inconsistent)" />
+                <div className="bg-white border rounded-xl p-6 space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">Card Title</p>
+                    <p className="text-gray-500">Description using gray-500</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">Another Card Title</p>
+                    <p className="text-gray-600">Description using gray-600</p>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <p className="text-gray-400">Muted text gray-400</p>
+                    <p className="text-gray-500">Also muted gray-500</p>
+                  </div>
+                </div>
+                <p className="text-xs text-red-500">Problem: Same purpose, different grays</p>
+              </div>
+
+              {/* Proposed (Standardized) */}
+              <div className="space-y-4">
+                <StateLabel label="Proposed Standard" />
+                <div className="bg-white border rounded-xl p-6 space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">Card Title (gray-900)</p>
+                    <p className="text-gray-600">Description always gray-600</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">Another Card Title (gray-900)</p>
+                    <p className="text-gray-600">Description always gray-600</p>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <p className="text-gray-500">Muted text always gray-500</p>
+                    <p className="text-gray-400">Disabled/placeholder gray-400</p>
+                  </div>
+                </div>
+                <p className="text-xs text-green-600">Consistent hierarchy</p>
+              </div>
+            </div>
+
+            {/* Gray Scale Reference */}
+            <div className="mt-8">
+              <StateLabel label="Proposed Gray Scale" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gray-900 rounded mb-2" />
+                  <p className="text-sm font-medium">gray-900</p>
+                  <p className="text-xs text-gray-500">Primary text, headings</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gray-600 rounded mb-2" />
+                  <p className="text-sm font-medium">gray-600</p>
+                  <p className="text-xs text-gray-500">Body text, descriptions</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gray-500 rounded mb-2" />
+                  <p className="text-sm font-medium">gray-500</p>
+                  <p className="text-xs text-gray-500">Secondary/muted text</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gray-400 rounded mb-2" />
+                  <p className="text-sm font-medium">gray-400</p>
+                  <p className="text-xs text-gray-500">Disabled, placeholders</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Real Component Examples */}
+            <div className="mt-8">
+              <StateLabel label="Real Examples - Before & After" />
+              <div className="space-y-6">
+
+                {/* Example 1: Dashboard Card */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">BEFORE: Dashboard.tsx:247</p>
+                    <div className="bg-white border rounded-2xl p-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <span className="text-xl">📚</span>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">My words</h3>
+                          <p className="text-sm text-gray-500">12 personal words & expressions</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-green-600 mb-2">AFTER: Standardized</p>
+                    <div className="bg-white border rounded-2xl p-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <span className="text-xl">📚</span>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">My words</h3>
+                          <p className="text-sm text-gray-600">12 personal words & expressions</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Example 2: Footer Links */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">BEFORE: PublicFooter.tsx (mixed grays)</p>
+                    <div className="bg-gray-50 border rounded-xl p-4">
+                      <div className="flex gap-6 text-sm">
+                        <span className="text-gray-500">Home</span>
+                        <span className="text-gray-500">All Packs</span>
+                        <span className="text-gray-500">Resources</span>
+                      </div>
+                      <p className="text-gray-400 text-sm mt-2">Made with ❤️ by Alex</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-green-600 mb-2">AFTER: Standardized</p>
+                    <div className="bg-gray-50 border rounded-xl p-4">
+                      <div className="flex gap-6 text-sm">
+                        <span className="text-gray-600">Home</span>
+                        <span className="text-gray-600">All Packs</span>
+                        <span className="text-gray-600">Resources</span>
+                      </div>
+                      <p className="text-gray-500 text-sm mt-2">Made with ❤️ by Alex</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Example 3: Word Detail */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">BEFORE: WordDetailModal (inconsistent)</p>
+                    <div className="bg-white border rounded-xl p-4">
+                      <p className="text-2xl font-arabic mb-1">مرحبا</p>
+                      <p className="text-gray-500">marhaba</p>
+                      <p className="text-gray-600 mt-2">hello, welcome</p>
+                      <span className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded-full mt-2 inline-block">phrase</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-green-600 mb-2">AFTER: Standardized</p>
+                    <div className="bg-white border rounded-xl p-4">
+                      <p className="text-2xl font-arabic mb-1">مرحبا</p>
+                      <p className="text-gray-500">marhaba</p>
+                      <p className="text-gray-600 mt-2">hello, welcome</p>
+                      <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full mt-2 inline-block">phrase</span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
