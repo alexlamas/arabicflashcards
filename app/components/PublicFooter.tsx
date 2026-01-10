@@ -42,7 +42,7 @@ export function PublicFooter({ maxWidth = "max-w-4xl" }: PublicFooterProps) {
             </Link>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 flex items-center justify-center gap-1">
+        <div className="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-400 flex items-center gap-1">
           <span>Made with</span>
           <Heart weight="fill" className="text-red-500 w-4 h-4" />
           <span>by a fellow telmeez.</span>
