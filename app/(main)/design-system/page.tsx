@@ -107,10 +107,11 @@ export default function DesignSystemPage() {
   useEffect(() => {
     StarterPackService.getAvailablePacks().then(setPacks);
   }, []);
-  // Theme colors from NotionLandingPage
-  const theme = {
-    primary: "#47907d",
-    primaryLight: "#e8f3f0",
+  // Brand colors - using Tailwind emerald/teal
+  const brandColors = {
+    emerald500: "#10b981",
+    emerald300: "#6ee7b7",
+    teal500: "#14b8a6",
   };
 
   const ratingColors = {

@@ -19,6 +19,7 @@ export function createSupabaseMock() {
     in: vi.fn(() => chainableMock),
     not: vi.fn(() => chainableMock),
     is: vi.fn(() => chainableMock),
+    or: vi.fn(() => chainableMock),
     order: vi.fn(() => chainableMock),
     limit: vi.fn(() => chainableMock),
     single: vi.fn(() => Promise.resolve(mockResult)),
