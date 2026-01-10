@@ -274,33 +274,46 @@ export function calculateNextReview(
   let interval: number;
   let easeFactor = currentEaseFactor;
 
-  // Update ease factor if it was a successful review
-  if (rating >= 2) {
-    const qualityFactor = rating - 2; // Convert 2,3 to 0,1 for ease calculation
-    easeFactor = Math.max(
-      1.3,
-      currentEaseFactor + (0.1 - qualityFactor * (0.08 + qualityFactor * 0.02))
-    );
+  // Adjust ease factor based on rating
+  // Rating 0 (Forgot): decrease EF significantly - card is hard
+  // Rating 1 (Struggled): decrease EF slightly - card is challenging
+  // Rating 2 (Remembered): keep EF the same - card is at right difficulty
+  // Rating 3 (Easy): increase EF - card is easy, can wait longer
+  if (rating === 0) {
+    easeFactor = Math.max(1.3, easeFactor - 0.2);
+  } else if (rating === 1) {
+    easeFactor = Math.max(1.3, easeFactor - 0.15);
+  } else if (rating === 3) {
+    easeFactor = easeFactor + 0.15;
   }
+  // Rating 2: ease factor stays the same
 
   // Calculate next interval
   if (rating < 2) {
-    // Failed review
+    // Failed review - reset to short interval
     if (rating === 0) {
-      // "Again"
-      interval = 0.25; // 6 hours
+      // "Forgot" - see again in 10 minutes
+      interval = 1 / 144; // ~10 minutes (0.007 days)
     } else {
-      // "Hard"
-      interval = Math.max(0.5, currentInterval * 0.5); // At least 12 hours
+      // "Struggled" - see again in 1 hour minimum
+      interval = Math.max(1 / 24, currentInterval * 0.25); // At least 1 hour
     }
   } else {
-    // Successful review - use SuperMemo algorithm
+    // Successful review
     if (reviewCount === 0) {
-      interval = 1; // First success: 1 day
+      // First success: 1 day
+      interval = 1;
     } else if (reviewCount === 1) {
-      interval = 6; // Second success: 6 days
+      // Second success: 3 days (was 6, but 3 feels better for learning)
+      interval = 3;
     } else {
+      // Subsequent: multiply by ease factor
       interval = Math.round(currentInterval * easeFactor);
+    }
+
+    // Bonus for "Easy" - 1.3x the calculated interval
+    if (rating === 3) {
+      interval = Math.round(interval * 1.3);
     }
   }
 
