@@ -188,7 +188,6 @@ export default function DesignSystemPage() {
             <div className="flex flex-wrap gap-2">
               {[
                 "Colors",
-                "Status Colors",
                 "Logo",
                 "DashboardPackCard",
                 "ProgressBreakdown",
@@ -257,14 +256,6 @@ export default function DesignSystemPage() {
 
           </ComponentSection>
         </div>
-
-        {/* Status Colors Comparison */}
-        <div id="status-colors">
-          <ComponentSection
-            name="Status Colors"
-            path="Design System Audit"
-            description="Comparing solid green vs emerald/teal gradient for status indicators"
-          >
             {/* Current Usage */}
             <div className="mb-8">
               <StateLabel label="Current Usage (Inconsistent)" />
@@ -362,21 +353,21 @@ export default function DesignSystemPage() {
               <p className="text-xs text-subtle mt-2">#47907d / #7ab5a6 — Pure brand, consistent with landing page</p>
             </div>
 
-            {/* Option B: Brand Gradient (Green → Teal) */}
+            {/* Option B: Emerald → Brand */}
             <div className="mb-8">
-              <StateLabel label="Option B: Brand Gradient (Green → Teal)" />
+              <StateLabel label="Option B: Emerald → Brand" />
               <div className="bg-white border rounded-xl p-6 space-y-6">
                 {/* Segmented progress bar */}
                 <div>
                   <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
                   <div className="flex gap-1">
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #6fb3a0, #7bb8ad)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #3d8b72, #479088)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #6ee7b7, #7ab5a6)' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #10b981, #47907d)' }} />
                     </div>
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #6fb3a0, #7bb8ad)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #3d8b72, #479088)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #6ee7b7, #7ab5a6)' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #10b981, #47907d)' }} />
                     </div>
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
@@ -385,37 +376,37 @@ export default function DesignSystemPage() {
                 {/* Status dots */}
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #3d8b72, #479088)' }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #10b981, #47907d)' }} />
                     <span className="text-sm">Learned</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #6fb3a0, #7bb8ad)' }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #6ee7b7, #7ab5a6)' }} />
                     <span className="text-sm">Learning</span>
                   </div>
                 </div>
                 {/* Button */}
-                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #3d8b72, #479088)' }}>
+                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #10b981, #47907d)' }}>
                   Start review
                 </button>
               </div>
-              <p className="text-xs text-subtle mt-2">#3d8b72 → #479088 — Brand-adjacent green to teal</p>
+              <p className="text-xs text-subtle mt-2">#10b981 → #47907d — Emerald-500 to brand</p>
             </div>
 
-            {/* Option C: Brand Gradient (Muted) */}
+            {/* Option C: Brand → Teal */}
             <div className="mb-8">
-              <StateLabel label="Option C: Brand Gradient (Muted)" />
+              <StateLabel label="Option C: Brand → Teal" />
               <div className="bg-white border rounded-xl p-6 space-y-6">
                 {/* Segmented progress bar */}
                 <div>
                   <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
                   <div className="flex gap-1">
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #7ab5a6, #8ac4ba)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #3f8a70, #47907d)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #7ab5a6, #5eead4)' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #47907d, #14b8a6)' }} />
                     </div>
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #7ab5a6, #8ac4ba)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #3f8a70, #47907d)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #7ab5a6, #5eead4)' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #47907d, #14b8a6)' }} />
                     </div>
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
@@ -424,37 +415,37 @@ export default function DesignSystemPage() {
                 {/* Status dots */}
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #3f8a70, #47907d)' }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #47907d, #14b8a6)' }} />
                     <span className="text-sm">Learned</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #7ab5a6, #8ac4ba)' }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #7ab5a6, #5eead4)' }} />
                     <span className="text-sm">Learning</span>
                   </div>
                 </div>
                 {/* Button */}
-                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #3f8a70, #47907d)' }}>
+                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #47907d, #14b8a6)' }}>
                   Start review
                 </button>
               </div>
-              <p className="text-xs text-subtle mt-2">#3f8a70 → #47907d — Subtle, ends at brand color</p>
+              <p className="text-xs text-subtle mt-2">#47907d → #14b8a6 — Brand to teal-500</p>
             </div>
 
-            {/* Option D: Brand Gradient (Vibrant) */}
+            {/* Option D: Brand → Cyan */}
             <div className="mb-8">
-              <StateLabel label="Option D: Brand Gradient (Vibrant)" />
+              <StateLabel label="Option D: Brand → Cyan" />
               <div className="bg-white border rounded-xl p-6 space-y-6">
                 {/* Segmented progress bar */}
                 <div>
                   <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
                   <div className="flex gap-1">
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #5cc4a7, #6ed4c0)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #2d9d78, #3aaa8c)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #7ab5a6, #67e8f9)' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #47907d, #06b6d4)' }} />
                     </div>
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #5cc4a7, #6ed4c0)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #2d9d78, #3aaa8c)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #7ab5a6, #67e8f9)' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #47907d, #06b6d4)' }} />
                     </div>
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
@@ -463,37 +454,37 @@ export default function DesignSystemPage() {
                 {/* Status dots */}
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #2d9d78, #3aaa8c)' }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #47907d, #06b6d4)' }} />
                     <span className="text-sm">Learned</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #5cc4a7, #6ed4c0)' }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #7ab5a6, #67e8f9)' }} />
                     <span className="text-sm">Learning</span>
                   </div>
                 </div>
                 {/* Button */}
-                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #2d9d78, #3aaa8c)' }}>
+                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #47907d, #06b6d4)' }}>
                   Start review
                 </button>
               </div>
-              <p className="text-xs text-subtle mt-2">#2d9d78 → #3aaa8c — More saturated, punchier</p>
+              <p className="text-xs text-subtle mt-2">#47907d → #06b6d4 — Brand to cyan-500 (bold shift)</p>
             </div>
 
-            {/* Option E: Brand Gradient (Wide Shift) */}
+            {/* Option E: Original emerald → teal */}
             <div className="mb-8">
-              <StateLabel label="Option E: Brand Gradient (Wide Shift)" />
+              <StateLabel label="Option E: Original Emerald → Teal" />
               <div className="bg-white border rounded-xl p-6 space-y-6">
                 {/* Segmented progress bar */}
                 <div>
                   <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
                   <div className="flex gap-1">
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #6bb89e, #7ec9bc)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', background: 'linear-gradient(to right, #358c6a, #479088)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" style={{ width: '100%' }} />
+                      <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: '80%' }} />
                     </div>
                     <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
-                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', background: 'linear-gradient(to right, #6bb89e, #7ec9bc)' }} />
-                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', background: 'linear-gradient(to right, #358c6a, #479088)' }} />
+                      <div className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" style={{ width: '70%' }} />
+                      <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: '40%' }} />
                     </div>
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
                     <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
@@ -502,20 +493,20 @@ export default function DesignSystemPage() {
                 {/* Status dots */}
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #358c6a, #479088)' }} />
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
                     <span className="text-sm">Learned</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #6bb89e, #7ec9bc)' }} />
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" />
                     <span className="text-sm">Learning</span>
                   </div>
                 </div>
                 {/* Button */}
-                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ background: 'linear-gradient(to right, #358c6a, #479088)' }}>
+                <button className="px-6 py-2 text-white rounded-full font-medium bg-gradient-to-r from-emerald-500 to-teal-500">
                   Start review
                 </button>
               </div>
-              <p className="text-xs text-subtle mt-2">#358c6a → #479088 — Wider green to teal shift, ends at brand-adjacent</p>
+              <p className="text-xs text-subtle mt-2">#10b981 → #14b8a6 — Current Tailwind gradient (for comparison)</p>
             </div>
 
             {/* Gradient comparison */}
@@ -523,28 +514,28 @@ export default function DesignSystemPage() {
               <StateLabel label="Gradient Comparison" />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-subtle mb-2">Original emerald → teal</p>
-                  <div className="h-8 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500" />
-                </div>
-                <div>
                   <p className="text-xs text-subtle mb-2">A: Brand solid</p>
                   <div className="h-8 rounded-lg" style={{ backgroundColor: '#47907d' }} />
                 </div>
                 <div>
-                  <p className="text-xs text-subtle mb-2">B: Green → teal</p>
-                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #3d8b72, #479088)' }} />
+                  <p className="text-xs text-subtle mb-2">B: Emerald → brand</p>
+                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #10b981, #47907d)' }} />
                 </div>
                 <div>
-                  <p className="text-xs text-subtle mb-2">C: Muted (→ brand)</p>
-                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #3f8a70, #47907d)' }} />
+                  <p className="text-xs text-subtle mb-2">C: Brand → teal</p>
+                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #47907d, #14b8a6)' }} />
                 </div>
                 <div>
-                  <p className="text-xs text-subtle mb-2">D: Vibrant</p>
-                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #2d9d78, #3aaa8c)' }} />
+                  <p className="text-xs text-subtle mb-2">D: Brand → cyan</p>
+                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #47907d, #06b6d4)' }} />
                 </div>
                 <div>
-                  <p className="text-xs text-subtle mb-2">E: Wide shift</p>
-                  <div className="h-8 rounded-lg" style={{ background: 'linear-gradient(to right, #358c6a, #479088)' }} />
+                  <p className="text-xs text-subtle mb-2">E: Emerald → teal (original)</p>
+                  <div className="h-8 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500" />
+                </div>
+                <div>
+                  <p className="text-xs text-subtle mb-2">Brand #47907d reference</p>
+                  <div className="h-8 rounded-lg border-2 border-dashed border-gray-300" style={{ backgroundColor: '#47907d' }} />
                 </div>
               </div>
             </div>
