@@ -257,9 +257,17 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-lg sm:text-xl text-gray-500 mb-10 max-w-lg mx-auto"
+            className="text-lg sm:text-xl text-gray-500 mb-4 max-w-lg mx-auto"
           >
             Smart flashcards to help you finally understand what Teta is saying about you.
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-sm text-gray-400 mb-10"
+          >
+            Real spoken Lebanese — not MSA or Syrian dialect.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}

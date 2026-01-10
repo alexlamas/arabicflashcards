@@ -40,6 +40,12 @@ export function PublicFooter({ maxWidth = "max-w-4xl" }: PublicFooterProps) {
             >
               Resources
             </Link>
+            <Link
+              href="/about"
+              className="hover:text-gray-900 transition-colors"
+            >
+              About
+            </Link>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 flex items-center justify-center gap-1">
