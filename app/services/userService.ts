@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/client";
 export interface UserRole {
   id: string;
   user_id: string;
-  role: 'user' | 'admin' | 'moderator' | 'reviewer';
+  role: 'user' | 'admin' | 'reviewer';
   created_at: string;
   updated_at: string;
 }
@@ -54,12 +54,7 @@ export class UserService {
     return roles.some(r => r.role === 'admin');
   }
 
-  static async isModerator(userId?: string): Promise<boolean> {
-    const roles = await this.getUserRoles(userId);
-    return roles.some(r => r.role === 'moderator' || r.role === 'admin');
-  }
-
-  static async hasRole(role: 'user' | 'admin' | 'moderator', userId?: string): Promise<boolean> {
+  static async hasRole(role: 'user' | 'admin' | 'reviewer', userId?: string): Promise<boolean> {
     const roles = await this.getUserRoles(userId);
     return roles.some(r => r.role === role);
   }
@@ -74,7 +69,7 @@ export class UserService {
     }
   }
 
-  static async assignRole(userId: string, role: 'user' | 'admin' | 'moderator'): Promise<void> {
+  static async assignRole(userId: string, role: 'user' | 'admin' | 'reviewer'): Promise<void> {
     const supabase = createClient();
     const { error } = await supabase
       .from("user_roles")
@@ -84,7 +79,7 @@ export class UserService {
     this.clearCache(userId);
   }
 
-  static async removeRole(userId: string, role: 'user' | 'admin' | 'moderator'): Promise<void> {
+  static async removeRole(userId: string, role: 'user' | 'admin' | 'reviewer'): Promise<void> {
     const supabase = createClient();
     const { error } = await supabase
       .from("user_roles")
