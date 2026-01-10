@@ -46,6 +46,7 @@ export function Dashboard() {
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [weeklyStats, setWeeklyStats] = useState<{ thisWeek: number; lastWeek: number } | null>(null);
+  const [streak, setStreak] = useState<number>(0);
 
   // Count personal words (words without a source pack)
   const myWordsCount = useMemo(() => {
@@ -124,12 +125,16 @@ export function Dashboard() {
     loadPacks();
   }, []);
 
-  // Fetch weekly review stats
+  // Fetch weekly review stats and streak
   useEffect(() => {
     async function loadWeeklyStats() {
       if (!session?.user?.id) return;
-      const stats = await SpacedRepetitionService.getWeeklyReviewStats(session.user.id);
+      const [stats, userStreak] = await Promise.all([
+        SpacedRepetitionService.getWeeklyReviewStats(session.user.id),
+        SpacedRepetitionService.getStreak(session.user.id),
+      ]);
       setWeeklyStats(stats);
+      setStreak(userStreak);
     }
     loadWeeklyStats();
   }, [session?.user?.id]);
@@ -224,31 +229,35 @@ export function Dashboard() {
             words={words}
             reviewsThisWeek={weeklyStats?.thisWeek}
             reviewsLastWeek={weeklyStats?.lastWeek}
+            streak={streak}
           />
         )}
       </div>
 
       {/* My Words Section */}
-      {myWordsCount > 0 && (
-        <Link href="/my-words" className="block">
-            <div className="bg-white border rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                    <CardsThree className="w-6 h-6 text-gray-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">My words</h3>
-                    <p className="text-sm text-gray-500">{myWordsCount} personal {myWordsCount === 1 ? 'word' : 'words'} & expressions</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  View all
-                </Button>
+      <Link href="/my-words" className="block">
+        <div className="bg-white border rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                <CardsThree className="w-6 h-6 text-gray-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">My words</h3>
+                <p className="text-sm text-gray-500">
+                  {myWordsCount > 0
+                    ? `${myWordsCount} personal ${myWordsCount === 1 ? 'word' : 'words'} & expressions`
+                    : "Add your own words and expressions"
+                  }
+                </p>
               </div>
             </div>
-        </Link>
-      )}
+            <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+              {myWordsCount > 0 ? "View all" : "Add words"}
+            </Button>
+          </div>
+        </div>
+      </Link>
 
       {/* Installed Packs Section */}
       {!loadingPacks && installedPacks.length > 0 && (

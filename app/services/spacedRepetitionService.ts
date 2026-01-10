@@ -170,6 +170,65 @@ export class SpacedRepetitionService {
     }
   }
 
+  static async getStreak(userId: string): Promise<number> {
+    const supabase = createClient();
+
+    try {
+      // Get all review dates for the user, grouped by day
+      const { data, error } = await supabase
+        .from("word_progress")
+        .select("updated_at")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+      if (!data?.length) return 0;
+
+      // Get unique days (in user's local timezone approximation using UTC dates)
+      const reviewDays = new Set<string>();
+      data.forEach(row => {
+        const date = new Date(row.updated_at);
+        const dayKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`;
+        reviewDays.add(dayKey);
+      });
+
+      // Convert to sorted array of dates
+      const sortedDays = Array.from(reviewDays)
+        .map(key => {
+          const [year, month, day] = key.split("-").map(Number);
+          return new Date(Date.UTC(year, month, day));
+        })
+        .sort((a, b) => b.getTime() - a.getTime());
+
+      // Count consecutive days starting from today or yesterday
+      const today = new Date();
+      const todayKey = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+      const yesterdayKey = todayKey - 24 * 60 * 60 * 1000;
+
+      let streak = 0;
+      let expectedDay = sortedDays[0]?.getTime();
+
+      // Start counting only if most recent review is today or yesterday
+      if (expectedDay !== todayKey && expectedDay !== yesterdayKey) {
+        return 0;
+      }
+
+      for (const day of sortedDays) {
+        if (day.getTime() === expectedDay) {
+          streak++;
+          expectedDay -= 24 * 60 * 60 * 1000; // Previous day
+        } else if (day.getTime() < expectedDay) {
+          // Gap in streak
+          break;
+        }
+      }
+
+      return streak;
+    } catch {
+      return 0;
+    }
+  }
+
   static async getWeeklyReviewStats(userId: string): Promise<{ thisWeek: number; lastWeek: number }> {
     const supabase = createClient();
     const now = new Date();

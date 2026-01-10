@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Word } from "../types/word";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TrendUp } from "@phosphor-icons/react";
+import { TrendUp, Fire } from "@phosphor-icons/react";
 
 const LEVELS = [
   { name: "Tourist", threshold: 0, endThreshold: 50 },
@@ -18,9 +18,10 @@ interface FluencyProgressBarProps {
   words: Word[];
   reviewsThisWeek?: number;
   reviewsLastWeek?: number;
+  streak?: number;
 }
 
-export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek }: FluencyProgressBarProps) {
+export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, streak }: FluencyProgressBarProps) {
   const { learned, learning } = useMemo(() => {
     const now = new Date();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -140,6 +141,17 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek }: 
             <>
               <div className="h-4 w-px bg-gray-200" />
               <WeeklyStats thisWeek={reviewsThisWeek} lastWeek={reviewsLastWeek} />
+            </>
+          )}
+
+          {streak !== undefined && streak > 0 && (
+            <>
+              <div className="h-4 w-px bg-gray-200" />
+              <div className="flex items-center gap-1">
+                <Fire className="w-4 h-4 text-orange-500" weight="fill" />
+                <span className="font-semibold text-gray-900">{streak}</span>
+                <span className="hidden md:inline text-gray-600">day streak</span>
+              </div>
             </>
           )}
         </div>
