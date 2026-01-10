@@ -832,12 +832,11 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                           <span className="text-disabled">·</span>
                           <span className="text-sm text-subtle">{word.transliteration}</span>
                         </div>
-                        {word.isDuplicate && (
-                          <span className="text-xs text-amber-600">Already saved</span>
-                        )}
                       </div>
 
-                      {!word.isDuplicate && (
+                      {word.isDuplicate ? (
+                        <span className="text-xs text-amber-600 flex-shrink-0">Already saved</span>
+                      ) : (
                         <button
                           type="button"
                           onClick={(e) => {
