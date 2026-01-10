@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Button } from "@/components/ui/button";
+import { PackCTA } from "./PackCTA";
 
 // Create a Supabase client for server-side static generation
 const supabase = createClient(
@@ -314,31 +315,33 @@ export default async function PackPreviewPage({
         )}
 
         {/* CTA */}
-        <div className="py-24 px-4 bg-gray-50">
-          <div className="max-w-2xl mx-auto">
-            <div className="rounded-3xl bg-white border border-gray-200 shadow-sm p-12 text-center">
-              <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Ready to start?
-              </h2>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                Join learners building real Lebanese Arabic fluency, one word at a time.
-              </p>
-              <Link href="/new">
-                <Button
-                  size="lg"
-                  className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-10 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                >
-                  Get started free
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <PackCTA />
 
         {/* Footer */}
-        <footer className="py-8 border-t border-gray-100">
-          <div className="max-w-4xl mx-auto px-4 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Yalla Flash</p>
+        <footer className="py-12 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+              <Link href="/new" className="flex items-center gap-3">
+                <Image
+                  src="/avatars/pomegranate.svg"
+                  alt="Yalla Flash"
+                  width={32}
+                  height={32}
+                />
+                <span className="font-pphatton font-bold text-gray-900">Yalla Flash</span>
+              </Link>
+              <div className="flex items-center gap-6 text-sm text-gray-500">
+                <Link href="/new" className="hover:text-gray-900 transition-colors">
+                  Home
+                </Link>
+                <Link href="/packs" className="hover:text-gray-900 transition-colors">
+                  All Packs
+                </Link>
+              </div>
+            </div>
+            <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400">
+              <p>&copy; {new Date().getFullYear()} Yalla Flash</p>
+            </div>
           </div>
         </footer>
       </div>
