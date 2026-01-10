@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,10 +16,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CircleNotchIcon, PlusIcon, WarningCircle, Package } from "@phosphor-icons/react";
+import { CircleNotchIcon, PlusIcon, WarningCircle, Package, Image, Check, PencilSimple, X } from "@phosphor-icons/react";
 import { Word, WordType } from "../types/word";
 import { useAIUsage } from "../hooks/useAIUsage";
 import { PackService, PackWord } from "../services/packService";
+import { useWords } from "../contexts/WordsContext";
+
+type Mode = "single" | "bulk";
+type BulkStep = "input" | "preview";
+
+interface ExtractedWord {
+  id: string;
+  english: string;
+  arabic: string;
+  transliteration: string;
+  type: WordType;
+  isDuplicate: boolean;
+}
 
 interface AddWordDialogProps {
   onWordAdded: (word: Word) => void;
@@ -27,6 +40,9 @@ interface AddWordDialogProps {
 
 export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("single");
+
+  // Single mode state
   const [inputText, setInputText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +50,19 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [previewWord, setPreviewWord] = useState<Partial<Word> | null>(null);
   const [searchResults, setSearchResults] = useState<PackWord[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Bulk mode state
+  const [bulkStep, setBulkStep] = useState<BulkStep>("input");
+  const [bulkText, setBulkText] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [extractedWords, setExtractedWords] = useState<ExtractedWord[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { usage, isUnlimited, refresh: refreshUsage } = useAIUsage();
+  const { words: existingWords } = useWords();
 
   const wordTypes: WordType[] = ["noun", "verb", "adjective", "phrase"];
 
@@ -158,6 +186,13 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     setError(null);
     setLimitReached(false);
     setSearchResults([]);
+    // Reset bulk state
+    setBulkStep("input");
+    setBulkText("");
+    setImagePreview(null);
+    setExtractedWords([]);
+    setSelectedIds(new Set());
+    setEditingId(null);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -169,6 +204,171 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     }
   };
 
+  // Check if a word is a duplicate
+  const isDuplicateWord = useCallback(
+    (english: string, arabic: string) => {
+      const normalizedEnglish = english.toLowerCase().trim();
+      const normalizedArabic = arabic.trim();
+      return existingWords.some(
+        (w) =>
+          w.english.toLowerCase().trim() === normalizedEnglish ||
+          w.arabic.trim() === normalizedArabic
+      );
+    },
+    [existingWords]
+  );
+
+  // Handle image file selection
+  const handleImageSelect = (file: File) => {
+    if (file.size > 1024 * 1024) {
+      setError("Image must be less than 1MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    setError(null);
+  };
+
+  // Handle bulk extraction
+  const handleBulkExtract = async () => {
+    setError(null);
+    setLimitReached(false);
+    setIsGenerating(true);
+
+    try {
+      const body: { text?: string; image?: string } = {};
+
+      if (imagePreview) {
+        body.image = imagePreview;
+      } else if (bulkText.trim()) {
+        body.text = bulkText.trim();
+      } else {
+        setError("Please enter text or upload an image");
+        setIsGenerating(false);
+        return;
+      }
+
+      const response = await fetch("/api/words/bulk-extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.limitReached) {
+          setLimitReached(true);
+          setError(errorData.error || "AI limit reached");
+          return;
+        }
+        throw new Error(errorData.error || "Failed to extract words");
+      }
+
+      const data = await response.json();
+      const words: ExtractedWord[] = data.words.map(
+        (w: Omit<ExtractedWord, "id" | "isDuplicate">, i: number) => ({
+          ...w,
+          id: `extracted-${i}-${Date.now()}`,
+          isDuplicate: isDuplicateWord(w.english, w.arabic),
+        })
+      );
+
+      setExtractedWords(words);
+      // Select all non-duplicate words by default
+      setSelectedIds(new Set(words.filter((w) => !w.isDuplicate).map((w) => w.id)));
+      setBulkStep("preview");
+      refreshUsage();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error extracting words");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Toggle word selection
+  const toggleWordSelection = (id: string) => {
+    const word = extractedWords.find((w) => w.id === id);
+    if (word?.isDuplicate) return; // Can't select duplicates
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // Update extracted word
+  const updateExtractedWord = (id: string, field: keyof ExtractedWord, value: string) => {
+    setExtractedWords((prev) =>
+      prev.map((w) => {
+        if (w.id !== id) return w;
+        const updated = { ...w, [field]: value };
+        // Recheck duplicate status if english or arabic changed
+        if (field === "english" || field === "arabic") {
+          updated.isDuplicate = isDuplicateWord(
+            field === "english" ? value : w.english,
+            field === "arabic" ? value : w.arabic
+          );
+        }
+        return updated;
+      })
+    );
+  };
+
+  // Save selected words
+  const handleBulkSave = async () => {
+    const wordsToSave = extractedWords.filter(
+      (w) => selectedIds.has(w.id) && !w.isDuplicate
+    );
+
+    if (wordsToSave.length === 0) {
+      setError("No words selected to save");
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      for (const word of wordsToSave) {
+        const response = await fetch("/api/words/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            text: word.english,
+            confirmed: true,
+            word: {
+              english: word.english,
+              arabic: word.arabic,
+              transliteration: word.transliteration,
+              type: word.type,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          const savedWord = await response.json();
+          onWordAdded(savedWord);
+        }
+      }
+
+      handleClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save words");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -177,18 +377,54 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           <span className="hidden text-sm sm:block">New word</span>
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className={mode === "bulk" && bulkStep === "preview" ? "max-w-2xl" : ""}>
         <DialogHeader>
-          <DialogTitle>New word</DialogTitle>
+          <DialogTitle>New {mode === "bulk" ? "words" : "word"}</DialogTitle>
           <DialogDescription>
-            {!previewWord
-              ? "We'll translate it to Lebanese Arabic for you."
-              : "Review and edit the translation before saving."}
+            {mode === "single"
+              ? !previewWord
+                ? "We'll translate it to Lebanese Arabic for you."
+                : "Review and edit the translation before saving."
+              : bulkStep === "input"
+              ? "Paste text or upload an image to extract multiple words."
+              : `Found ${extractedWords.length} words. Select which to save.`}
           </DialogDescription>
         </DialogHeader>
 
-        {!previewWord ? (
-          // Step 1: Input word and generate translation
+        {/* Mode toggle */}
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("single");
+              setError(null);
+            }}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              mode === "single"
+                ? "bg-white text-heading shadow-sm"
+                : "text-subtle hover:text-body"
+            }`}
+          >
+            Single
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("bulk");
+              setError(null);
+            }}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              mode === "bulk"
+                ? "bg-white text-heading shadow-sm"
+                : "text-subtle hover:text-body"
+            }`}
+          >
+            Bulk
+          </button>
+        </div>
+
+        {/* Single mode - input */}
+        {mode === "single" && !previewWord && (
           <div className="space-y-4">
             <div className="relative">
               <form
@@ -288,8 +524,10 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
               </div>
             </div>
           </div>
-        ) : (
-          // Step 2: Review and edit translation
+        )}
+
+        {/* Single mode - preview */}
+        {mode === "single" && previewWord && (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -374,6 +612,267 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
               </div>
             </div>
           </form>
+        )}
+
+        {/* Bulk mode - input */}
+        {mode === "bulk" && bulkStep === "input" && (
+          <div className="space-y-4">
+            {/* Text area or image upload */}
+            <div className="space-y-3">
+              <textarea
+                placeholder="Paste text containing words you want to learn..."
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                disabled={isGenerating || !!imagePreview}
+                className="w-full h-32 px-3 py-2 text-sm border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                maxLength={500}
+              />
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-subtle">or</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {/* Image upload zone */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageSelect(file);
+                }}
+                className="hidden"
+              />
+
+              {imagePreview ? (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imagePreview}
+                    alt="Upload preview"
+                    className="w-full h-32 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isGenerating}
+                  className="w-full h-20 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-subtle hover:border-gray-400 hover:text-body transition-colors disabled:opacity-50"
+                >
+                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                  <Image className="w-5 h-5" aria-hidden="true" />
+                  <span className="text-sm">Upload image</span>
+                </button>
+              )}
+            </div>
+
+            {/* Character count for text */}
+            {bulkText && !imagePreview && (
+              <p className="text-xs text-subtle text-right">{bulkText.length}/500 characters</p>
+            )}
+
+            {error && (
+              limitReached ? (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <WarningCircle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" weight="fill" />
+                    <div className="text-sm">
+                      <p className="font-medium text-rose-800">Not enough AI uses</p>
+                      <p className="text-rose-700 mt-1">{error}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-red-500">{error}</p>
+              )
+            )}
+
+            <div className="flex items-center justify-between gap-2">
+              {usage && !isUnlimited && !limitReached && (
+                <span className="text-xs text-muted-foreground">
+                  {usage.count}/{usage.limit} AI uses (bulk costs 2)
+                </span>
+              )}
+              {!usage && <span />}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleBulkExtract}
+                  disabled={isGenerating || (!bulkText.trim() && !imagePreview) || limitReached}
+                >
+                  {isGenerating ? (
+                    <>
+                      <CircleNotchIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Extracting...
+                    </>
+                  ) : (
+                    "Extract words"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk mode - preview */}
+        {mode === "bulk" && bulkStep === "preview" && (
+          <div className="space-y-4">
+            {/* Word list with checkboxes */}
+            <div className="max-h-80 overflow-y-auto border rounded-lg divide-y">
+              {extractedWords.map((word) => (
+                <div
+                  key={word.id}
+                  className={`p-3 ${word.isDuplicate ? "opacity-50 bg-gray-50" : ""}`}
+                >
+                  {editingId === word.id ? (
+                    // Editing mode
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input
+                          value={word.english}
+                          onChange={(e) => updateExtractedWord(word.id, "english", e.target.value)}
+                          placeholder="English"
+                          className="text-sm"
+                        />
+                        <Input
+                          value={word.arabic}
+                          onChange={(e) => updateExtractedWord(word.id, "arabic", e.target.value)}
+                          placeholder="Arabic"
+                          dir="rtl"
+                          className="text-sm font-arabic"
+                        />
+                        <Input
+                          value={word.transliteration}
+                          onChange={(e) => updateExtractedWord(word.id, "transliteration", e.target.value)}
+                          placeholder="Transliteration"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={word.type}
+                          onValueChange={(value) => updateExtractedWord(word.id, "type", value)}
+                        >
+                          <SelectTrigger className="w-32 h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {wordTypes.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingId(null)}
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Display mode
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleWordSelection(word.id)}
+                        disabled={word.isDuplicate}
+                        className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 ${
+                          word.isDuplicate
+                            ? "bg-gray-200 border-gray-300 cursor-not-allowed"
+                            : selectedIds.has(word.id)
+                            ? "bg-emerald-500 border-emerald-500"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      >
+                        {selectedIds.has(word.id) && <Check className="w-3 h-3 text-white" weight="bold" />}
+                      </button>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-heading">{word.english}</span>
+                          <span className="text-disabled">·</span>
+                          <span className="font-arabic text-body">{word.arabic}</span>
+                          <span className="text-disabled">·</span>
+                          <span className="text-sm text-subtle">{word.transliteration}</span>
+                        </div>
+                        {word.isDuplicate && (
+                          <span className="text-xs text-amber-600">Already saved</span>
+                        )}
+                      </div>
+
+                      {!word.isDuplicate && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(word.id)}
+                          className="p-1.5 text-subtle hover:text-body hover:bg-gray-100 rounded"
+                        >
+                          <PencilSimple className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-sm text-subtle">
+                {selectedIds.size} of {extractedWords.filter((w) => !w.isDuplicate).length} selected
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setBulkStep("input");
+                    setExtractedWords([]);
+                    setSelectedIds(new Set());
+                    setEditingId(null);
+                  }}
+                >
+                  Back
+                </Button>
+                <Button type="button" variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleBulkSave}
+                  disabled={isSaving || selectedIds.size === 0}
+                >
+                  {isSaving ? (
+                    <>
+                      <CircleNotchIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    `Save ${selectedIds.size} word${selectedIds.size !== 1 ? "s" : ""}`
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>
