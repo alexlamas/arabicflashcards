@@ -115,10 +115,10 @@ export function AuthDialog() {
                 <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
                   <Mail className="w-6 h-6 text-green-600" />
                 </div>
-                <h3 className="text-2xl font-pphatton font-bold text-gray-900 mb-2">
+                <h3 className="text-2xl font-pphatton font-bold text-heading mb-2">
                   Check your email
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                <p className="text-body text-sm leading-relaxed mb-6">
                   We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
                 </p>
                 <Button
@@ -134,10 +134,10 @@ export function AuthDialog() {
               </div>
             ) : (
               <div className="mb-6">
-                <h3 className="text-2xl font-pphatton font-bold text-gray-900 mb-2">
+                <h3 className="text-2xl font-pphatton font-bold text-heading mb-2">
                   Welcome
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className="text-body text-sm leading-relaxed">
                   {step === "email"
                     ? "Sign in to continue learning, or create an account to get started."
                     : "Enter your password to continue."}
@@ -190,11 +190,11 @@ export function AuthDialog() {
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">{email}</p>
+                    <p className="text-sm text-body">{email}</p>
                     <button
                       type="button"
                       onClick={handleChangeEmail}
-                      className="text-sm text-gray-500 hover:text-gray-900 transition"
+                      className="text-sm text-subtle hover:text-heading transition"
                     >
                       Change
                     </button>
@@ -235,7 +235,7 @@ export function AuthDialog() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="w-full text-sm text-gray-600 hover:text-gray-900"
+                  className="w-full text-sm text-body hover:text-heading"
                 >
                   Forgot password?
                 </button>

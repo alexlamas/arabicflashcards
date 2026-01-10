@@ -65,7 +65,14 @@ export const metadata: Metadata = {
     url: "https://yallaflash.com/packs",
     siteName: "Yalla Flash",
     type: "website",
-    images: ["/og.png"],
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Yalla Flash - Learn Lebanese Arabic",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -118,7 +125,7 @@ export default async function PacksIndexPage() {
                 width={28}
                 height={28}
               />
-              <span className="font-pphatton font-bold text-lg text-gray-900">
+              <span className="font-pphatton font-bold text-lg text-heading">
                 Yalla<span className="hidden sm:inline"> Flash</span>
               </span>
             </Link>
@@ -140,10 +147,10 @@ export default async function PacksIndexPage() {
 
         {/* Hero */}
         <div className="max-w-4xl mx-auto px-4 pt-28 pb-12">
-          <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading mb-4">
             Vocabulary Packs
           </h1>
-          <p className="text-gray-600 text-lg max-w-2xl">
+          <p className="text-body text-lg max-w-2xl">
             Browse our collection of Lebanese Arabic vocabulary packs. Each pack
             is designed to help you learn words that actually matter, from
             everyday essentials to specific topics.
@@ -162,7 +169,7 @@ export default async function PacksIndexPage() {
 
               return (
                 <div key={level}>
-                  <h2 className="font-pphatton text-xl font-bold text-gray-900 mb-4 capitalize">
+                  <h2 className="font-pphatton text-xl font-bold text-heading mb-4 capitalize">
                     {level}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -189,11 +196,11 @@ export default async function PacksIndexPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">
+                            <h3 className="font-semibold text-heading group-hover:text-body transition-colors">
                               {pack.name}
                             </h3>
                             {wordCounts[pack.id] && (
-                              <p className="text-sm text-gray-500 mt-1">
+                              <p className="text-sm text-subtle mt-1">
                                 {wordCounts[pack.id]} words
                               </p>
                             )}

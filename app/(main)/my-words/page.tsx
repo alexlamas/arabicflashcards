@@ -111,10 +111,10 @@ function MyWordsContent() {
       <div className="max-w-4xl mx-auto p-4 px-9 pt-24">
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-            <CardsThree className="w-8 h-8 text-gray-400" />
+            <CardsThree className="w-8 h-8 text-disabled" />
           </div>
-          <h3 className="font-medium text-gray-900 mb-1">No words yet</h3>
-          <p className="text-sm text-gray-500 mb-4 max-w-xs">
+          <h3 className="font-medium text-heading mb-1">No words yet</h3>
+          <p className="text-sm text-body mb-4 max-w-xs">
             Add your own words and expressions to build a personal vocabulary list.
           </p>
           {session && (

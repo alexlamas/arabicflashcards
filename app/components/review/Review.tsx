@@ -258,7 +258,7 @@ export function Review() {
                     <div className="text-3xl font-arabic mb-2 select-none">
                       {currentWord.arabic}
                     </div>
-                    <div className="text-sm text-gray-600 select-none">
+                    <div className="text-sm text-body select-none">
                       {currentWord.transliteration}
                     </div>
                   </div>
@@ -276,7 +276,7 @@ export function Review() {
                   initial={{ opacity: 0, filter: "blur(4px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.15 }}
-                  className="absolute bottom-3 left-1/2 text-center text-sm text-gray-600 px-3 pointer-events-none"
+                  className="absolute bottom-3 left-1/2 text-center text-sm text-body px-3 pointer-events-none"
                   style={{ x: "-50%" }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -299,7 +299,7 @@ export function Review() {
                   initial={{ opacity: 0, filter: "blur(4px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.15 }}
-                  className="absolute bottom-3 left-1/2 text-center text-sm text-gray-600 px-3 max-w-md pointer-events-none"
+                  className="absolute bottom-3 left-1/2 text-center text-sm text-body px-3 max-w-md pointer-events-none"
                   style={{ x: "-50%" }}
                 >
                   {currentWord.notes}
@@ -361,7 +361,7 @@ export function Review() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex group text-gray-500 hover:text-gray-700"
+                className="flex group text-subtle hover:text-heading"
                 onClick={async (e) => {
                   e.stopPropagation();
                   if (currentWord) {
@@ -504,9 +504,9 @@ export function Review() {
         >
           <p className="font-arabic text-lg mb-1">{sentences[0].arabic}</p>
           {sentences[0].transliteration && (
-            <p className="text-sm text-gray-500 mb-1">{sentences[0].transliteration}</p>
+            <p className="text-sm text-subtle mb-1">{sentences[0].transliteration}</p>
           )}
-          <p className="text-sm text-gray-600">{sentences[0].english}</p>
+          <p className="text-sm text-body">{sentences[0].english}</p>
         </motion.div>
       )}
 

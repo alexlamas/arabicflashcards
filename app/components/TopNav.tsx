@@ -57,8 +57,8 @@ function NavLink({  active, badge, icon: Icon, children, onClick }: NavLinkProps
       className={cn(
         "px-3 py-1.5 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5",
         active
-          ? "bg-gray-200 text-gray-900 font-semibold"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          ? "bg-gray-200 text-heading font-semibold"
+          : "text-subtle hover:bg-gray-100 hover:text-heading"
       )}
     >
       <Icon className="h-4 w-4" />
@@ -87,8 +87,8 @@ function MobileNavLink({  active, badge, icon: Icon, children, onClick }: Mobile
       className={cn(
         "w-full px-4 py-3 text-left text-base font-medium transition-colors flex items-center gap-3",
         active
-          ? "bg-gray-100 text-gray-900"
-          : "text-gray-600 hover:bg-gray-50"
+          ? "bg-gray-100 text-heading"
+          : "text-body hover:bg-gray-50"
       )}
     >
       <Icon className="h-5 w-5" />
@@ -248,11 +248,11 @@ export function TopNav() {
                       className="rounded-full"
                     />
                     {displayName}
-                    <CaretDown className="h-3 w-3 text-gray-400" />
+                    <CaretDown className="h-3 w-3 text-disabled" />
                   </Button>
                 </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem disabled className="text-xs text-gray-500">
+                <DropdownMenuItem disabled className="text-xs text-subtle">
                   {session?.user?.email}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -343,7 +343,7 @@ export function TopNav() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled className="text-xs text-gray-500">
+                  <DropdownMenuItem disabled className="text-xs text-subtle">
                     {session?.user?.email}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

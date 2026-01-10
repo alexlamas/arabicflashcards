@@ -15,7 +15,7 @@ export default function NotFound() {
               width={28}
               height={28}
             />
-            <span className="font-pphatton font-bold text-lg text-gray-900">
+            <span className="font-pphatton font-bold text-lg text-heading">
               Yalla<span className="hidden sm:inline"> Flash</span>
             </span>
           </Link>
@@ -39,10 +39,10 @@ export default function NotFound() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-8xl mb-6">🫣</div>
-          <h1 className="font-pphatton text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="font-pphatton text-4xl sm:text-5xl font-bold text-heading mb-4">
             Page not found
           </h1>
-          <p className="text-gray-500 text-lg mb-8 max-w-md mx-auto">
+          <p className="text-body text-lg mb-8 max-w-md mx-auto">
             Looks like this page got lost in translation. Let&apos;s get you back on track.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

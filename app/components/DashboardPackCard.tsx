@@ -82,13 +82,13 @@ export function DashboardPackCard({
             <h3 className="font-medium">{pack.name}</h3>
             <span className={`text-sm ${config.color}`}>{config.label}</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-disabled group-hover:text-subtle transition-colors" />
         </div>
 
         {variant === "installed" && progress ? (
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
-              <span className="text-gray-500">
+              <span className="text-subtle">
                 {progress.learned}/{progress.total} learned
               </span>
               <span className="font-medium">{percent}%</span>
@@ -101,7 +101,7 @@ export function DashboardPackCard({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-body">
             {progress?.total || 0} {(progress?.total || 0) === 1 ? "word" : "words"}
             {sentenceCount > 0 && ` · ${sentenceCount} ${sentenceCount === 1 ? "sentence" : "sentences"}`}
           </p>

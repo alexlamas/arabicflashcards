@@ -32,7 +32,7 @@ interface WordDetailModalProps {
 }
 
 const TypeBadge = ({ type }: { type: string }) => (
-  <span className="text-xs tracking-wide font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+  <span className="text-xs tracking-wide font-medium px-3 py-1 rounded-full bg-gray-100 text-body">
     {type}
   </span>
 );
@@ -179,7 +179,7 @@ export function WordDetailModal({
           {/* Arabic and transliteration */}
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <div className="text-4xl font-arabic mb-3">{word.arabic}</div>
-            <div className="text-lg text-gray-600">{word.transliteration}</div>
+            <div className="text-lg text-body">{word.transliteration}</div>
           </div>
 
           {/* Example Sentences */}
@@ -198,7 +198,7 @@ export function WordDetailModal({
                           {sentence.arabic}
                         </p>
                       )}
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-body">
                         {sentence.transliteration}
                       </p>
                       <p className="text-base text-black mt-2">
@@ -222,7 +222,7 @@ export function WordDetailModal({
           {/* Empty state - don't show while sentences are loading */}
           {!loadingSentences && !hasSentences && !hasNotes && (
             <div
-              className="relative text-center py-8 text-gray-500 hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
+              className="relative text-center py-8 text-subtle hover:text-yellow-800 hover:border-yellow-400 group border border-dashed border-gray-300 rounded-lg  hover:bg-yellow-50 transition-colors cursor-pointer"
               onClick={() => canAddNotes && setIsEditOpen(true)}
             >
               <NoteBlankIcon

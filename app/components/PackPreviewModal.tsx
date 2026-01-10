@@ -236,7 +236,7 @@ export function PackPreviewModal({
         {isInstalled && words.length > 0 && (
           <div className="pb-2">
             <div className="flex justify-between items-center mb-1.5">
-              <span className="text-sm text-gray-600">Progress</span>
+              <span className="text-sm text-body">Progress</span>
               <span className="text-sm font-medium">{learnedCount}/{words.length} learned</span>
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2">
@@ -276,11 +276,11 @@ export function PackPreviewModal({
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6 mt-3">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-disabled" />
             </div>
           ) : activeTab === "words" ? (
             words.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-subtle">
                 No words in this pack
               </div>
             ) : (
@@ -297,13 +297,13 @@ export function PackPreviewModal({
                         <div className="flex items-center gap-2">
                           <span className="font-medium truncate">{word.english}</span>
                           {word.type && (
-                            <span className="text-xs text-gray-400 shrink-0">{word.type}</span>
+                            <span className="text-xs text-disabled shrink-0">{word.type}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-lg font-arabic">{word.arabic}</span>
                           {word.transliteration && (
-                            <span className="text-sm text-gray-500">{word.transliteration}</span>
+                            <span className="text-sm text-subtle">{word.transliteration}</span>
                           )}
                         </div>
                       </div>
@@ -317,7 +317,7 @@ export function PackPreviewModal({
             )
           ) : (
             sentences.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-subtle">
                 No sentences in this pack
               </div>
             ) : (
@@ -329,9 +329,9 @@ export function PackPreviewModal({
                   >
                     <p className="font-arabic text-lg text-gray-800">{sentence.arabic}</p>
                     {sentence.transliteration && (
-                      <p className="text-gray-500 text-sm mt-0.5">{sentence.transliteration}</p>
+                      <p className="text-subtle text-sm mt-0.5">{sentence.transliteration}</p>
                     )}
-                    <p className="text-gray-700 mt-1">{sentence.english}</p>
+                    <p className="text-body mt-1">{sentence.english}</p>
                   </div>
                 ))}
               </div>

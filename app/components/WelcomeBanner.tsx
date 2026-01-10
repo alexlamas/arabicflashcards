@@ -98,10 +98,10 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           />
           <div className="flex-1 flex flex-row justify-between items-center">
             <div>
-              <h1 className="text-3xl font-semibold font-pphatton mt-2 text-gray-900">
+              <h1 className="text-3xl font-semibold font-pphatton mt-2 text-heading">
                 Ahla w sahla, {firstName}!
               </h1>
-              <p className="text-sm text-gray-500 py-1">
+              <p className="text-sm text-subtle py-1">
                 Install a pack below to start learning
               </p>
             </div>
@@ -136,8 +136,8 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           />
           <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
             <div>
-              <h1 className="text-3xl font-semibold font-pphatton mt-2 text-gray-900">{fluency.greeting}, {firstName}!</h1>
-              <p className="text-sm text-gray-500 py-1">{levelSubtitle}</p>
+              <h1 className="text-3xl font-semibold font-pphatton mt-2 text-heading">{fluency.greeting}, {firstName}!</h1>
+              <p className="text-sm text-subtle py-1">{levelSubtitle}</p>
             </div>
             <Link href="/review">
               <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-medium rounded-full pl-2.5 gap-1">
@@ -169,11 +169,11 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
             <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
             <span className="text-xs font-medium text-amber-700">All caught up</span>
           </div>
-          <h1 className="text-2xl font-bold mb-1 text-gray-900">
+          <h1 className="text-2xl font-bold mb-1 text-heading">
             {fluency.greeting}, {firstName}!
           </h1>
-          <p className="text-sm text-gray-500 mb-3">{levelSubtitle}</p>
-          <p className="text-gray-600 max-w-md">
+          <p className="text-sm text-subtle mb-3">{levelSubtitle}</p>
+          <p className="text-body max-w-md">
             No words waiting for review — check back soon.
           </p>
         </div>

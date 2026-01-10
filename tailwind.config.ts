@@ -69,6 +69,12 @@ const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      textColor: {
+        heading: "hsl(var(--text-primary))",
+        body: "hsl(var(--text-body))",
+        subtle: "hsl(var(--text-muted))",
+        disabled: "hsl(var(--text-disabled))",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

@@ -191,7 +191,7 @@ export default function ResourcesPage() {
                 width={28}
                 height={28}
               />
-              <span className="font-pphatton font-bold text-lg text-gray-900">
+              <span className="font-pphatton font-bold text-lg text-heading">
                 Yalla<span className="hidden sm:inline"> Flash</span>
               </span>
             </Link>
@@ -213,10 +213,10 @@ export default function ResourcesPage() {
 
         {/* Hero */}
         <div className="max-w-4xl mx-auto px-4 pt-28 pb-12">
-          <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading mb-4">
             Other learning resources
           </h1>
-          <p className="text-gray-600 text-lg max-w-2xl">
+          <p className="text-body text-lg max-w-2xl">
             A curated collection of resources for learning Lebanese Arabic.
           </p>
         </div>
@@ -226,7 +226,7 @@ export default function ResourcesPage() {
           <div className="space-y-12">
             {resourceCategories.map((category) => (
               <section key={category.title}>
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                <h2 className="text-sm font-semibold text-subtle uppercase tracking-wide mb-4">
                   {category.title}
                 </h2>
                 <div className="grid gap-4">
@@ -251,18 +251,18 @@ export default function ResourcesPage() {
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 mb-1">
+                          <h3 className="font-medium text-heading mb-1">
                             {resource.name}
                           </h3>
-                          <p className="text-gray-600 text-sm mb-1">
+                          <p className="text-body text-sm mb-1">
                             {resource.description}
                           </p>
-                          <p className="text-gray-400 text-xs truncate">
+                          <p className="text-disabled text-xs truncate">
                             {new URL(resource.url).hostname.replace("www.", "")}
                           </p>
                         </div>
                         <svg
-                          className="w-5 h-5 text-gray-400 flex-shrink-0"
+                          className="w-5 h-5 text-disabled flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"

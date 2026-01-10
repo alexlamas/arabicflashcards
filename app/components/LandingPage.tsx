@@ -219,7 +219,7 @@ export function LandingPage() {
               width={28}
               height={28}
             />
-            <span className="font-pphatton font-bold text-lg text-gray-900">
+            <span className="font-pphatton font-bold text-lg text-heading">
               Yalla<span className="hidden sm:inline"> Flash</span>
             </span>
           </Link>
@@ -249,7 +249,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="font-pphatton text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-5 tracking-tight"
+            className="font-pphatton text-4xl sm:text-5xl md:text-6xl font-bold text-heading mb-5 tracking-tight"
           >
             Learn Lebanese Arabic
           </motion.h1>
@@ -257,7 +257,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-lg sm:text-xl text-gray-500 mb-4 max-w-lg mx-auto"
+            className="text-lg sm:text-xl text-body mb-4 max-w-lg mx-auto"
           >
             Smart flashcards to help you finally understand what Teta is saying about you.
           </motion.p>
@@ -265,7 +265,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-sm text-gray-400 mb-10"
+            className="text-sm text-disabled mb-10"
           >
             Real spoken Lebanese — not MSA or Syrian dialect.
           </motion.p>
@@ -325,8 +325,8 @@ export function LandingPage() {
                   </div>
                 )}
                 <div className="p-3">
-                  <h3 className="font-medium text-gray-900 text-sm">{pack.name}</h3>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="font-medium text-heading text-sm">{pack.name}</h3>
+                  <p className="text-xs text-subtle">
                     {packWordCounts[pack.id] || 0} words
                   </p>
                 </div>
@@ -345,8 +345,8 @@ export function LandingPage() {
           className="flex flex-col items-center pb-8 cursor-pointer -space-y-3"
           onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
         >
-          <CaretDown size={24} weight="bold" className="text-gray-400" />
-          <CaretDown size={24} weight="bold" className="text-gray-400" />
+          <CaretDown size={24} weight="bold" className="text-disabled" />
+          <CaretDown size={24} weight="bold" className="text-disabled" />
         </motion.div>
       )}
 
@@ -390,7 +390,7 @@ export function LandingPage() {
                   onClick={() => setSelectedPack(null)}
                   className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-600" />
+                  <X className="w-5 h-5 text-body" />
                 </button>
                 <div className="absolute bottom-4 left-4 right-4">
                   <h3 className="text-2xl font-bold text-white">{selectedPack.name}</h3>
@@ -400,7 +400,7 @@ export function LandingPage() {
 
               {/* Preview words */}
               <div className="p-4 pt-4 pb-0">
-                <p className="text-sm text-gray-500 mb-3">Preview words:</p>
+                <p className="text-sm text-subtle mb-3">Preview words:</p>
                 {/* Fixed height container to prevent layout shift */}
                 <div className="relative h-[284px] overflow-hidden">
                   {loadingPreview || previewWords.length === 0 ? (
@@ -414,8 +414,8 @@ export function LandingPage() {
                           key={word.id}
                           className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
                         >
-                          <span className="text-gray-900 font-medium">{word.english}</span>
-                          <span className="text-gray-600 font-arabic text-lg">{word.arabic}</span>
+                          <span className="text-heading font-medium">{word.english}</span>
+                          <span className="text-body font-arabic text-lg">{word.arabic}</span>
                         </div>
                       ))}
                     </div>
@@ -461,7 +461,7 @@ export function LandingPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-center mb-16"
           >
-            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900">
+            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading">
               How it works
             </h2>
           </motion.div>
@@ -599,7 +599,7 @@ export function LandingPage() {
                         className="w-16 h-20 bg-white rounded-lg border border-gray-200 shadow-md flex flex-col items-center justify-center p-1.5"
                       >
                         <span className="text-lg font-arabic">{card.arabic}</span>
-                        <span className="text-[10px] text-gray-400">{card.english}</span>
+                        <span className="text-[10px] text-disabled">{card.english}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -636,7 +636,7 @@ export function LandingPage() {
                         />
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500 tabular-nums">
+                    <span className="text-xs text-subtle tabular-nums">
                       {activeStep === 2 ? '1' : showFeedback ? '2' : '1'}/6
                     </span>
                   </motion.div>
@@ -702,7 +702,7 @@ export function LandingPage() {
                     <div className="h-[170px] flex flex-col items-center justify-center p-6 relative">
                       {/* English (front) */}
                       <motion.p
-                        className="text-3xl font-semibold text-gray-900 absolute"
+                        className="text-3xl font-semibold text-heading absolute"
                         animate={{
                           opacity: activeStep === 2 ? 1 : 0,
                           y: activeStep === 2 ? 0 : -10,
@@ -726,7 +726,7 @@ export function LandingPage() {
                         <p className="text-3xl font-arabic mb-1">
                           {demoCards[0].arabic}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-body">
                           {demoCards[0].transliteration}
                         </p>
                       </motion.div>
@@ -737,7 +737,7 @@ export function LandingPage() {
                       {/* Tap to reveal hint */}
                       {activeStep === 2 && (
                         <motion.p
-                          className="text-xs text-gray-400"
+                          className="text-xs text-disabled"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.3 }}
@@ -789,10 +789,10 @@ export function LandingPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-center flex flex-col items-center mb-12"
           >
-            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+            <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading mb-3">
               Your journey
             </h2>
-            <p className="text-gray-500 max-w-lg">
+            <p className="text-body max-w-lg">
               Learning commonly used words first helps you understand the majority of conversations within a few hundred words.
             </p>
           </motion.div>
@@ -834,7 +834,7 @@ export function LandingPage() {
                     />
                   </motion.div>
                   <motion.span
-                    className="text-xs font-medium text-gray-900"
+                    className="text-xs font-medium text-heading"
                     initial={{ opacity: 0.4 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -842,7 +842,7 @@ export function LandingPage() {
                   >
                     {level.label}
                   </motion.span>
-                  <span className="text-[10px] text-gray-400">{level.words}</span>
+                  <span className="text-[10px] text-disabled">{level.words}</span>
                 </div>
               ))}
             </div>
@@ -907,11 +907,11 @@ export function LandingPage() {
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#47907D' }} />
-                <span className="text-gray-600">Learned <span className="font-semibold text-gray-900">530</span></span>
+                <span className="text-body">Learned <span className="font-semibold text-heading">530</span></span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#7ab5a6' }} />
-                <span className="text-gray-600">Learning <span className="font-semibold text-gray-900">50</span></span>
+                <span className="text-body">Learning <span className="font-semibold text-heading">50</span></span>
               </div>
             </div>
           </motion.div>
@@ -937,10 +937,10 @@ export function LandingPage() {
               speedScale={0.4}
             />
             <div className="relative z-10">
-              <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading mb-4">
                 Ready to start?
               </h2>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+              <p className="text-body mb-8 max-w-md mx-auto">
                 Join learners building real Lebanese Arabic fluency, one word at a time.
               </p>
               <Button

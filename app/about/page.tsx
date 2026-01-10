@@ -145,7 +145,7 @@ export default function AboutPage() {
           <div className="mt-8 pt-8 border-t border-gray-200 flex items-center gap-4">
             <Image
               src="/alex.jpg"
-              alt="Alex"
+              alt="Alex, founder of Yalla Flash"
               width={56}
               height={56}
               className="rounded-full"

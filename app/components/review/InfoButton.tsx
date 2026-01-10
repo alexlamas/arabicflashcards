@@ -89,7 +89,7 @@ export default function InfoButton({ word }: InfoButtonProps) {
           )}
           {hasNotes && (
             <div className="flex items-start gap-2 p-3 bg-yellow-50 rounded-md border border-yellow-100">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              <p className="text-sm text-body whitespace-pre-wrap">
                 {word.notes}
               </p>
             </div>
@@ -104,7 +104,7 @@ export default function InfoButton({ word }: InfoButtonProps) {
         }`}
       >
         <div className="bg-white/20 px-4 py-2 rounded-full border border-gray-200 pointer-events-none select-none">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-body">
             {getOverlayText()}
           </p>
         </div>

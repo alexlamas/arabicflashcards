@@ -103,8 +103,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
 
           <div className="space-y-2">
-            <Label className="text-gray-500">Email</Label>
-            <p className="text-sm text-gray-600">{session?.user?.email}</p>
+            <Label className="text-subtle">Email</Label>
+            <p className="text-sm text-body">{session?.user?.email}</p>
           </div>
         </div>
 

@@ -60,8 +60,8 @@ export function ProgressBreakdown({ words }: ProgressBreakdownProps) {
   return (
     <div className="bg-white border rounded-xl p-5">
       <div className="flex justify-between items-center mb-3">
-        <h3 className="font-medium text-gray-900">Your progress</h3>
-        <span className="text-sm text-gray-500">
+        <h3 className="font-medium text-heading">Your progress</h3>
+        <span className="text-sm text-subtle">
           {learned} of {total} words learned
         </span>
       </div>
@@ -92,18 +92,18 @@ export function ProgressBreakdown({ words }: ProgressBreakdownProps) {
       <div className="flex items-center gap-6 mt-3">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          <span className="text-sm text-gray-600">Learned</span>
-          <span className="text-sm font-medium text-gray-900">{learned}</span>
+          <span className="text-sm text-body">Learned</span>
+          <span className="text-sm font-medium text-heading">{learned}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-          <span className="text-sm text-gray-600">Learning</span>
-          <span className="text-sm font-medium text-gray-900">{learning}</span>
+          <span className="text-sm text-body">Learning</span>
+          <span className="text-sm font-medium text-heading">{learning}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-gray-300" />
-          <span className="text-sm text-gray-600">New</span>
-          <span className="text-sm font-medium text-gray-900">{newWords}</span>
+          <span className="text-sm text-body">New</span>
+          <span className="text-sm font-medium text-heading">{newWords}</span>
         </div>
       </div>
     </div>

@@ -393,7 +393,7 @@ export default function DesignSystemPage() {
                         <span className="text-gray-600">All Packs</span>
                         <span className="text-gray-600">Resources</span>
                       </div>
-                      <p className="text-gray-500 text-sm mt-2">Made with ❤️ by Alex</p>
+                      <p className="text-gray-400 text-sm mt-2">Made with ❤️ by Alex</p>
                     </div>
                   </div>
                 </div>

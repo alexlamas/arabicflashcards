@@ -41,6 +41,12 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Semantic text colors */
+    --text-primary: 220 9% 7%;       /* gray-900 - headings, primary text */
+    --text-body: 220 9% 35%;          /* gray-600 - body text, descriptions */
+    --text-muted: 220 9% 42%;         /* gray-500 - secondary/muted text */
+    --text-disabled: 220 9% 53%;      /* gray-400 - disabled, placeholders */
   }
   .dark {
     --background: 222.2 84% 4.9%;

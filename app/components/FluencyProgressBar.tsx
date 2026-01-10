@@ -62,10 +62,10 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
           return (
             <div
               key={level.name}
-              className="text-xs text-gray-500"
+              className="text-xs text-subtle"
               style={{ width: `${width}%` }}
             >
-              <span className="font-medium text-gray-700">{level.name}</span>
+              <span className="font-medium text-body">{level.name}</span>
               <span className="ml-1">{level.endThreshold}</span>
             </div>
           );
@@ -119,8 +119,8 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 cursor-help">
                 <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
-                <span className="text-gray-600">Learned</span>
-                <span className="font-semibold text-gray-900">{learned}</span>
+                <span className="text-body">Learned</span>
+                <span className="font-semibold text-heading">{learned}</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -132,8 +132,8 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 cursor-help">
                 <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" />
-                <span className="text-gray-600">Learning</span>
-                <span className="font-semibold text-gray-900">{learning}</span>
+                <span className="text-body">Learning</span>
+                <span className="font-semibold text-heading">{learning}</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -153,8 +153,8 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
               <div className="h-4 w-px bg-gray-200" />
               <div className="flex items-center gap-1">
                 <Fire className="w-4 h-4 text-orange-500" weight="fill" />
-                <span className="font-semibold text-gray-900">{streak}</span>
-                <span className="hidden md:inline text-gray-600">day streak</span>
+                <span className="font-semibold text-heading">{streak}</span>
+                <span className="hidden md:inline text-body">day streak</span>
               </div>
             </>
           )}
@@ -175,8 +175,8 @@ function WeeklyStats({ thisWeek, lastWeek }: { thisWeek: number; lastWeek?: numb
     <div className="flex items-center gap-2 md:gap-3">
       <div className="flex items-center gap-1">
         <TrendUp className="w-4 h-4 text-emerald-500" weight="bold" />
-        <span className="font-semibold text-gray-900">{thisWeek}</span>
-        <span className="hidden md:inline text-gray-600">reviews this week</span>
+        <span className="font-semibold text-heading">{thisWeek}</span>
+        <span className="hidden md:inline text-body">reviews this week</span>
       </div>
       {percentChange !== null && (
         <span className={`text-xs px-2 py-0.5 rounded-full ${

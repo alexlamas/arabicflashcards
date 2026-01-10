@@ -240,11 +240,11 @@ export function Dashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                <CardsThree className="w-6 h-6 text-gray-600" />
+                <CardsThree className="w-6 h-6 text-body" />
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">My words</h3>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-medium text-heading">My words</h3>
+                <p className="text-sm text-body">
                   {myWordsCount > 0
                     ? `${myWordsCount} personal ${myWordsCount === 1 ? 'word' : 'words'} & expressions`
                     : "Add your own words and expressions"
@@ -293,8 +293,8 @@ export function Dashboard() {
           <div key={level}>
             <div className="flex items-baseline gap-2 mb-4">
               <h2 className="text-lg font-semibold">{config.label}</h2>
-              <span className="text-sm text-gray-400">•</span>
-              <span className="text-sm text-gray-500">{packs.length} {packs.length === 1 ? "pack" : "packs"} available</span>
+              <span className="text-sm text-disabled">•</span>
+              <span className="text-sm text-subtle">{packs.length} {packs.length === 1 ? "pack" : "packs"} available</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

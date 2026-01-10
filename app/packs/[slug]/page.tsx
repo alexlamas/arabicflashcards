@@ -150,6 +150,7 @@ export default async function PackPreviewPage({
     "@context": "https://schema.org",
     "@type": "Course",
     name: pack.name,
+    url: `https://yallaflash.com/packs/${slug}`,
     description:
       pack.description ||
       `Learn ${words.length} essential Lebanese Arabic words with smart flashcards.`,
@@ -158,10 +159,10 @@ export default async function PackPreviewPage({
       name: "Yalla Flash",
       url: "https://yallaflash.com",
     },
-    numberOfCredits: `${words.length} words`,
     educationalLevel: pack.level || "beginner",
     inLanguage: ["en", "ar"],
     isAccessibleForFree: true,
+    teaches: `${words.length} Lebanese Arabic vocabulary words`,
   };
 
   return (
@@ -183,7 +184,7 @@ export default async function PackPreviewPage({
                 width={28}
                 height={28}
               />
-              <span className="font-pphatton font-bold text-lg text-gray-900">
+              <span className="font-pphatton font-bold text-lg text-heading">
                 Yalla<span className="hidden sm:inline"> Flash</span>
               </span>
             </Link>
@@ -225,14 +226,14 @@ export default async function PackPreviewPage({
 
             {/* Pack Info */}
             <div className="flex-1">
-              <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+              <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading mb-3">
                 {pack.name}
               </h1>
-              <p className="text-gray-600 text-lg mb-4">
+              <p className="text-body text-lg mb-4">
                 {pack.description ||
                   `Master ${words.length} essential Lebanese Arabic words with smart flashcards and spaced repetition.`}
               </p>
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-4 text-sm text-subtle">
                 {pack.level && (
                   <span className="px-3 py-1 bg-gray-100 rounded-full capitalize">
                     {pack.level}
@@ -247,7 +248,7 @@ export default async function PackPreviewPage({
         {/* Words Grid */}
         <div className="bg-gray-50 py-12">
           <div className="max-w-4xl mx-auto px-4">
-            <h2 className="font-pphatton text-2xl font-bold text-gray-900 mb-6">
+            <h2 className="font-pphatton text-2xl font-bold text-heading mb-6">
               Words in this pack
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -257,9 +258,9 @@ export default async function PackPreviewPage({
                   className="bg-white rounded-xl p-4 border border-gray-200"
                 >
                   <div className="text-2xl font-arabic mb-1">{word.arabic}</div>
-                  <div className="text-gray-900 font-medium">{word.english}</div>
+                  <div className="text-heading font-medium">{word.english}</div>
                   {word.transliteration && (
-                    <div className="text-gray-500 text-sm">
+                    <div className="text-body text-sm">
                       {word.transliteration}
                     </div>
                   )}
@@ -273,7 +274,7 @@ export default async function PackPreviewPage({
         {otherPacks.length > 0 && (
           <div className="py-12">
             <div className="max-w-4xl mx-auto px-4">
-              <h2 className="font-pphatton text-2xl font-bold text-gray-900 mb-6">
+              <h2 className="font-pphatton text-2xl font-bold text-heading mb-6">
                 More packs you might like
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -300,9 +301,9 @@ export default async function PackPreviewPage({
                         )}
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{p.name}</div>
+                        <div className="font-medium text-heading">{p.name}</div>
                         {p.level && (
-                          <div className="text-xs text-gray-500 capitalize">
+                          <div className="text-xs text-subtle capitalize">
                             {p.level}
                           </div>
                         )}

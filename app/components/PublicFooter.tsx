@@ -20,35 +20,35 @@ export function PublicFooter({ maxWidth = "max-w-4xl" }: PublicFooterProps) {
               width={32}
               height={32}
             />
-            <span className="font-pphatton font-bold text-gray-900">
+            <span className="font-pphatton font-bold text-heading">
               Yalla Flash
             </span>
           </Link>
-          <div className="flex items-center gap-6 text-sm text-gray-500">
-            <Link href="/" className="hover:text-gray-900 transition-colors">
+          <div className="flex items-center gap-6 text-sm text-body">
+            <Link href="/" className="hover:text-heading transition-colors">
               Home
             </Link>
             <Link
               href="/packs"
-              className="hover:text-gray-900 transition-colors"
+              className="hover:text-heading transition-colors"
             >
               All Packs
             </Link>
             <Link
               href="/resources"
-              className="hover:text-gray-900 transition-colors"
+              className="hover:text-heading transition-colors"
             >
               Resources
             </Link>
             <Link
               href="/about"
-              className="hover:text-gray-900 transition-colors"
+              className="hover:text-heading transition-colors"
             >
               About
             </Link>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 flex items-center justify-center gap-1">
+        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-disabled flex items-center justify-center gap-1">
           <span>Made with</span>
           <Heart weight="fill" className="text-red-500 w-4 h-4" />
           <span>by a fellow telmeez.</span>

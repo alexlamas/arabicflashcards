@@ -13,7 +13,7 @@ const StatusBadge = ({
   if (!reviewTime) return null;
 
   return (
-    <div className="text-xs text-gray-500">
+    <div className="text-xs text-subtle">
       {reviewTime}
     </div>
   );
@@ -42,7 +42,7 @@ const ListCard = ({
       {!hideArabic && (
         <>
           <div className="text-3xl mt-4 mb-3 font-arabic">{word.arabic}</div>
-          <div className="text-base text-gray-500">{word.transliteration}</div>
+          <div className="text-base text-body">{word.transliteration}</div>
         </>
       )}
     </div>
