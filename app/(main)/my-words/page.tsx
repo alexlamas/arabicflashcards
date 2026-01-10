@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useFilteredWords } from "../../hooks/useFilteredWords";
 import { useWords } from "../../contexts/WordsContext";
 import WordGrid from "../../components/WordGrid";
@@ -10,9 +10,17 @@ import { ViewToggle } from "../../components/ViewToggle";
 import AddWordDialog from "../../components/AddWordDialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Word } from "../../types/word";
-import { CardsThree } from "@phosphor-icons/react";
+import { CardsThree, SortAscending, Check } from "@phosphor-icons/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 type FilterTab = "all" | "learning" | "learned";
+type SortOption = "alphabetical" | "recent" | "review";
 
 function MyWordsContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -29,6 +37,7 @@ function MyWordsContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [hideArabic, setHideArabic] = useState(false);
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
+  const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
 
   // Filter based on active tab
   const now = new Date();
@@ -53,6 +62,31 @@ function MyWordsContent() {
     words: tabFilteredWords,
     searchTerm,
   });
+
+  // Sort the filtered words
+  const sortedWords = useMemo(() => {
+    const sorted = [...filteredWords];
+    switch (sortBy) {
+      case "alphabetical":
+        sorted.sort((a, b) => a.english.localeCompare(b.english));
+        break;
+      case "recent":
+        sorted.sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA; // Most recent first
+        });
+        break;
+      case "review":
+        sorted.sort((a, b) => {
+          const dateA = a.next_review_date ? new Date(a.next_review_date).getTime() : Infinity;
+          const dateB = b.next_review_date ? new Date(b.next_review_date).getTime() : Infinity;
+          return dateA - dateB; // Soonest review first
+        });
+        break;
+    }
+    return sorted;
+  }, [filteredWords, sortBy]);
 
   // Count for badges
   const learnedCount = words.filter(w => {
@@ -105,6 +139,27 @@ function MyWordsContent() {
         onTabChange={(tab) => setActiveTab(tab as FilterTab)}
         actions={
           <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <SortAscending className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortBy("alphabetical")}>
+                  {sortBy === "alphabetical" && <Check className="h-4 w-4 mr-2" />}
+                  <span className={sortBy !== "alphabetical" ? "pl-6" : ""}>Alphabetical</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("recent")}>
+                  {sortBy === "recent" && <Check className="h-4 w-4 mr-2" />}
+                  <span className={sortBy !== "recent" ? "pl-6" : ""}>Recently added</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("review")}>
+                  {sortBy === "review" && <Check className="h-4 w-4 mr-2" />}
+                  <span className={sortBy !== "review" ? "pl-6" : ""}>Review date</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <TooltipProvider>
               <ViewToggle hideArabic={hideArabic} onChange={setHideArabic} />
             </TooltipProvider>
@@ -120,7 +175,7 @@ function MyWordsContent() {
       />
       <div className="p-4 px-9 pt-24">
         <WordGrid
-          words={filteredWords}
+          words={sortedWords}
           hideArabic={hideArabic}
           onWordUpdate={handleWordUpdate}
         />
