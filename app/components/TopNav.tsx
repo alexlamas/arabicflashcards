@@ -36,7 +36,6 @@ import { useUserRoles } from "../hooks/useUserRoles";
 import { cn } from "@/lib/utils";
 
 interface NavLinkProps {
-  href: string;
   active: boolean;
   badge?: number;
   icon: React.ElementType;
@@ -67,7 +66,6 @@ function NavLink({  active, badge, icon: Icon, children, onClick }: NavLinkProps
 }
 
 interface MobileNavLinkProps {
-  href: string;
   active: boolean;
   badge?: number;
   icon: React.ElementType;

@@ -2,16 +2,12 @@ import React, { useState } from "react";
 import { Word, Sentence } from "../types/word";
 import { WordDetailModal } from "./WordDetailModal";
 import { formatTimeUntilReview } from "../utils/formatReviewTime";
-import { useOfflineSync, offlineHelpers } from "../hooks/useOfflineSync";
-import { useAuth } from "../contexts/AuthContext";
-import { SpacedRepetitionService } from "../services/spacedRepetitionService";
 import { SentenceService } from "../services/sentenceService";
 
 const StatusBadge = ({
   word,
 }: {
   word: Word;
-  onStartLearning?: () => void;
 }) => {
   const reviewTime = formatTimeUntilReview(word.next_review_date);
   if (!reviewTime) return null;
@@ -26,12 +22,10 @@ const StatusBadge = ({
 const ListCard = ({
   word,
   onShowDetails,
-  onStartLearning,
   hideArabic = false,
 }: {
   word: Word;
   onShowDetails: () => void;
-  onStartLearning?: () => void;
   hideArabic?: boolean;
 }) => {
   return (
@@ -43,7 +37,7 @@ const ListCard = ({
         <div className="flex items-center gap-2">
           <div className="text-xl font-medium">{word.english}</div>
         </div>
-        <StatusBadge word={word} onStartLearning={onStartLearning} />
+        <StatusBadge word={word} />
       </div>
       {!hideArabic && (
         <>
@@ -67,8 +61,6 @@ export function WordGrid({
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
   const [selectedWordSentences, setSelectedWordSentences] = useState<Sentence[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { session } = useAuth();
-  const { handleOfflineAction } = useOfflineSync();
 
   const handleShowDetails = async (word: Word) => {
     setSelectedWord(word);
@@ -76,32 +68,6 @@ export function WordGrid({
     const sentences = await SentenceService.getSentencesForWord(word.id);
     setSelectedWordSentences(sentences);
     setIsModalOpen(true);
-  };
-
-  const handleStartLearning = async (word: Word) => {
-    if (!session?.user) return;
-
-    const updatedWord = {
-      ...word,
-      status: "learning" as const,
-      next_review_date: new Date().toISOString(),
-    };
-
-    await handleOfflineAction(
-      async () => {
-        const { count } = await SpacedRepetitionService.startLearning(
-          session.user.id,
-          word.id
-        );
-        window.dispatchEvent(
-          new CustomEvent("wordProgressUpdated", { detail: { count } })
-        );
-        return count;
-      },
-      () => offlineHelpers.startLearning(session.user.id, word.id)
-    );
-
-    onWordUpdate(updatedWord);
   };
 
   return (
@@ -125,7 +91,6 @@ export function WordGrid({
             key={word.id}
             word={word}
             onShowDetails={() => handleShowDetails(word)}
-            onStartLearning={() => handleStartLearning(word)}
             hideArabic={hideArabic}
           />
         ))}
