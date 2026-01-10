@@ -265,7 +265,7 @@ export class SpacedRepetitionService {
   }
 }
 
-function calculateNextReview(
+export function calculateNextReview(
   currentInterval: number,
   currentEaseFactor: number,
   rating: number,

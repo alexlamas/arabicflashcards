@@ -188,6 +188,7 @@ export default function DesignSystemPage() {
             <div className="flex flex-wrap gap-2">
               {[
                 "Colors",
+                "Status Colors",
                 "Logo",
                 "DashboardPackCard",
                 "ProgressBreakdown",
@@ -197,7 +198,7 @@ export default function DesignSystemPage() {
               ].map((name) => (
                 <a
                   key={name}
-                  href={`#${name.toLowerCase()}`}
+                  href={`#${name.toLowerCase().replace(/\s+/g, '-')}`}
                   className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
                 >
                   {name}
@@ -250,6 +251,293 @@ export default function DesignSystemPage() {
                     <ColorSwatch name="border" hex="#bbf7d0" />
                     <ColorSwatch name="text" hex="#15803d" />
                   </div>
+                </div>
+              </div>
+            </div>
+
+          </ComponentSection>
+        </div>
+
+        {/* Status Colors Comparison */}
+        <div id="status-colors">
+          <ComponentSection
+            name="Status Colors"
+            path="Design System Audit"
+            description="Comparing solid green vs emerald/teal gradient for status indicators"
+          >
+            {/* Current Usage */}
+            <div className="mb-8">
+              <StateLabel label="Current Usage (Inconsistent)" />
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 rounded mb-2" style={{ backgroundColor: '#47907d' }} />
+                  <p className="text-sm font-medium">#47907d</p>
+                  <p className="text-xs text-subtle">Landing page bars</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-green-500 rounded mb-2" />
+                  <p className="text-sm font-medium">green-500</p>
+                  <p className="text-xs text-subtle">Progress bars</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded mb-2" />
+                  <p className="text-sm font-medium">emerald→teal</p>
+                  <p className="text-xs text-subtle">Learned dots, buttons</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gradient-to-r from-emerald-300 to-teal-300 rounded mb-2" />
+                  <p className="text-sm font-medium">emerald→teal light</p>
+                  <p className="text-xs text-subtle">Learning state</p>
+                </div>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="w-full h-8 bg-gradient-to-r from-emerald-400 to-emerald-500 rounded mb-2" />
+                  <p className="text-sm font-medium">emerald gradient</p>
+                  <p className="text-xs text-subtle">Review progress</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Segmented Progress Bar Preview */}
+            <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-800 font-medium mb-2">Note: Progress bar is segmented</p>
+              <p className="text-xs text-amber-700 mb-3">The fluency bar has 4 separate segments (Tourist → Visitor → Resident → Local), so gradients don't work well. Each segment needs a solid fill.</p>
+              <div className="flex gap-1">
+                <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
+                  <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
+                </div>
+                <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
+                  <div className="h-full bg-emerald-500" style={{ width: '60%' }} />
+                </div>
+                <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }}>
+                  <div className="h-full bg-emerald-500" style={{ width: '0%' }} />
+                </div>
+                <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }}>
+                  <div className="h-full bg-emerald-500" style={{ width: '0%' }} />
+                </div>
+              </div>
+              <div className="flex gap-1 mt-1 text-xs text-amber-600">
+                <div style={{ width: '8.3%' }}>Tourist</div>
+                <div style={{ width: '16.7%' }}>Visitor</div>
+                <div style={{ width: '33.3%' }}>Resident</div>
+                <div style={{ width: '41.7%' }}>Local</div>
+              </div>
+            </div>
+
+            {/* Option A: Brand Teal */}
+            <div className="mb-8">
+              <StateLabel label="Option A: Brand Teal" />
+              <div className="bg-white border rounded-xl p-6 space-y-6">
+                {/* Segmented progress bar */}
+                <div>
+                  <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
+                  <div className="flex gap-1">
+                    <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '100%', backgroundColor: '#7ab5a6' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '80%', backgroundColor: '#47907d' }} />
+                    </div>
+                    <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
+                      <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: '70%', backgroundColor: '#7ab5a6' }} />
+                      <div className="absolute top-0 left-0 h-full" style={{ width: '40%', backgroundColor: '#47907d' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
+                  </div>
+                </div>
+                {/* Status dots */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#47907d' }} />
+                    <span className="text-sm">Learned</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#7ab5a6' }} />
+                    <span className="text-sm">Learning</span>
+                  </div>
+                </div>
+                {/* Button */}
+                <button className="px-6 py-2 text-white rounded-full font-medium" style={{ backgroundColor: '#47907d' }}>
+                  Start review
+                </button>
+              </div>
+              <p className="text-xs text-subtle mt-2">#47907d / #7ab5a6 — Pure brand, consistent with landing page</p>
+            </div>
+
+            {/* Option B: Emerald */}
+            <div className="mb-8">
+              <StateLabel label="Option B: Emerald" />
+              <div className="bg-white border rounded-xl p-6 space-y-6">
+                {/* Segmented progress bar */}
+                <div>
+                  <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
+                  <div className="flex gap-1">
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
+                      <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
+                      <div className="h-full bg-emerald-500" style={{ width: '60%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
+                  </div>
+                </div>
+                {/* Status dots */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <span className="text-sm">Learned</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-emerald-300" />
+                    <span className="text-sm">Learning</span>
+                  </div>
+                </div>
+                {/* Button */}
+                <button className="px-6 py-2 bg-emerald-500 text-white rounded-full font-medium">
+                  Start review
+                </button>
+              </div>
+              <p className="text-xs text-subtle mt-2">emerald-500 / emerald-300 — Standard Tailwind, vibrant</p>
+            </div>
+
+            {/* Option C: Teal */}
+            <div className="mb-8">
+              <StateLabel label="Option C: Teal" />
+              <div className="bg-white border rounded-xl p-6 space-y-6">
+                {/* Segmented progress bar */}
+                <div>
+                  <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
+                  <div className="flex gap-1">
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
+                      <div className="h-full bg-teal-500" style={{ width: '100%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
+                      <div className="h-full bg-teal-500" style={{ width: '60%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
+                  </div>
+                </div>
+                {/* Status dots */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-teal-500" />
+                    <span className="text-sm">Learned</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-teal-300" />
+                    <span className="text-sm">Learning</span>
+                  </div>
+                </div>
+                {/* Button */}
+                <button className="px-6 py-2 bg-teal-500 text-white rounded-full font-medium">
+                  Start review
+                </button>
+              </div>
+              <p className="text-xs text-subtle mt-2">teal-500 / teal-300 — Closer to brand teal hue</p>
+            </div>
+
+            {/* Option D: Cyan */}
+            <div className="mb-8">
+              <StateLabel label="Option D: Cyan" />
+              <div className="bg-white border rounded-xl p-6 space-y-6">
+                {/* Segmented progress bar */}
+                <div>
+                  <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
+                  <div className="flex gap-1">
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
+                      <div className="h-full bg-cyan-500" style={{ width: '100%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
+                      <div className="h-full bg-cyan-500" style={{ width: '60%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
+                  </div>
+                </div>
+                {/* Status dots */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-cyan-500" />
+                    <span className="text-sm">Learned</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-cyan-300" />
+                    <span className="text-sm">Learning</span>
+                  </div>
+                </div>
+                {/* Button */}
+                <button className="px-6 py-2 bg-cyan-500 text-white rounded-full font-medium">
+                  Start review
+                </button>
+              </div>
+              <p className="text-xs text-subtle mt-2">cyan-500 / cyan-300 — Fresh, modern, tech feel</p>
+            </div>
+
+            {/* Option E: Green */}
+            <div className="mb-8">
+              <StateLabel label="Option E: Green" />
+              <div className="bg-white border rounded-xl p-6 space-y-6">
+                {/* Segmented progress bar */}
+                <div>
+                  <p className="text-xs text-subtle mb-2">Segmented progress bar</p>
+                  <div className="flex gap-1">
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '8.3%' }}>
+                      <div className="h-full bg-green-500" style={{ width: '100%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '16.7%' }}>
+                      <div className="h-full bg-green-500" style={{ width: '60%' }} />
+                    </div>
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '33.3%' }} />
+                    <div className="h-3 rounded-full bg-gray-200 overflow-hidden" style={{ width: '41.7%' }} />
+                  </div>
+                </div>
+                {/* Status dots */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span className="text-sm">Learned</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-300" />
+                    <span className="text-sm">Learning</span>
+                  </div>
+                </div>
+                {/* Button */}
+                <button className="px-6 py-2 bg-green-500 text-white rounded-full font-medium">
+                  Start review
+                </button>
+              </div>
+              <p className="text-xs text-subtle mt-2">green-500 / green-300 — Classic "success" green</p>
+            </div>
+
+            {/* Color comparison grid */}
+            <div>
+              <StateLabel label="Quick Color Comparison" />
+              <div className="grid grid-cols-5 gap-4">
+                <div className="text-center">
+                  <div className="h-12 rounded-lg mb-2" style={{ backgroundColor: '#47907d' }} />
+                  <p className="text-xs font-medium">Brand</p>
+                  <p className="text-xs text-subtle">#47907d</p>
+                </div>
+                <div className="text-center">
+                  <div className="h-12 rounded-lg mb-2 bg-emerald-500" />
+                  <p className="text-xs font-medium">Emerald</p>
+                  <p className="text-xs text-subtle">#10b981</p>
+                </div>
+                <div className="text-center">
+                  <div className="h-12 rounded-lg mb-2 bg-teal-500" />
+                  <p className="text-xs font-medium">Teal</p>
+                  <p className="text-xs text-subtle">#14b8a6</p>
+                </div>
+                <div className="text-center">
+                  <div className="h-12 rounded-lg mb-2 bg-cyan-500" />
+                  <p className="text-xs font-medium">Cyan</p>
+                  <p className="text-xs text-subtle">#06b6d4</p>
+                </div>
+                <div className="text-center">
+                  <div className="h-12 rounded-lg mb-2 bg-green-500" />
+                  <p className="text-xs font-medium">Green</p>
+                  <p className="text-xs text-subtle">#22c55e</p>
                 </div>
               </div>
             </div>
