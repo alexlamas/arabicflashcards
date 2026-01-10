@@ -148,50 +148,59 @@ export default async function PacksIndexPage() {
 
         {/* Packs Grid */}
         <div className="bg-gray-50 py-12">
-          <div className="max-w-4xl mx-auto px-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {packs.map((pack) => (
-                <Link
-                  key={pack.id}
-                  href={`/packs/${slugify(pack.name)}`}
-                  className="bg-white rounded-xl p-5 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all group"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
-                      {pack.image_url ? (
-                        <Image
-                          src={pack.image_url}
-                          alt={pack.name}
-                          width={56}
-                          height={56}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-2xl">
-                          {pack.icon || "📚"}
+          <div className="max-w-4xl mx-auto px-4 space-y-10">
+            {["beginner", "intermediate", "advanced"].map((level) => {
+              const levelPacks = packs
+                .filter((p) => p.level === level)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+              if (levelPacks.length === 0) return null;
+
+              return (
+                <div key={level}>
+                  <h2 className="font-pphatton text-xl font-bold text-gray-900 mb-4 capitalize">
+                    {level}
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {levelPacks.map((pack) => (
+                      <Link
+                        key={pack.id}
+                        href={`/packs/${slugify(pack.name)}`}
+                        className="bg-white rounded-xl p-5 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all group"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
+                            {pack.image_url ? (
+                              <Image
+                                src={pack.image_url}
+                                alt={pack.name}
+                                width={56}
+                                height={56}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-2xl">
+                                {pack.icon || "📚"}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
+                              {pack.name}
+                            </h3>
+                            {wordCounts[pack.id] && (
+                              <p className="text-sm text-gray-500 mt-1">
+                                {wordCounts[pack.id]} words
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
-                        {pack.name}
-                      </h2>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                        {pack.level && (
-                          <span className="capitalize">{pack.level}</span>
-                        )}
-                        {pack.level && wordCounts[pack.id] && (
-                          <span>•</span>
-                        )}
-                        {wordCounts[pack.id] && (
-                          <span>{wordCounts[pack.id]} words</span>
-                        )}
-                      </div>
-                    </div>
+                      </Link>
+                    ))}
                   </div>
-                </Link>
-              ))}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
