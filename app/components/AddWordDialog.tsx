@@ -233,14 +233,29 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   };
 
   // Handle drag and drop
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
       handleImageSelect(file);
@@ -685,13 +700,19 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   onDragOver={handleDragOver}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   disabled={isGenerating}
-                  className="w-full h-20 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-subtle hover:border-gray-400 hover:text-body transition-colors disabled:opacity-50"
+                  className={`w-full h-20 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 ${
+                    isDragging
+                      ? "border-blue-500 bg-blue-50 text-blue-600"
+                      : "text-subtle hover:border-gray-400 hover:text-body"
+                  }`}
                 >
                   {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   <Image className="w-5 h-5" aria-hidden="true" />
-                  <span className="text-sm">Drop image or click to upload</span>
+                  <span className="text-sm">{isDragging ? "Drop image here" : "Drop image or click to upload"}</span>
                 </button>
               )}
             </div>
