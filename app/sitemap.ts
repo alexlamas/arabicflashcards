@@ -37,6 +37,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       priority: 1.0,
     },
+    {
+      url: "https://yallaflash.com/packs",
+      lastModified: new Date(),
+      priority: 0.9,
+    },
     ...packUrls,
   ];
 }
