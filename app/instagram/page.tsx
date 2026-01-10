@@ -153,179 +153,179 @@ export default function InstagramTemplate() {
         </div>
 
         {/* Card Styles Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
 
           {/* Style 1: Classic */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm font-medium text-gray-600 text-center">Classic</p>
             <div
               ref={cardRefs.classic}
               className="bg-white relative overflow-hidden"
-              style={{ width: 270, height: 270 }}
+              style={{ width: 400, height: 400 }}
             >
-              <div className="absolute inset-3 border-2 border-gray-100 rounded-2xl" />
+              <div className="absolute inset-4 border-2 border-gray-100 rounded-3xl" />
               {imageUrl ? (
                 <>
-                  <div className="h-[50%] p-3 pb-0">
-                    <div className="w-full h-full rounded-xl overflow-hidden">
+                  <div className="h-[52%] p-5 pb-0">
+                    <div className="w-full h-full rounded-2xl overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
                     </div>
                   </div>
-                  <div className="h-[50%] flex flex-col items-center justify-center px-4">
-                    <h1 className="text-3xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
-                    <p className="text-sm text-gray-400">{transliteration}</p>
-                    <p className="text-sm text-gray-700 font-medium">{english}</p>
-                    <div className="absolute bottom-3 flex items-center gap-1">
-                      <Image src="/avatars/pomegranate.svg" alt="" width={14} height={14} />
-                      <span className="font-pphatton font-bold text-gray-900 text-xs">Yalla Flash</span>
+                  <div className="h-[48%] flex flex-col items-center justify-center px-8">
+                    <h1 className="text-5xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
+                    <p className="text-lg text-gray-400 mb-1">{transliteration}</p>
+                    <p className="text-lg text-gray-700 font-medium">{english}</p>
+                    <div className="absolute bottom-5 flex items-center gap-2">
+                      <Image src="/avatars/pomegranate.svg" alt="" width={18} height={18} />
+                      <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center px-6">
-                  <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">Word of the Day</p>
-                  <h1 className="text-4xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
-                  <p className="text-sm text-gray-400 mb-1">{transliteration}</p>
-                  <p className="text-sm text-gray-700 font-medium">{english}</p>
-                  <div className="absolute bottom-3 flex items-center gap-1">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={14} height={14} />
-                    <span className="font-pphatton font-bold text-gray-900 text-xs">Yalla Flash</span>
+                <div className="h-full flex flex-col items-center justify-center px-10">
+                  <p className="text-sm text-gray-400 uppercase tracking-widest mb-6">Word of the Day</p>
+                  <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
+                  <p className="text-xl text-gray-400 mb-2">{transliteration}</p>
+                  <p className="text-xl text-gray-700 font-medium">{english}</p>
+                  <div className="absolute bottom-5 flex items-center gap-2">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={18} height={18} />
+                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                   </div>
                 </div>
               )}
             </div>
             <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("classic")} disabled={isDownloading === "classic"}>
-              <DownloadSimple className="w-3 h-3 mr-1" />
+              <DownloadSimple className="w-4 h-4 mr-2" />
               {isDownloading === "classic" ? "..." : "Download"}
             </Button>
           </div>
 
           {/* Style 2: Polaroid */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm font-medium text-gray-600 text-center">Polaroid</p>
             <div
               ref={cardRefs.polaroid}
               className="bg-white relative"
-              style={{ width: 270, height: 270, boxShadow: "inset 0 0 0 8px white, inset 0 0 0 9px #e5e5e5" }}
+              style={{ width: 400, height: 400, boxShadow: "inset 0 0 0 12px white, inset 0 0 0 13px #e5e5e5" }}
             >
               {imageUrl ? (
                 <>
-                  <div className="h-[65%] p-2 pb-0">
+                  <div className="h-[62%] p-3 pb-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
                   </div>
-                  <div className="h-[35%] flex flex-col items-center justify-center">
-                    <h1 className="text-2xl font-arabic text-gray-900" dir="rtl">{arabic}</h1>
-                    <p className="text-xs text-gray-500">{transliteration} · {english}</p>
-                    <div className="absolute bottom-2 flex items-center gap-1">
-                      <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
-                      <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                  <div className="h-[38%] flex flex-col items-center justify-center px-6">
+                    <h1 className="text-4xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
+                    <p className="text-base text-gray-500">{transliteration} · {english}</p>
+                    <div className="absolute bottom-4 flex items-center gap-2">
+                      <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
+                      <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center">
-                  <h1 className="text-4xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
-                  <p className="text-sm text-gray-500">{transliteration}</p>
-                  <p className="text-sm text-gray-700 font-medium">{english}</p>
-                  <div className="absolute bottom-2 flex items-center gap-1">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
-                    <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                <div className="h-full flex flex-col items-center justify-center px-8">
+                  <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
+                  <p className="text-xl text-gray-500 mb-1">{transliteration}</p>
+                  <p className="text-xl text-gray-700 font-medium">{english}</p>
+                  <div className="absolute bottom-4 flex items-center gap-2">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
+                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                   </div>
                 </div>
               )}
             </div>
             <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("polaroid")} disabled={isDownloading === "polaroid"}>
-              <DownloadSimple className="w-3 h-3 mr-1" />
+              <DownloadSimple className="w-4 h-4 mr-2" />
               {isDownloading === "polaroid" ? "..." : "Download"}
             </Button>
           </div>
 
           {/* Style 3: Modern */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm font-medium text-gray-600 text-center">Modern</p>
             <div
               ref={cardRefs.modern}
               className="relative overflow-hidden"
-              style={{ width: 270, height: 270, background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)" }}
+              style={{ width: 400, height: 400, background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)" }}
             >
               {imageUrl ? (
                 <>
-                  <div className="absolute top-4 left-4 right-4 bottom-20 rounded-xl overflow-hidden">
+                  <div className="absolute top-6 left-6 right-6 bottom-28 rounded-2xl overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                    <h1 className="text-2xl font-arabic text-white" dir="rtl">{arabic}</h1>
-                    <p className="text-xs text-gray-300">{transliteration} · {english}</p>
-                    <div className="absolute bottom-3 right-4 flex items-center gap-1">
-                      <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
-                      <span className="font-pphatton font-bold text-white text-[10px]">Yalla Flash</span>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
+                    <h1 className="text-4xl font-arabic text-white mb-1" dir="rtl">{arabic}</h1>
+                    <p className="text-base text-gray-300">{transliteration} · {english}</p>
+                    <div className="absolute bottom-5 right-6 flex items-center gap-2">
+                      <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
+                      <span className="font-pphatton font-bold text-white text-sm">Yalla Flash</span>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center px-6">
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Word of the Day</p>
-                  <h1 className="text-4xl font-arabic text-white mb-2" dir="rtl">{arabic}</h1>
-                  <p className="text-sm text-gray-400 mb-1">{transliteration}</p>
-                  <p className="text-sm text-gray-300 font-medium">{english}</p>
-                  <div className="absolute bottom-3 flex items-center gap-1">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
-                    <span className="font-pphatton font-bold text-white text-[10px]">Yalla Flash</span>
+                <div className="h-full flex flex-col items-center justify-center px-10">
+                  <p className="text-sm text-gray-500 uppercase tracking-widest mb-6">Word of the Day</p>
+                  <h1 className="text-6xl font-arabic text-white mb-3" dir="rtl">{arabic}</h1>
+                  <p className="text-xl text-gray-400 mb-2">{transliteration}</p>
+                  <p className="text-xl text-gray-300 font-medium">{english}</p>
+                  <div className="absolute bottom-5 flex items-center gap-2">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
+                    <span className="font-pphatton font-bold text-white text-sm">Yalla Flash</span>
                   </div>
                 </div>
               )}
             </div>
             <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("modern")} disabled={isDownloading === "modern"}>
-              <DownloadSimple className="w-3 h-3 mr-1" />
+              <DownloadSimple className="w-4 h-4 mr-2" />
               {isDownloading === "modern" ? "..." : "Download"}
             </Button>
           </div>
 
           {/* Style 4: Minimal */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm font-medium text-gray-600 text-center">Minimal</p>
             <div
               ref={cardRefs.minimal}
               className="bg-[#fafafa] relative overflow-hidden"
-              style={{ width: 270, height: 270 }}
+              style={{ width: 400, height: 400 }}
             >
               {imageUrl ? (
                 <div className="h-full flex flex-col">
-                  <div className="flex-1 flex items-center justify-center p-6">
-                    <div className="w-28 h-28 rounded-full overflow-hidden">
+                  <div className="flex-1 flex items-center justify-center p-8">
+                    <div className="w-40 h-40 rounded-full overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
                     </div>
                   </div>
-                  <div className="text-center pb-8">
-                    <h1 className="text-3xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
-                    <p className="text-xs text-gray-400">{transliteration}</p>
-                    <p className="text-sm text-gray-600">{english}</p>
+                  <div className="text-center pb-14">
+                    <h1 className="text-5xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
+                    <p className="text-base text-gray-400 mb-1">{transliteration}</p>
+                    <p className="text-lg text-gray-600">{english}</p>
                   </div>
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
-                    <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
+                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                   </div>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center">
-                  <div className="w-16 h-px bg-gray-200 mb-6" />
-                  <h1 className="text-4xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
-                  <p className="text-sm text-gray-400 mb-1">{transliteration}</p>
-                  <p className="text-sm text-gray-600">{english}</p>
-                  <div className="w-16 h-px bg-gray-200 mt-6" />
-                  <div className="absolute bottom-3 flex items-center gap-1">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
-                    <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                  <div className="w-20 h-px bg-gray-300 mb-8" />
+                  <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
+                  <p className="text-xl text-gray-400 mb-2">{transliteration}</p>
+                  <p className="text-xl text-gray-600">{english}</p>
+                  <div className="w-20 h-px bg-gray-300 mt-8" />
+                  <div className="absolute bottom-5 flex items-center gap-2">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
+                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                   </div>
                 </div>
               )}
             </div>
             <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("minimal")} disabled={isDownloading === "minimal"}>
-              <DownloadSimple className="w-3 h-3 mr-1" />
+              <DownloadSimple className="w-4 h-4 mr-2" />
               {isDownloading === "minimal" ? "..." : "Download"}
             </Button>
           </div>

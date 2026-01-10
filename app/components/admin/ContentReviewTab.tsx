@@ -250,7 +250,7 @@ export function ContentReviewTab() {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-between h-auto py-2 px-3"
+              className="w-80 justify-between h-auto py-2 px-3"
               disabled={isLoadingPacks}
             >
               {isLoadingPacks ? (
