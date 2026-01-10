@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Copy, ChevronRight, Play } from "lucide-react";
 import { DashboardPackCard } from "@/app/components/DashboardPackCard";
 import { WelcomeBanner } from "@/app/components/WelcomeBanner";
-import { Word } from "@/app/types/word";
 import { StarterPackService, StarterPack } from "@/app/services/starterPackService";
 import Image from "next/image";
 
@@ -100,53 +99,6 @@ function ColorSwatch({ name, hex, className }: { name: string; hex: string; clas
       <p className="text-xs text-gray-500">{hex}</p>
     </button>
   );
-}
-
-// Helper to create mock words for ProgressBreakdown demos
-function createMockWords({ learned, learning, newWords }: { learned: number; learning: number; newWords: number }): Word[] {
-  const now = new Date();
-  const oneDay = 24 * 60 * 60 * 1000;
-  const oneMonth = 30 * oneDay;
-
-  const words: Word[] = [];
-
-  // Learned words (next_review > 1 month)
-  for (let i = 0; i < learned; i++) {
-    words.push({
-      id: `learned-${i}`,
-      arabic: "مثال",
-      english: "example",
-      transliteration: "mithal",
-      status: "learning",
-      next_review_date: new Date(now.getTime() + oneMonth + oneDay * (i + 1)).toISOString(),
-    } as Word);
-  }
-
-  // Learning words (next_review 1 day to 1 month)
-  for (let i = 0; i < learning; i++) {
-    words.push({
-      id: `learning-${i}`,
-      arabic: "مثال",
-      english: "example",
-      transliteration: "mithal",
-      status: "learning",
-      next_review_date: new Date(now.getTime() + oneDay * 2 + oneDay * (i % 28)).toISOString(),
-    } as Word);
-  }
-
-  // New words (next_review within 1 day)
-  for (let i = 0; i < newWords; i++) {
-    words.push({
-      id: `new-${i}`,
-      arabic: "مثال",
-      english: "example",
-      transliteration: "mithal",
-      status: "learning",
-      next_review_date: new Date(now.getTime() + 1000 * 60 * 60 * (i % 24)).toISOString(),
-    } as Word);
-  }
-
-  return words;
 }
 
 export default function DesignSystemPage() {
@@ -337,38 +289,6 @@ export default function DesignSystemPage() {
             ) : (
               <div className="text-gray-500">Loading packs...</div>
             )}
-          </ComponentSection>
-        </div>
-
-        {/* Progress Breakdown */}
-        <div id="progressbreakdown">
-          <ComponentSection
-            name="ProgressBreakdown"
-            path="app/components/ProgressBreakdown.tsx"
-            description="Segmented progress bar showing learned, learning, and new words"
-          >
-            <div className="space-y-4">
-              <div>
-                <StateLabel label="Mixed Progress" />
-                <ProgressBreakdown
-                  words={createMockWords({ learned: 133, learning: 87, newWords: 51 })}
-                />
-              </div>
-
-              <div>
-                <StateLabel label="Mostly Learned" />
-                <ProgressBreakdown
-                  words={createMockWords({ learned: 180, learning: 15, newWords: 5 })}
-                />
-              </div>
-
-              <div>
-                <StateLabel label="Just Starting" />
-                <ProgressBreakdown
-                  words={createMockWords({ learned: 5, learning: 20, newWords: 75 })}
-                />
-              </div>
-            </div>
           </ComponentSection>
         </div>
 
