@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { useUserRoles } from "../../hooks/useUserRoles";
-import { useRouter } from "next/navigation";
 import { StarterPack } from "../../services/starterPackService";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
-import { WordReviewCard } from "../../components/content-review/WordReviewCard";
+import { WordReviewCard } from "../content-review/WordReviewCard";
 import {
   ContentReviewService,
   WordWithSentences,
@@ -17,16 +14,19 @@ import {
 import type { Word, Sentence } from "../../types/word";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 interface PackWithStats extends StarterPack {
   total: number;
   reviewed: number;
 }
 
-export default function ContentEditorPage() {
-  const { session, isLoading: isAuthLoading } = useAuth();
-  const { isReviewer, isLoading: isRolesLoading } = useUserRoles();
-  const router = useRouter();
+export function ContentReviewTab() {
   const { toast } = useToast();
 
   const [packs, setPacks] = useState<PackWithStats[]>([]);
@@ -35,24 +35,14 @@ export default function ContentEditorPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPacks, setIsLoadingPacks] = useState(true);
+  const [isPackSelectorOpen, setIsPackSelectorOpen] = useState(false);
   const filter = "all";
-
-  // Redirect non-reviewers
-  useEffect(() => {
-    if (!isAuthLoading && !isRolesLoading) {
-      if (!session || !isReviewer) {
-        router.push("/");
-      }
-    }
-  }, [session, isReviewer, isAuthLoading, isRolesLoading, router]);
 
   // Load packs with stats
   useEffect(() => {
-    if (isReviewer) {
-      loadPacksWithStats();
-    }
+    loadPacksWithStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReviewer]);
+  }, []);
 
   const loadPackContent = useCallback(async (packId: string, wordFilter: "unreviewed" | "reviewed" | "all") => {
     setIsLoading(true);
@@ -211,118 +201,136 @@ export default function ContentEditorPage() {
     [toast]
   );
 
-  if (isAuthLoading || isRolesLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
-
-  if (!session || !isReviewer) {
-    return null;
-  }
-
   const currentWord = words[currentIndex];
   const selectedPackData = packs.find((p) => p.id === selectedPack);
 
-  return (
-    <div className="flex h-screen">
-      {/* Left Panel - Pack List */}
-      <div className="w-72 border-r bg-gray-50/50 overflow-y-auto shrink-0 relative z-0">
-        <div className="p-4 border-b bg-white sticky top-0 z-10">
-          <h1 className="font-semibold">Content Review</h1>
-        </div>
+  const renderPackItem = (pack: PackWithStats, isSelected: boolean = false) => {
+    const progressPercent = pack.total > 0 ? (pack.reviewed / pack.total) * 100 : 0;
+    const isComplete = pack.reviewed === pack.total && pack.total > 0;
 
-        {isLoadingPacks ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-          </div>
+    return (
+      <div className={cn(
+        "flex items-center gap-3 p-3 rounded-lg text-left transition-colors",
+        isSelected ? "bg-gray-50" : ""
+      )}>
+        {pack.image_url ? (
+          <Image
+            src={pack.image_url}
+            alt={pack.name}
+            width={48}
+            height={48}
+            className="w-12 h-12 rounded-lg object-cover shrink-0"
+          />
         ) : (
-          <div className="p-2 space-y-1 isolate">
-            {packs.map((pack) => {
-              const progressPercent = pack.total > 0 ? (pack.reviewed / pack.total) * 100 : 0;
-              const isComplete = pack.reviewed === pack.total && pack.total > 0;
-
-              return (
-                <button
-                  key={pack.id}
-                  onClick={() => setSelectedPack(pack.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors border",
-                    selectedPack === pack.id
-                      ? "bg-white shadow-sm border-gray-200"
-                      : "border-transparent hover:bg-white/60"
-                  )}
-                >
-                  {pack.image_url ? (
-                    <Image
-                      src={pack.image_url}
-                      alt={pack.name}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 rounded-lg object-cover shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center text-2xl shrink-0">
-                      {pack.icon || "📦"}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">{pack.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {pack.reviewed}/{pack.total} reviewed
-                    </div>
-                    <div className="mt-1.5 relative z-0">
-                      <Progress
-                        value={progressPercent}
-                        className={cn("h-1.5", isComplete && "[&>div]:bg-green-500")}
-                      />
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+          <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center text-2xl shrink-0">
+            {pack.icon || "📦"}
           </div>
         )}
-      </div>
-
-      {/* Right Panel - Review UI */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 max-w-3xl mx-auto">
-          {selectedPackData && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold">{selectedPackData.name}</h2>
-              <p className="text-sm text-muted-foreground">
-                {selectedPackData.reviewed} of {selectedPackData.total} words approved
-              </p>
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-            </div>
-          ) : words.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-muted-foreground">No words in this pack.</p>
-            </div>
-          ) : currentWord ? (
-            <WordReviewCard
-              word={currentWord}
-              onApprove={handleApprove}
-              onUnapprove={handleUnapprove}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              onSentenceApprove={handleSentenceApprove}
-              hasPrevious={currentIndex > 0}
-              hasNext={currentIndex < words.length - 1}
-              currentIndex={currentIndex}
-              totalCount={words.length}
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-sm truncate">{pack.name}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {pack.reviewed}/{pack.total} reviewed
+          </div>
+          <div className="mt-1.5">
+            <Progress
+              value={progressPercent}
+              className={cn("h-1.5", isComplete && "[&>div]:bg-green-500")}
             />
-          ) : null}
+          </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-6">
+      {/* Pack Selector Dropdown */}
+      <div className="mb-6">
+        <Popover open={isPackSelectorOpen} onOpenChange={setIsPackSelectorOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-between h-auto py-2 px-3"
+              disabled={isLoadingPacks}
+            >
+              {isLoadingPacks ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading packs...</span>
+                </div>
+              ) : selectedPackData ? (
+                <div className="flex items-center gap-3 flex-1">
+                  {selectedPackData.image_url ? (
+                    <Image
+                      src={selectedPackData.image_url}
+                      alt={selectedPackData.name}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-lg object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center text-xl shrink-0">
+                      {selectedPackData.icon || "📦"}
+                    </div>
+                  )}
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="font-medium text-sm">{selectedPackData.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {selectedPackData.reviewed}/{selectedPackData.total} reviewed
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <span>Select a pack</span>
+              )}
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-2" align="start">
+            <div className="max-h-80 overflow-y-auto space-y-1">
+              {packs.map((pack) => (
+                <button
+                  key={pack.id}
+                  onClick={() => {
+                    setSelectedPack(pack.id);
+                    setIsPackSelectorOpen(false);
+                  }}
+                  className={cn(
+                    "w-full rounded-lg hover:bg-gray-50 transition-colors",
+                    selectedPack === pack.id && "ring-2 ring-primary ring-offset-1"
+                  )}
+                >
+                  {renderPackItem(pack, selectedPack === pack.id)}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Review UI */}
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      ) : words.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-muted-foreground">No words in this pack.</p>
+        </div>
+      ) : currentWord ? (
+        <WordReviewCard
+          word={currentWord}
+          onApprove={handleApprove}
+          onUnapprove={handleUnapprove}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onSentenceApprove={handleSentenceApprove}
+          hasPrevious={currentIndex > 0}
+          hasNext={currentIndex < words.length - 1}
+          currentIndex={currentIndex}
+          totalCount={words.length}
+        />
+      ) : null}
     </div>
   );
 }

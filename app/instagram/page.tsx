@@ -14,31 +14,37 @@ export default function InstagramTemplate() {
   const [imageUrl, setImageUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
-  const cardRef = useRef<HTMLDivElement>(null);
+
+  const cardRefs = {
+    classic: useRef<HTMLDivElement>(null),
+    polaroid: useRef<HTMLDivElement>(null),
+    modern: useRef<HTMLDivElement>(null),
+    minimal: useRef<HTMLDivElement>(null),
+  };
 
   const prompt = `${english}, simple illustration, black ink on white background`;
 
-  const downloadCard = async () => {
-    if (!cardRef.current) return;
-    setIsDownloading(true);
+  const downloadCard = async (style: string) => {
+    const ref = cardRefs[style as keyof typeof cardRefs];
+    if (!ref.current) return;
+    setIsDownloading(style);
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2, // 1080x1080 output
+      const canvas = await html2canvas(ref.current, {
+        scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: "#ffffff",
+        backgroundColor: null,
       });
       const link = document.createElement("a");
-      link.download = `yallaflash-${english.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.download = `yallaflash-${english.replace(/\s+/g, "-").toLowerCase()}-${style}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch (error) {
       console.error("Error downloading:", error);
-      alert("Failed to download image");
     } finally {
-      setIsDownloading(false);
+      setIsDownloading(null);
     }
   };
 
@@ -46,27 +52,22 @@ export default function InstagramTemplate() {
     setIsShuffling(true);
     try {
       const supabase = createClient();
-
-      // Get total count
       const { count } = await supabase
         .from("words")
         .select("*", { count: "exact", head: true });
-
       if (!count) return;
-
-      // Get random word
       const randomOffset = Math.floor(Math.random() * count);
       const { data } = await supabase
         .from("words")
         .select("arabic, english, transliteration")
         .range(randomOffset, randomOffset)
         .single();
-
       if (data) {
         setArabic(data.arabic);
         setEnglish(data.english);
         setTransliteration(data.transliteration || "");
         setImageUrl("");
+        setCaption("");
       }
     } catch (error) {
       console.error("Error fetching random word:", error);
@@ -79,9 +80,7 @@ export default function InstagramTemplate() {
     setIsGenerating(true);
     setCaption("");
     setImageUrl("");
-
     try {
-      // Generate both in parallel
       const [imageResponse, captionResponse] = await Promise.all([
         fetch("/api/generate-image", {
           method: "POST",
@@ -94,18 +93,12 @@ export default function InstagramTemplate() {
           body: JSON.stringify({ arabic, transliteration, english }),
         }),
       ]);
-
       const [imageData, captionData] = await Promise.all([
         imageResponse.json(),
         captionResponse.json(),
       ]);
-
-      if (imageData.imageUrl) {
-        setImageUrl(imageData.imageUrl);
-      }
-      if (captionData.caption) {
-        setCaption(captionData.caption);
-      }
+      if (imageData.imageUrl) setImageUrl(imageData.imageUrl);
+      if (captionData.caption) setCaption(captionData.caption);
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to generate");
@@ -115,20 +108,16 @@ export default function InstagramTemplate() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-md mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Controls */}
-        <div className="bg-white rounded-xl p-4 space-y-4">
+        <div className="bg-white rounded-xl p-4 max-w-md mx-auto space-y-4">
           <h2 className="font-semibold text-gray-900">Word of the Day</h2>
-
-          {/* Word display */}
           <div className="text-center py-4 border rounded-lg bg-gray-50">
             <p className="text-3xl font-arabic mb-1" dir="rtl">{arabic}</p>
             <p className="text-gray-500">{transliteration}</p>
             <p className="text-gray-700 font-medium">{english}</p>
           </div>
-
-          {/* Main actions */}
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -147,11 +136,9 @@ export default function InstagramTemplate() {
               {isGenerating ? "Generating..." : "Generate"}
             </Button>
           </div>
-
-          {/* Caption output */}
           {caption && (
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+              <div className="flex items-center justify-between mb-2 sticky top-0 bg-gray-50">
                 <p className="text-xs text-gray-500">Caption:</p>
                 <button
                   onClick={() => navigator.clipboard.writeText(caption)}
@@ -163,117 +150,186 @@ export default function InstagramTemplate() {
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{caption}</p>
             </div>
           )}
-
-          {/* Download */}
-          {imageUrl && (
-            <Button
-              variant="outline"
-              onClick={downloadCard}
-              disabled={isDownloading}
-              className="w-full"
-            >
-              <DownloadSimple className="w-4 h-4 mr-2" />
-              {isDownloading ? "Downloading..." : "Download Image"}
-            </Button>
-          )}
         </div>
 
-        {/* Instagram Card - 1:1 aspect ratio */}
-        <div
-          ref={cardRef}
-          className="bg-white rounded-2xl shadow-lg relative overflow-hidden"
-          style={{ width: 540, height: 540 }}
-        >
-          {imageUrl ? (
-            <>
-              {/* Image as hero - top half */}
-              <div className="h-[55%] w-full overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imageUrl}
-                  alt={english}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+        {/* Card Styles Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
 
-              {/* Content - bottom half */}
-              <div className="h-[45%] flex flex-col items-center justify-center px-8 pt-4 pb-6">
-                <h1
-                  className="text-5xl font-arabic text-gray-900 leading-tight mb-2"
-                  dir="rtl"
-                >
-                  {arabic}
-                </h1>
-
-                <p className="text-lg text-gray-400 font-light mb-1">
-                  {transliteration}
-                </p>
-
-                <p className="text-xl text-gray-700 font-medium">{english}</p>
-
-                {/* Logo */}
-                <div className="absolute bottom-5 flex items-center gap-2">
-                  <Image
-                    src="/avatars/pomegranate.svg"
-                    alt="Yalla Flash"
-                    width={20}
-                    height={20}
-                  />
-                  <span className="font-pphatton font-bold text-gray-900 text-sm">
-                    Yalla Flash
-                  </span>
+          {/* Style 1: Classic */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-600 text-center">Classic</p>
+            <div
+              ref={cardRefs.classic}
+              className="bg-white relative overflow-hidden"
+              style={{ width: 270, height: 270 }}
+            >
+              <div className="absolute inset-3 border-2 border-gray-100 rounded-2xl" />
+              {imageUrl ? (
+                <>
+                  <div className="h-[50%] p-3 pb-0">
+                    <div className="w-full h-full rounded-xl overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div className="h-[50%] flex flex-col items-center justify-center px-4">
+                    <h1 className="text-3xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
+                    <p className="text-sm text-gray-400">{transliteration}</p>
+                    <p className="text-sm text-gray-700 font-medium">{english}</p>
+                    <div className="absolute bottom-3 flex items-center gap-1">
+                      <Image src="/avatars/pomegranate.svg" alt="" width={14} height={14} />
+                      <span className="font-pphatton font-bold text-gray-900 text-xs">Yalla Flash</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center px-6">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">Word of the Day</p>
+                  <h1 className="text-4xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
+                  <p className="text-sm text-gray-400 mb-1">{transliteration}</p>
+                  <p className="text-sm text-gray-700 font-medium">{english}</p>
+                  <div className="absolute bottom-3 flex items-center gap-1">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={14} height={14} />
+                    <span className="font-pphatton font-bold text-gray-900 text-xs">Yalla Flash</span>
+                  </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* No image - centered layout */}
-              <div className="absolute inset-0 opacity-[0.02]">
-                <div
-                  className="w-full h-full"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(circle, #000 1px, transparent 1px)",
-                    backgroundSize: "20px 20px",
-                  }}
-                />
-              </div>
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("classic")} disabled={isDownloading === "classic"}>
+              <DownloadSimple className="w-3 h-3 mr-1" />
+              {isDownloading === "classic" ? "..." : "Download"}
+            </Button>
+          </div>
 
-              <div className="h-full flex flex-col items-center justify-center px-12">
-                <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-8">
-                  Word of the Day
-                </p>
-
-                <h1
-                  className="text-6xl font-arabic text-gray-900 leading-tight mb-4"
-                  dir="rtl"
-                >
-                  {arabic}
-                </h1>
-
-                <p className="text-xl text-gray-500 font-light mb-3">
-                  {transliteration}
-                </p>
-
-                <div className="w-12 h-px bg-gray-200 mb-3" />
-
-                <p className="text-xl text-gray-700 font-medium">{english}</p>
-
-                {/* Logo */}
-                <div className="absolute bottom-8 flex items-center gap-2">
-                  <Image
-                    src="/avatars/pomegranate.svg"
-                    alt="Yalla Flash"
-                    width={24}
-                    height={24}
-                  />
-                  <span className="font-pphatton font-bold text-gray-900">
-                    Yalla Flash
-                  </span>
+          {/* Style 2: Polaroid */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-600 text-center">Polaroid</p>
+            <div
+              ref={cardRefs.polaroid}
+              className="bg-white relative"
+              style={{ width: 270, height: 270, boxShadow: "inset 0 0 0 8px white, inset 0 0 0 9px #e5e5e5" }}
+            >
+              {imageUrl ? (
+                <>
+                  <div className="h-[65%] p-2 pb-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="h-[35%] flex flex-col items-center justify-center">
+                    <h1 className="text-2xl font-arabic text-gray-900" dir="rtl">{arabic}</h1>
+                    <p className="text-xs text-gray-500">{transliteration} · {english}</p>
+                    <div className="absolute bottom-2 flex items-center gap-1">
+                      <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
+                      <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center">
+                  <h1 className="text-4xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
+                  <p className="text-sm text-gray-500">{transliteration}</p>
+                  <p className="text-sm text-gray-700 font-medium">{english}</p>
+                  <div className="absolute bottom-2 flex items-center gap-1">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
+                    <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("polaroid")} disabled={isDownloading === "polaroid"}>
+              <DownloadSimple className="w-3 h-3 mr-1" />
+              {isDownloading === "polaroid" ? "..." : "Download"}
+            </Button>
+          </div>
+
+          {/* Style 3: Modern */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-600 text-center">Modern</p>
+            <div
+              ref={cardRefs.modern}
+              className="relative overflow-hidden"
+              style={{ width: 270, height: 270, background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)" }}
+            >
+              {imageUrl ? (
+                <>
+                  <div className="absolute top-4 left-4 right-4 bottom-20 rounded-xl overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <h1 className="text-2xl font-arabic text-white" dir="rtl">{arabic}</h1>
+                    <p className="text-xs text-gray-300">{transliteration} · {english}</p>
+                    <div className="absolute bottom-3 right-4 flex items-center gap-1">
+                      <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
+                      <span className="font-pphatton font-bold text-white text-[10px]">Yalla Flash</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center px-6">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Word of the Day</p>
+                  <h1 className="text-4xl font-arabic text-white mb-2" dir="rtl">{arabic}</h1>
+                  <p className="text-sm text-gray-400 mb-1">{transliteration}</p>
+                  <p className="text-sm text-gray-300 font-medium">{english}</p>
+                  <div className="absolute bottom-3 flex items-center gap-1">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
+                    <span className="font-pphatton font-bold text-white text-[10px]">Yalla Flash</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("modern")} disabled={isDownloading === "modern"}>
+              <DownloadSimple className="w-3 h-3 mr-1" />
+              {isDownloading === "modern" ? "..." : "Download"}
+            </Button>
+          </div>
+
+          {/* Style 4: Minimal */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-600 text-center">Minimal</p>
+            <div
+              ref={cardRefs.minimal}
+              className="bg-[#fafafa] relative overflow-hidden"
+              style={{ width: 270, height: 270 }}
+            >
+              {imageUrl ? (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 flex items-center justify-center p-6">
+                    <div className="w-28 h-28 rounded-full overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div className="text-center pb-8">
+                    <h1 className="text-3xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
+                    <p className="text-xs text-gray-400">{transliteration}</p>
+                    <p className="text-sm text-gray-600">{english}</p>
+                  </div>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
+                    <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center">
+                  <div className="w-16 h-px bg-gray-200 mb-6" />
+                  <h1 className="text-4xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
+                  <p className="text-sm text-gray-400 mb-1">{transliteration}</p>
+                  <p className="text-sm text-gray-600">{english}</p>
+                  <div className="w-16 h-px bg-gray-200 mt-6" />
+                  <div className="absolute bottom-3 flex items-center gap-1">
+                    <Image src="/avatars/pomegranate.svg" alt="" width={12} height={12} />
+                    <span className="font-pphatton font-bold text-gray-900 text-[10px]">Yalla Flash</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("minimal")} disabled={isDownloading === "minimal"}>
+              <DownloadSimple className="w-3 h-3 mr-1" />
+              {isDownloading === "minimal" ? "..." : "Download"}
+            </Button>
+          </div>
+
         </div>
       </div>
     </div>

@@ -17,7 +17,6 @@ import {
   CardsThree,
   GearSix,
   HouseSimple,
-  NotePencil,
   Swatches,
   SignOut,
   ChatCircle,
@@ -203,23 +202,15 @@ export function TopNav() {
                 {(isAdmin || isReviewer) && (
                   <>
                     <DropdownMenuSeparator />
-                    {isReviewer && (
-                      <DropdownMenuItem onClick={() => handleNavigate("/content-editor")}>
-                        <NotePencil className="w-4 h-4 mr-2" />
-                        Content editor
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
+                      <GearSix className="w-4 h-4 mr-2" />
+                      Admin
+                    </DropdownMenuItem>
                     {isAdmin && (
-                      <>
-                        <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
-                          <GearSix className="w-4 h-4 mr-2" />
-                          Admin
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleNavigate("/design-system")}>
-                          <Swatches className="w-4 h-4 mr-2" />
-                          Design system
-                        </DropdownMenuItem>
-                      </>
+                      <DropdownMenuItem onClick={() => handleNavigate("/design-system")}>
+                        <Swatches className="w-4 h-4 mr-2" />
+                        Design system
+                      </DropdownMenuItem>
                     )}
                   </>
                 )}
@@ -310,32 +301,21 @@ export function TopNav() {
               {(isAdmin || isReviewer) && (
                 <>
                   <div className="border-t my-2 mx-4" />
-                  {isReviewer && (
-                    <MobileNavLink
-                      active={pathname === "/content-editor"}
-                      icon={NotePencil}
-                      onClick={() => handleNavigate("/content-editor")}
-                    >
-                      Content editor
-                    </MobileNavLink>
-                  )}
+                  <MobileNavLink
+                    active={pathname === "/admin"}
+                    icon={GearSix}
+                    onClick={() => handleNavigate("/admin")}
+                  >
+                    Admin
+                  </MobileNavLink>
                   {isAdmin && (
-                    <>
-                      <MobileNavLink
-                        active={pathname === "/admin"}
-                        icon={GearSix}
-                        onClick={() => handleNavigate("/admin")}
-                      >
-                        Admin
-                      </MobileNavLink>
-                      <MobileNavLink
-                        active={pathname === "/design-system"}
-                        icon={Swatches}
-                        onClick={() => handleNavigate("/design-system")}
-                      >
-                        Design system
-                      </MobileNavLink>
-                    </>
+                    <MobileNavLink
+                      active={pathname === "/design-system"}
+                      icon={Swatches}
+                      onClick={() => handleNavigate("/design-system")}
+                    >
+                      Design system
+                    </MobileNavLink>
                   )}
                 </>
               )}

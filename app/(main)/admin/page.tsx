@@ -51,13 +51,15 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ContentReviewTab } from "../../components/admin/ContentReviewTab";
 
 type PackWithCounts = StarterPack & { word_count: number };
 
 export default function AdminPage() {
   const { session, isLoading: isAuthLoading } = useAuth();
-  const { isAdmin, isLoading: isRolesLoading } = useUserRoles();
+  const { isAdmin, isReviewer, isLoading: isRolesLoading } = useUserRoles();
   const router = useRouter();
+  const canAccess = isAdmin || isReviewer;
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [words, setWords] = useState<AdminWord[]>([]);
@@ -65,7 +67,7 @@ export default function AdminPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("packs");
+  const [activeTab, setActiveTab] = useState("review");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [togglingRole, setTogglingRole] = useState<string | null>(null);
 
@@ -98,27 +100,27 @@ export default function AdminPage() {
 
   const [saving, setSaving] = useState(false);
 
-  // Redirect non-admins
+  // Redirect non-admins/reviewers
   useEffect(() => {
     if (!isAuthLoading && !isRolesLoading) {
-      if (!session || !isAdmin) {
+      if (!session || !canAccess) {
         router.push("/");
       }
     }
-  }, [session, isAdmin, isAuthLoading, isRolesLoading, router]);
+  }, [session, canAccess, isAuthLoading, isRolesLoading, router]);
 
   // Load data
   useEffect(() => {
-    if (isAdmin) {
+    if (canAccess) {
       loadData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, activeTab]);
+  }, [canAccess, activeTab]);
 
   async function loadData() {
     setIsLoading(true);
     try {
-      if (activeTab === "users") {
+      if (activeTab === "users" && isAdmin) {
         const [usersData, rolesResponse] = await Promise.all([
           AdminService.getAllUsers(),
           fetch('/api/admin/roles').then(r => r.json()),
@@ -306,14 +308,15 @@ export default function AdminPage() {
     );
   }
 
-  if (!session || !isAdmin) {
+  if (!session || !canAccess) {
     return null;
   }
 
   const tabs: TabConfig[] = [
+    { key: "review", label: "Review" },
     { key: "packs", label: "Packs", count: packs.length },
-    { key: "users", label: "Users", count: users.length },
     { key: "words", label: "Words", count: words.length },
+    ...(isAdmin ? [{ key: "users", label: "Users", count: users.length }] : []),
   ];
 
   return (
@@ -373,6 +376,13 @@ export default function AdminPage() {
         }
       />
       <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {/* Content Review Tab - Full width */}
+        <TabsContent value="review" className="mt-0">
+          <div className="pt-20">
+            <ContentReviewTab />
+          </div>
+        </TabsContent>
+
         <div className="p-4 pt-24 max-w-4xl mx-auto">
           {/* Starter Packs Tab */}
           <TabsContent value="packs" className="mt-0">

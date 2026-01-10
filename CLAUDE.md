@@ -23,8 +23,7 @@ app/
 │   ├── my-words/        # User's vocabulary (all/learning/learned tabs)
 │   ├── this-week/       # Weekly progress
 │   ├── this-month/      # Monthly progress
-│   ├── content-editor/  # Content editor (reviewer role)
-│   ├── admin/           # Admin panel (admin role)
+│   ├── admin/           # Admin panel (admin/reviewer roles - includes content review)
 │   ├── design-system/   # Component library reference
 │   └── memory-game/     # Memory matching game
 ├── api/                 # API routes
