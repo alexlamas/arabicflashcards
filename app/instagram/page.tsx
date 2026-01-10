@@ -215,10 +215,10 @@ export default function InstagramTemplate() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
                   </div>
-                  <div className="h-[38%] flex flex-col items-center justify-center px-6 pb-6">
+                  <div className="h-[38%] flex flex-col items-center justify-center px-6 pb-8">
                     <h1 className="text-4xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
                     <p className="text-base text-gray-500">{transliteration} · {english}</p>
-                    <div className="absolute bottom-6 flex items-center gap-2">
+                    <div className="absolute bottom-8 flex items-center gap-2">
                       <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
                       <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                     </div>
@@ -229,7 +229,7 @@ export default function InstagramTemplate() {
                   <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
                   <p className="text-xl text-gray-500 mb-1">{transliteration}</p>
                   <p className="text-xl text-gray-700 font-medium">{english}</p>
-                  <div className="absolute bottom-6 flex items-center gap-2">
+                  <div className="absolute bottom-8 flex items-center gap-2">
                     <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
                     <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
                   </div>

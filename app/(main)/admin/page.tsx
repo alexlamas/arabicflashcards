@@ -36,7 +36,6 @@ import {
 import {
   AdminService,
   AdminUser,
-  AdminWord,
 } from "../../services/adminService";
 import {
   StarterPack,
@@ -62,7 +61,6 @@ export default function AdminPage() {
   const canAccess = isAdmin || isReviewer;
 
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [words, setWords] = useState<AdminWord[]>([]);
   const [packs, setPacks] = useState<PackWithCounts[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
@@ -127,9 +125,6 @@ export default function AdminPage() {
         ]);
         setUsers(usersData);
         setUserRoles(rolesResponse);
-      } else if (activeTab === "words") {
-        const wordsData = await AdminService.getAllWords();
-        setWords(wordsData);
       } else if (activeTab === "packs") {
         const packsData = await AdminService.getAllStarterPacks();
         setPacks(packsData);
@@ -315,7 +310,6 @@ export default function AdminPage() {
   const tabs: TabConfig[] = [
     { key: "review", label: "Review" },
     { key: "packs", label: "Packs" },
-    { key: "words", label: "Words" },
     ...(isAdmin ? [{ key: "users", label: "Users" }] : []),
   ];
 
@@ -575,45 +569,6 @@ export default function AdminPage() {
                       </TableRow>
                     );
                   })}
-                </TableBody>
-              </Table>
-            )}
-          </TabsContent>
-
-          {/* Words Tab */}
-          <TabsContent value="words" className="mt-0">
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              </div>
-            ) : words.length === 0 ? (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-                <p className="font-medium mb-2">Admin RLS policies not configured</p>
-                <p>Run the SQL in <code className="bg-amber-100 px-1 rounded">supabase/005_admin_rls_policies.sql</code> in your Supabase SQL editor to enable admin access to all user data.</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Arabic</TableHead>
-                    <TableHead>English</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {words.map((word) => (
-                    <TableRow key={word.id}>
-                      <TableCell className="font-arabic">{word.arabic}</TableCell>
-                      <TableCell>{word.english}</TableCell>
-                      <TableCell>{word.type}</TableCell>
-                      <TableCell className="font-mono text-xs">{word.user_id.slice(0, 8)}...</TableCell>
-                      <TableCell>
-                        {new Date(word.created_at).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
                 </TableBody>
               </Table>
             )}
