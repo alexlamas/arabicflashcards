@@ -40,6 +40,7 @@ export interface Word {
   user_id?: string | null;
   reviewed_at?: string | null;
   reviewed_by?: string | null;
+  created_at?: string;
 }
 
 export type ProgressState = "learned" | "learning" | "new";
