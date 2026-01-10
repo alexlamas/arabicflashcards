@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart } from "@phosphor-icons/react";
+import { Heart, InstagramLogo } from "@phosphor-icons/react";
 
 interface PublicFooterProps {
   maxWidth?: string;
@@ -46,6 +46,15 @@ export function PublicFooter({ maxWidth = "max-w-4xl" }: PublicFooterProps) {
             >
               About
             </Link>
+            <a
+              href="https://instagram.com/yallaflash"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-heading transition-colors"
+              aria-label="Follow us on Instagram"
+            >
+              <InstagramLogo weight="regular" className="w-5 h-5" />
+            </a>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-disabled flex items-center justify-center gap-1">
