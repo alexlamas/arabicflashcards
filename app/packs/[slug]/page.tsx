@@ -314,22 +314,24 @@ export default async function PackPreviewPage({
         )}
 
         {/* CTA */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 py-16">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="font-pphatton text-3xl font-bold text-white mb-4">
-              Ready to start learning?
-            </h2>
-            <p className="text-white/90 mb-8 text-lg">
-              Join thousands of learners mastering Lebanese Arabic with Yalla Flash.
-            </p>
-            <Link href="/new">
-              <Button
-                size="lg"
-                className="bg-white text-emerald-600 hover:bg-gray-100 rounded-full px-8 text-lg font-semibold"
-              >
-                Create Free Account
-              </Button>
-            </Link>
+        <div className="py-24 px-4 bg-gray-50">
+          <div className="max-w-2xl mx-auto">
+            <div className="rounded-3xl bg-white border border-gray-200 shadow-sm p-12 text-center">
+              <h2 className="font-pphatton text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Ready to start?
+              </h2>
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                Join learners building real Lebanese Arabic fluency, one word at a time.
+              </p>
+              <Link href="/new">
+                <Button
+                  size="lg"
+                  className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-10 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  Get started free
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
