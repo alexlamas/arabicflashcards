@@ -267,7 +267,7 @@ export function LandingPage() {
             transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-sm text-disabled mb-10"
           >
-            Real spoken Lebanese — not MSA or Syrian dialect.
+            Real spoken Lebanese — not MSA or &ldquo;Levantine&rdquo;.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -671,7 +671,7 @@ export function LandingPage() {
                     <AnimatePresence>
                       {showFeedback && (
                         <motion.div
-                          className="absolute inset-0 bg-emerald-500 z-20 flex items-center justify-center"
+                          className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 z-20 flex items-center justify-center"
                           initial={{ x: "-100%" }}
                           animate={{ x: 0 }}
                           exit={{ opacity: 0 }}
@@ -852,8 +852,7 @@ export function LandingPage() {
               {/* Tourist: 0-50 */}
               <div className="flex-[50] rounded-l-full overflow-hidden bg-gray-100">
                 <motion.div
-                  className="h-full"
-                  style={{ backgroundColor: '#47907D' }}
+                  className="h-full bg-emerald-500"
                   initial={{ width: '0%' }}
                   whileInView={{ width: '100%' }}
                   viewport={{ once: true }}
@@ -863,8 +862,7 @@ export function LandingPage() {
               {/* Visitor: 50-150 */}
               <div className="flex-[100] overflow-hidden bg-gray-100">
                 <motion.div
-                  className="h-full"
-                  style={{ backgroundColor: '#47907D' }}
+                  className="h-full bg-emerald-500"
                   initial={{ width: '0%' }}
                   whileInView={{ width: '100%' }}
                   viewport={{ once: true }}
@@ -874,8 +872,7 @@ export function LandingPage() {
               {/* Resident: 150-350 */}
               <div className="flex-[200] overflow-hidden bg-gray-100">
                 <motion.div
-                  className="h-full"
-                  style={{ backgroundColor: '#47907D' }}
+                  className="h-full bg-emerald-500"
                   initial={{ width: '0%' }}
                   whileInView={{ width: '100%' }}
                   viewport={{ once: true }}
@@ -885,16 +882,14 @@ export function LandingPage() {
               {/* Local: 350-600, mostly filled */}
               <div className="flex-[250] rounded-r-full overflow-hidden bg-gray-100 flex">
                 <motion.div
-                  className="h-full"
-                  style={{ backgroundColor: '#47907D' }}
+                  className="h-full bg-emerald-500"
                   initial={{ width: '0%' }}
                   whileInView={{ width: '72%' }}
                   viewport={{ once: true }}
                   transition={{ duration: 1.4, delay: 3.0, ease: [0.16, 1, 0.3, 1] }}
                 />
                 <motion.div
-                  className="h-full"
-                  style={{ backgroundColor: '#7ab5a6' }}
+                  className="h-full bg-emerald-300"
                   initial={{ width: '0%' }}
                   whileInView={{ width: '20%' }}
                   viewport={{ once: true }}
@@ -906,11 +901,11 @@ export function LandingPage() {
             {/* Stats */}
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#47907D' }} />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                 <span className="text-body">Learned <span className="font-semibold text-heading">530</span></span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#7ab5a6' }} />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
                 <span className="text-body">Learning <span className="font-semibold text-heading">50</span></span>
               </div>
             </div>

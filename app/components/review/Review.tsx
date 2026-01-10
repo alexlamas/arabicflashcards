@@ -147,7 +147,7 @@ export function Review() {
         ? "bg-orange-500"
         : rating === 2
         ? "bg-green-500"
-        : "bg-emerald-500";
+        : "bg-gradient-to-r from-emerald-500 to-teal-500";
 
     setFeedbackAnimation({
       isPlaying: true,

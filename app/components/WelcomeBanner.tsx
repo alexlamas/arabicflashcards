@@ -79,7 +79,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
   // First-time user state - no words yet
   if (totalWords === 0) {
     return (
-      <div className="relative overflow-hidden p-6 py-6 pr-12 bg-gray-50">
+      <div className="relative overflow-hidden p-5 py-6 pr-12 bg-gray-50">
         <DottedGlowBackground
           gap={16}
           radius={1.5}
@@ -88,13 +88,13 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           opacity={0.8}
           speedScale={0.5}
         />
-        <div className="relative z-10 flex items-center gap-5">
+        <div className="relative z-10 flex items-center gap-4">
           <Image
             src="/logo-tourist.svg"
             alt="Yalla Flash"
-            width={96}
-            height={96}
-            className="flex-shrink-0"
+            width={120}
+            height={120}
+            className="flex-shrink-0 -m-4"
           />
           <div className="flex-1 flex flex-row justify-between items-center">
             <div>
@@ -113,7 +113,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
 
   if (reviewCount > 0) {
     return (
-      <div className="relative overflow-hidden p-6 py-6 pr-12 bg-gray-50">
+      <div className="relative overflow-hidden p-5 py-6 pr-12 bg-gray-50">
         <DottedGlowBackground
           gap={16}
           radius={1.5}
@@ -122,13 +122,13 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           opacity={0.8}
           speedScale={0.5}
         />
-        <div className="relative z-10 flex items-center gap-5">
+        <div className="relative z-10 flex items-center gap-4">
           <Image
             src={fluency.logo}
             alt="Yalla Flash"
-            width={96}
-            height={96}
-            className="flex-shrink-0"
+            width={120}
+            height={120}
+            className="flex-shrink-0 -m-4"
             onError={(e) => {
               // Fallback to default logo if level-specific one doesn't exist
               e.currentTarget.src = "/logo.svg";
@@ -140,7 +140,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
               <p className="text-sm text-subtle py-1">{levelSubtitle}</p>
             </div>
             <Link href="/review">
-              <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-medium rounded-full pl-2.5 gap-1">
+              <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 transition hover:to-teal-400 font-medium rounded-full pl-2.5 gap-1">
                 <PlayCircleIcon className="!size-6 pr-1" weight="fill" />
                 Review <strong>{reviewCount}</strong> words
               </Button>
@@ -157,8 +157,8 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
         <Image
           src={fluency.logo}
           alt="Yalla Flash"
-          width={64}
-          height={64}
+          width={96}
+          height={96}
           className="flex-shrink-0"
           onError={(e) => {
             e.currentTarget.src = "/logo.svg";
