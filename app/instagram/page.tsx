@@ -16,29 +16,9 @@ export default function InstagramTemplate() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [caption, setCaption] = useState("");
-  const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const prompt = `${english}, simple illustration, black ink on white background`;
-
-  const generateCaption = async () => {
-    setIsGeneratingCaption(true);
-    try {
-      const response = await fetch("/api/generate-caption", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ arabic, transliteration, english }),
-      });
-      const data = await response.json();
-      if (data.caption) {
-        setCaption(data.caption);
-      }
-    } catch (error) {
-      console.error("Error generating caption:", error);
-    } finally {
-      setIsGeneratingCaption(false);
-    }
-  };
 
   const downloadCard = async () => {
     if (!cardRef.current) return;
@@ -95,25 +75,40 @@ export default function InstagramTemplate() {
     }
   };
 
-  const generateImage = async () => {
+  const generate = async () => {
     setIsGenerating(true);
+    setCaption("");
+    setImageUrl("");
+
     try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
+      // Generate both in parallel
+      const [imageResponse, captionResponse] = await Promise.all([
+        fetch("/api/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        }),
+        fetch("/api/generate-caption", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ arabic, transliteration, english }),
+        }),
+      ]);
 
-      const data = await response.json();
+      const [imageData, captionData] = await Promise.all([
+        imageResponse.json(),
+        captionResponse.json(),
+      ]);
 
-      if (data.imageUrl) {
-        setImageUrl(data.imageUrl);
-      } else {
-        alert(data.error || "Failed to generate image");
+      if (imageData.imageUrl) {
+        setImageUrl(imageData.imageUrl);
+      }
+      if (captionData.caption) {
+        setCaption(captionData.caption);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to generate image");
+      alert("Failed to generate");
     } finally {
       setIsGenerating(false);
     }
@@ -124,82 +119,42 @@ export default function InstagramTemplate() {
       <div className="max-w-md mx-auto space-y-6">
         {/* Controls */}
         <div className="bg-white rounded-xl p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Word of the Day</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={shuffleWord}
-              disabled={isShuffling}
-            >
-              <Shuffle className="w-4 h-4 mr-1" />
-              {isShuffling ? "..." : "Shuffle"}
-            </Button>
+          <h2 className="font-semibold text-gray-900">Word of the Day</h2>
+
+          {/* Word display */}
+          <div className="text-center py-4 border rounded-lg bg-gray-50">
+            <p className="text-3xl font-arabic mb-1" dir="rtl">{arabic}</p>
+            <p className="text-gray-500">{transliteration}</p>
+            <p className="text-gray-700 font-medium">{english}</p>
           </div>
-          <div>
-            <label className="text-sm text-gray-500">Arabic</label>
-            <input
-              type="text"
-              value={arabic}
-              onChange={(e) => setArabic(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-2xl font-arabic text-right"
-              dir="rtl"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Transliteration</label>
-            <input
-              type="text"
-              value={transliteration}
-              onChange={(e) => setTransliteration(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">English</label>
-            <input
-              type="text"
-              value={english}
-              onChange={(e) => setEnglish(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-            />
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">Prompt:</p>
-            <p className="text-xs text-gray-700 font-mono">{prompt}</p>
-          </div>
+
+          {/* Main actions */}
           <div className="flex gap-2">
             <Button
-              onClick={generateImage}
-              disabled={isGenerating}
+              variant="outline"
+              onClick={shuffleWord}
+              disabled={isShuffling || isGenerating}
               className="flex-1"
             >
-              {isGenerating ? "Generating..." : "Generate Image"}
+              <Shuffle className="w-4 h-4 mr-2" />
+              {isShuffling ? "..." : "Shuffle"}
             </Button>
             <Button
-              variant="outline"
-              onClick={downloadCard}
-              disabled={isDownloading}
+              onClick={generate}
+              disabled={isGenerating || isShuffling}
+              className="flex-1"
             >
-              <DownloadSimple className="w-4 h-4" />
+              {isGenerating ? "Generating..." : "Generate"}
             </Button>
           </div>
-          <Button
-            variant="outline"
-            onClick={generateCaption}
-            disabled={isGeneratingCaption}
-            className="w-full"
-          >
-            {isGeneratingCaption ? "Writing..." : "Generate Caption"}
-          </Button>
+
+          {/* Caption output */}
           {caption && (
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-gray-500">Caption:</p>
                 <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(caption);
-                  }}
+                  onClick={() => navigator.clipboard.writeText(caption)}
                   className="text-xs text-gray-500 hover:text-gray-700"
                 >
                   Copy
@@ -207,6 +162,19 @@ export default function InstagramTemplate() {
               </div>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{caption}</p>
             </div>
+          )}
+
+          {/* Download */}
+          {imageUrl && (
+            <Button
+              variant="outline"
+              onClick={downloadCard}
+              disabled={isDownloading}
+              className="w-full"
+            >
+              <DownloadSimple className="w-4 h-4 mr-2" />
+              {isDownloading ? "Downloading..." : "Download Image"}
+            </Button>
           )}
         </div>
 

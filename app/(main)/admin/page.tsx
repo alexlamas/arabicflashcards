@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUserRoles } from "../../hooks/useUserRoles";
 import { useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { SubNav, TabConfig } from "../../components/SubNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -309,66 +310,70 @@ export default function AdminPage() {
     return null;
   }
 
+  const tabs: TabConfig[] = [
+    { key: "packs", label: "Packs", count: packs.length },
+    { key: "users", label: "Users", count: users.length },
+    { key: "words", label: "Words", count: words.length },
+  ];
+
   return (
     <>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b shadow-xs px-4 sticky top-0 backdrop-blur-lg bg-white/70 z-30">
-          <TabsList>
-            <TabsTrigger value="packs">Starter Packs</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="words">Words</TabsTrigger>
-          </TabsList>
-          {activeTab === "packs" && (
-            <div className="ml-auto">
-              <Dialog open={isCreatingPack} onOpenChange={setIsCreatingPack}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-1" /> New Pack
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create Starter Pack</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Name</Label>
-                      <Input
-                        value={packForm.name}
-                        onChange={(e) => setPackForm({ ...packForm, name: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label>Description</Label>
-                      <Textarea
-                        value={packForm.description}
-                        onChange={(e) => setPackForm({ ...packForm, description: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label>Level</Label>
-                      <Input
-                        value={packForm.level}
-                        onChange={(e) => setPackForm({ ...packForm, level: e.target.value })}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={packForm.is_active}
-                        onCheckedChange={(checked) => setPackForm({ ...packForm, is_active: checked })}
-                      />
-                      <Label>Active</Label>
-                    </div>
-                    <Button onClick={handleCreatePack} disabled={saving} className="w-full">
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
-                    </Button>
+      <SubNav
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        actions={
+          activeTab === "packs" ? (
+            <Dialog open={isCreatingPack} onOpenChange={setIsCreatingPack}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="rounded-full">
+                  <Plus className="h-4 w-4 mr-1" /> New Pack
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Starter Pack</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Name</Label>
+                    <Input
+                      value={packForm.name}
+                      onChange={(e) => setPackForm({ ...packForm, name: e.target.value })}
+                    />
                   </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-        </header>
-        <div className="p-4">
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea
+                      value={packForm.description}
+                      onChange={(e) => setPackForm({ ...packForm, description: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Level</Label>
+                    <Input
+                      value={packForm.level}
+                      onChange={(e) => setPackForm({ ...packForm, level: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={packForm.is_active}
+                      onCheckedChange={(checked) => setPackForm({ ...packForm, is_active: checked })}
+                    />
+                    <Label>Active</Label>
+                  </div>
+                  <Button onClick={handleCreatePack} disabled={saving} className="w-full">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          ) : undefined
+        }
+      />
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="p-4 pt-24 max-w-4xl mx-auto">
           {/* Starter Packs Tab */}
           <TabsContent value="packs" className="mt-0">
             {isLoading ? (
