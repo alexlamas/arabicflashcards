@@ -74,6 +74,9 @@ export const metadata: Metadata = {
       "Browse our collection of Lebanese Arabic vocabulary packs for all levels.",
     images: ["/og.png"],
   },
+  alternates: {
+    canonical: "https://yallaflash.com/packs",
+  },
 };
 
 export default async function PacksIndexPage() {
