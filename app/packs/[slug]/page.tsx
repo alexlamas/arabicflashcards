@@ -172,8 +172,8 @@ export default async function PackPreviewPage({
 
       <div className="min-h-screen bg-white">
         {/* Navigation */}
-        <nav className="border-b border-gray-100">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4">
+          <div className="h-12 flex items-center bg-white border border-gray-200 rounded-full shadow-sm px-4 pr-1.5 gap-2">
             <Link href="/new" className="flex items-center gap-2">
               <Image
                 src="/avatars/pomegranate.svg"
@@ -182,19 +182,27 @@ export default async function PackPreviewPage({
                 height={28}
               />
               <span className="font-pphatton font-bold text-lg text-gray-900">
-                Yalla Flash
+                Yalla<span className="hidden sm:inline"> Flash</span>
               </span>
             </Link>
+
+            <div className="flex-1" />
+
             <Link href="/new">
-              <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full px-6">
-                Start Free
+              <Button variant="ghost" className="rounded-full">
+                Log in
+              </Button>
+            </Link>
+            <Link href="/new">
+              <Button className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 text-sm font-medium">
+                Start free
               </Button>
             </Link>
           </div>
         </nav>
 
         {/* Hero */}
-        <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto px-4 pt-24 pb-12">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Pack Image */}
             <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
@@ -222,7 +230,7 @@ export default async function PackPreviewPage({
                 {pack.description ||
                   `Master ${words.length} essential Lebanese Arabic words with smart flashcards and spaced repetition.`}
               </p>
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
+              <div className="flex items-center gap-4 text-sm text-gray-500">
                 {pack.level && (
                   <span className="px-3 py-1 bg-gray-100 rounded-full capitalize">
                     {pack.level}
@@ -230,14 +238,6 @@ export default async function PackPreviewPage({
                 )}
                 <span>{words.length} words</span>
               </div>
-              <Link href="/new">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full px-8 text-lg"
-                >
-                  Start Learning - It&apos;s Free
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
