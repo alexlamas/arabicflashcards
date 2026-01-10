@@ -12,7 +12,7 @@ const anthropic = new Anthropic({
 const MODEL = "claude-sonnet-4-20250514";
 const BULK_USAGE_COST = 2; // Bulk import counts as 2 AI uses
 const MAX_TEXT_LENGTH = 500;
-const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 interface ExtractedWord {
   english: string;
@@ -23,6 +23,13 @@ interface ExtractedWord {
 
 export async function POST(req: Request) {
   try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: "AI service not configured" },
+        { status: 500 }
+      );
+    }
+
     const { text, image } = await req.json();
 
     if (!text && !image) {
@@ -45,7 +52,7 @@ export async function POST(req: Request) {
       const imageSize = Math.ceil((image.length * 3) / 4);
       if (imageSize > MAX_IMAGE_SIZE) {
         return NextResponse.json(
-          { error: "Image must be less than 1MB" },
+          { error: "Image must be less than 5MB" },
           { status: 400 }
         );
       }
@@ -197,10 +204,11 @@ No additional text or explanations. Just the JSON array.`;
       );
     }
   } catch (error) {
+    console.error("Bulk extract error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to process request", message: errorMessage },
+      { error: errorMessage || "Failed to process request" },
       { status: 500 }
     );
   }

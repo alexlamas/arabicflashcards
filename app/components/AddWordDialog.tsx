@@ -220,8 +220,8 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
   // Handle image file selection
   const handleImageSelect = (file: File) => {
-    if (file.size > 1024 * 1024) {
-      setError("Image must be less than 1MB");
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be less than 5MB");
       return;
     }
     const reader = new FileReader();
@@ -230,6 +230,21 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     };
     reader.readAsDataURL(file);
     setError(null);
+  };
+
+  // Handle drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      handleImageSelect(file);
+    }
   };
 
   // Handle bulk extraction
@@ -669,12 +684,14 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                   disabled={isGenerating}
                   className="w-full h-20 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-subtle hover:border-gray-400 hover:text-body transition-colors disabled:opacity-50"
                 >
                   {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   <Image className="w-5 h-5" aria-hidden="true" />
-                  <span className="text-sm">Upload image</span>
+                  <span className="text-sm">Drop image or click to upload</span>
                 </button>
               )}
             </div>
