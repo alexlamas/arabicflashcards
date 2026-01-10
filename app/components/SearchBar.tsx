@@ -6,9 +6,10 @@ import { useEffect, useRef } from "react";
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
 }
 
-export function SearchBar({ value, onChange }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = "Search..." }: SearchBarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -40,7 +41,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
       <Input
         ref={searchInputRef}
         type="text"
-        placeholder="Search..."
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="pl-9 pr-8 rounded-full bg-white"

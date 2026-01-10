@@ -5,7 +5,11 @@ import { useFilteredWords } from "../../hooks/useFilteredWords";
 import { useWords } from "../../contexts/WordsContext";
 import WordGrid from "../../components/WordGrid";
 import { useAuth } from "../../contexts/AuthContext";
-import { Header } from "../../components/Header";
+import { SubNav, TabConfig } from "../../components/SubNav";
+import { ViewToggle } from "../../components/ViewToggle";
+import AddWordDialog from "../../components/AddWordDialog";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Word } from "../../types/word";
 
 type FilterTab = "all" | "learning" | "learned";
 
@@ -15,6 +19,7 @@ function MyWordsContent() {
     words: allWords,
     isLoading: isWordsLoading,
     handleWordUpdate,
+    setWords,
   } = useWords();
 
   // Only show custom words (not pack words)
@@ -60,23 +65,34 @@ function MyWordsContent() {
     return null;
   }
 
-  const tabs = [
+  const tabs: TabConfig[] = [
     { key: "all", label: "All", count: words.length },
-    { key: "learning", label: "Learning", count: learningCount },
-    { key: "learned", label: "Learned", count: learnedCount },
+    { key: "learning", label: "Learning", count: learningCount, dot: "learning" },
+    { key: "learned", label: "Learned", count: learnedCount, dot: "learned" },
   ];
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Header
-        session={session}
+      <SubNav
         searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        hideArabic={hideArabic}
-        setHideArabic={setHideArabic}
+        onSearchChange={setSearchTerm}
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab as FilterTab)}
+        actions={
+          <>
+            <TooltipProvider>
+              <ViewToggle hideArabic={hideArabic} onChange={setHideArabic} />
+            </TooltipProvider>
+            {session && (
+              <AddWordDialog
+                onWordAdded={(word: Word) => {
+                  setWords((prevWords) => [...prevWords, word]);
+                }}
+              />
+            )}
+          </>
+        }
       />
       <div className="p-4 px-9 pt-24">
         <WordGrid
