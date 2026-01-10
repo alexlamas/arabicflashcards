@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { ContentReviewTab } from "../../components/admin/ContentReviewTab";
+import { InstagramTab } from "../../components/admin/InstagramTab";
 
 type PackWithCounts = StarterPack & { word_count: number };
 
@@ -310,7 +311,10 @@ export default function AdminPage() {
   const tabs: TabConfig[] = [
     { key: "review", label: "Review" },
     { key: "packs", label: "Packs" },
-    ...(isAdmin ? [{ key: "users", label: "Users" }] : []),
+    ...(isAdmin ? [
+      { key: "instagram", label: "Instagram" },
+      { key: "users", label: "Users" },
+    ] : []),
   ];
 
   return (
@@ -374,6 +378,13 @@ export default function AdminPage() {
         <TabsContent value="review" className="mt-0">
           <div className="pt-20">
             <ContentReviewTab />
+          </div>
+        </TabsContent>
+
+        {/* Instagram Tab - Admin only */}
+        <TabsContent value="instagram" className="mt-0">
+          <div className="pt-20">
+            <InstagramTab />
           </div>
         </TabsContent>
 

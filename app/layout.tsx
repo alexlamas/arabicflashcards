@@ -57,11 +57,11 @@ const ppHatton = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://yallaflash.com"),
   title: {
-    default: "Yalla! Learn Lebanese Arabic - Fun Flashcards That Actually Work",
-    template: "%s | Yalla! Lebanese Arabic",
+    default: "Yalla Flash - Learn Lebanese Arabic with Spaced Repetition",
+    template: "%s | Yalla Flash",
   },
   description:
-    "Finally, a fun way to learn Lebanese Arabic! Smart flashcards that know when you're about to forget. From 'Kifak' to fluent - start your journey today!",
+    "Lebanese Arabic flashcards powered by spaced repetition. Learn the most common words first, or photograph your notes to add your own vocabulary. The science-backed way to actually remember.",
   icons: {
     icon: [
       { url: "/favicon.ico?v=2" },
@@ -83,9 +83,9 @@ export const metadata: Metadata = {
     "Arabic flashcards",
   ],
   openGraph: {
-    title: "Yalla! Learn Lebanese Arabic - The Fun Way",
+    title: "Yalla Flash - Learn Lebanese Arabic with Spaced Repetition",
     description:
-      "Smart flashcards that make learning Lebanese Arabic addictively fun. Your brain will thank you (in Arabic)!",
+      "The science-backed way to learn Lebanese Arabic. Start with high-frequency words that cover most conversations, or snap a photo of your notes to add your own vocabulary. Spaced repetition shows you words right before you'd forget them - so they stick forever.",
     url: "https://yallaflash.com",
     siteName: "Yalla Flash",
     locale: "en_US",
@@ -101,8 +101,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Yalla Flash - Learn Lebanese Arabic",
-    description: "Smart flashcards that make learning Lebanese Arabic addictively fun.",
+    title: "Yalla Flash - Learn Lebanese Arabic with Spaced Repetition",
+    description: "Lebanese Arabic flashcards powered by spaced repetition. Learn common words first, or photograph your notes to add custom vocab. The science-backed way to actually remember.",
     images: ["/og.png"],
   },
   robots: {
