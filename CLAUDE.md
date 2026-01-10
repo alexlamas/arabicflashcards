@@ -163,3 +163,10 @@ Key tables:
 ### Working with Supabase
 - Client: `utils/supabase/client.ts` (browser)
 - Server: `utils/supabase/server.ts` (server components)
+
+## Style Guide
+
+### Text formatting
+- Always use **sentence case** for UI text (headings, buttons, labels, etc.)
+  - Correct: "AI credits", "Add new word", "Monthly limit reached"
+  - Incorrect: "AI Credits", "Add New Word", "Monthly Limit Reached"

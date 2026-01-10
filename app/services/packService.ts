@@ -299,6 +299,26 @@ export class PackService {
   }
 
   /**
+   * Search pack words by english or arabic text
+   */
+  static async searchPackWords(query: string, limit: number = 5): Promise<PackWord[]> {
+    if (!query || query.length < 2) return [];
+
+    const supabase = createClient();
+    const searchTerm = `%${query.toLowerCase()}%`;
+
+    const { data, error } = await supabase
+      .from("words")
+      .select("*")
+      .not("pack_id", "is", null)
+      .or(`english.ilike.${searchTerm},arabic.ilike.${searchTerm},transliteration.ilike.${searchTerm}`)
+      .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
    * Create a new pack (admin only)
    */
   static async createPack(pack: Omit<Pack, "id" | "created_at" | "updated_at">): Promise<Pack> {

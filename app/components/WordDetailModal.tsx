@@ -93,6 +93,9 @@ export function WordDetailModal({
       );
 
       await handleWordDeleted(word.id);
+      toast({
+        title: "Word deleted",
+      });
       onClose();
     } catch {
       toast({

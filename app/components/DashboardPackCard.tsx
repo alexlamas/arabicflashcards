@@ -76,11 +76,11 @@ export function DashboardPackCard({
         </div>
       )}
 
-      <div className="p-3 flex-1 flex flex-col justify-center">
-        <div className="flex items-start justify-between mb-2">
-          <div>
+      <div className="p-3 flex-1 flex flex-col justify-between">
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col">
             <h3 className="font-medium">{pack.name}</h3>
-            <span className={`text-xs ${config.color}`}>{config.label}</span>
+            <span className={`text-sm ${config.color}`}>{config.label}</span>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
         </div>

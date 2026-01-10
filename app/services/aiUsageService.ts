@@ -17,14 +17,18 @@ function getCurrentPeriod(): string {
 async function hasUnlimitedAccess(userId: string): Promise<boolean> {
   const supabase = await createClient(cookies());
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
-    .in("role", ["admin", "reviewer"])
-    .single();
+    .in("role", ["admin", "reviewer"]);
 
-  return !!data;
+  // If error or no data, user doesn't have unlimited access
+  if (error || !data || data.length === 0) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -39,7 +43,7 @@ export async function getUsageCount(userId: string): Promise<number> {
     .select("request_count")
     .eq("user_id", userId)
     .eq("period", period)
-    .single();
+    .maybeSingle();
 
   return data?.request_count ?? 0;
 }

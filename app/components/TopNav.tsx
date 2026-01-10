@@ -12,6 +12,11 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   PlayCircle,
   GameController,
   CardsThree,
@@ -23,6 +28,7 @@ import {
   CaretDown,
   List,
   Cube,
+  Coin,
 } from "@phosphor-icons/react";
 import { useWords } from "../contexts/WordsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -33,6 +39,7 @@ import { SettingsModal } from "./SettingsModal";
 import { FeedbackModal } from "./FeedbackModal";
 import { useOfflineNavigation } from "../hooks/useOfflineNavigation";
 import { useUserRoles } from "../hooks/useUserRoles";
+import { useAIUsage } from "../hooks/useAIUsage";
 import { cn } from "@/lib/utils";
 
 interface NavLinkProps {
@@ -102,6 +109,7 @@ export function TopNav() {
   const { session, handleLogout } = useAuth();
   const { firstName: profileFirstName, avatar, isLoading: isProfileLoading } = useProfile();
   const { isAdmin, isReviewer } = useUserRoles();
+  const { usage, isUnlimited } = useAIUsage();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -179,7 +187,51 @@ export function TopNav() {
           <div className="flex-1" />
 
           {/* Desktop right side */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-2">
+            {/* AI Usage chip */}
+            {usage && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center rounded-full px-2 py-1.5 h-auto gap-1.5 text-sm font-medium bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 transition-colors cursor-pointer">
+                    <Coin className="h-5 w-5 text-rose-500" weight="fill" />
+                    <span>{isUnlimited ? "∞" : usage.limit - usage.count}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="center" className="w-72 p-0 overflow-hidden">
+                  <div className="bg-rose-50 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-rose-200 flex items-center justify-center">
+                        <Coin className="h-5 w-5 text-rose-700" weight="fill" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-rose-900">
+                          {isUnlimited ? "∞" : usage.limit - usage.count}
+                        </div>
+                        <div className="text-xs text-rose-700">
+                          {isUnlimited ? "unlimited credits" : `of ${usage.limit} credits left`}
+                        </div>
+                      </div>
+                    </div>
+                    {!isUnlimited && (
+                      <div className="mt-3">
+                        <div className="h-2 bg-rose-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-rose-500 rounded-full transition-all"
+                            style={{ width: `${((usage.limit - usage.count) / usage.limit) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 text-xs text-muted-foreground border-t">
+                    {isUnlimited
+                      ? "Admin accounts have unlimited AI credits."
+                      : "Used for translations, sentences, and hints. Resets monthly."
+                    }
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
             {/* User dropdown - only show when profile is loaded */}
             {!isProfileLoading && (
               <DropdownMenu>
@@ -232,7 +284,51 @@ export function TopNav() {
           </div>
 
           {/* Mobile avatar on right - only show when profile is loaded */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            {/* AI Usage chip */}
+            {usage && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center rounded-full px-2 py-1.5 h-auto gap-1.5 text-sm font-medium bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 transition-colors cursor-pointer">
+                    <Coin className="h-5 w-5 text-rose-500" weight="fill" />
+                    <span>{isUnlimited ? "∞" : usage.limit - usage.count}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="center" className="w-72 p-0 overflow-hidden">
+                  <div className="bg-rose-50 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-rose-200 flex items-center justify-center">
+                        <Coin className="h-5 w-5 text-rose-700" weight="fill" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-rose-900">
+                          {isUnlimited ? "∞" : usage.limit - usage.count}
+                        </div>
+                        <div className="text-xs text-rose-700">
+                          {isUnlimited ? "unlimited credits" : `of ${usage.limit} credits left`}
+                        </div>
+                      </div>
+                    </div>
+                    {!isUnlimited && (
+                      <div className="mt-3">
+                        <div className="h-2 bg-rose-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-rose-500 rounded-full transition-all"
+                            style={{ width: `${((usage.limit - usage.count) / usage.limit) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 text-xs text-muted-foreground border-t">
+                    {isUnlimited
+                      ? "Admin accounts have unlimited AI credits."
+                      : "Used for translations, sentences, and hints. Resets monthly."
+                    }
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
             {!isProfileLoading && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

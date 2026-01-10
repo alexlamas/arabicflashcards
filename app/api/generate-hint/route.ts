@@ -43,16 +43,21 @@ export async function POST(req: Request) {
 
     const { english, arabic } = data;
 
-    const prompt = `Create a memorable mnemonic hint to help an English speaker remember the Arabic word "${arabic}" which means "${english}".
+    const prompt = `Give a short hint to help someone recall the Lebanese Arabic word "${arabic}" (which means "${english}").
 
-    The hint should:
-    1. Make a meaningful connection between the sound or meaning of the Arabic word and something familiar to English speakers
-    2. Be concise (1-2 sentences)
-    3. Focus on either the sound pattern or a visual/conceptual connection
-    4. Be easy to remember
-    5. Be appropriate for all ages
+The hint must NOT give away the answer. Choose the most helpful approach:
+- First letter + syllable count (always include both)
+- If there's a related Arabic root or word family, mention it
+- If there's a sound pattern that's memorable (rhymes with something, sounds like an English word), mention it
 
-    Provide ONLY the hint text itself with no additional formatting or explanation.`;
+Keep it to 1-2 short sentences. Do NOT include the English translation or reveal the meaning.
+
+Examples of good hints:
+- "Starts with م (meem), 2 syllables"
+- "Begins with ش (shin), 3 syllables — shares a root with 'shams' (sun)"
+- "Starts with ك (kaf), 2 syllables — sounds a bit like 'cable'"
+
+Provide ONLY the hint text.`;
 
     const hint = await ClaudeService.chatCompletion(prompt);
 

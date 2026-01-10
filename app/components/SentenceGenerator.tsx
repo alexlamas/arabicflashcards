@@ -7,13 +7,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CircleNotch, MagicWand } from "@phosphor-icons/react";
+import { CircleNotch, MagicWand, WarningCircle } from "@phosphor-icons/react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { useAIUsage } from "../hooks/useAIUsage";
 
 interface SentenceGeneratorProps {
   word: {
@@ -34,13 +35,16 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [sentence, setSentence] = useState<GeneratedSentence | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const { refresh: refreshUsage } = useAIUsage();
 
   React.useEffect(() => {
     const generateSentence = async () => {
       setIsGenerating(true);
       setError(null);
+      setLimitReached(false);
 
       try {
         const response = await fetch("/api/generate-sentence", {
@@ -57,13 +61,20 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to generate sentence");
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.limitReached) {
+            setLimitReached(true);
+            setError(errorData.error || "Monthly AI limit reached");
+            return;
+          }
+          throw new Error(errorData.error || "Failed to generate sentence");
         }
 
         const data = await response.json();
         setSentence(data);
-      } catch {
-        setError("Failed to generate sentence. Please try again.");
+        refreshUsage();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to generate sentence. Please try again.");
         toast({
           variant: "destructive",
           title: "Failed to generate sentence",
@@ -73,10 +84,10 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
       }
     };
 
-    if (isOpen && !sentence && !isGenerating) {
+    if (isOpen && !sentence && !isGenerating && !limitReached) {
       generateSentence();
     }
-  }, [isOpen, sentence, isGenerating, word, setError, setSentence, toast]);
+  }, [isOpen, sentence, isGenerating, limitReached, word, refreshUsage, toast]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -119,7 +130,21 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
 
           {error && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-red-500 text-sm">{error}</div>
+              {limitReached ? (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 mx-4">
+                  <div className="flex items-start gap-3">
+                    <WarningCircle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" weight="fill" />
+                    <div className="text-sm">
+                      <p className="font-medium text-rose-800">Monthly limit reached</p>
+                      <p className="text-rose-700 mt-1">
+                        You&apos;ve used all your free AI generations this month. Your limit resets next month.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-red-500 text-sm">{error}</div>
+              )}
             </div>
           )}
 

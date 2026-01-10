@@ -87,6 +87,7 @@ const config: Config = {
         "float-fast": "float-fast 10s ease-in-out infinite",
         "float-reverse": "float-reverse 12s ease-in-out infinite",
         spotlight: "spotlight 2s ease 0.75s 1 forwards",
+        shimmer: "shimmer 2s ease-in-out infinite",
       },
       keyframes: {
         meteor: {
@@ -119,6 +120,10 @@ const config: Config = {
         spotlight: {
           "0%": { opacity: "0", transform: "translate(-72%, -62%) scale(0.5)" },
           "100%": { opacity: "1", transform: "translate(-50%, -40%) scale(1)" },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
         },
       },
     },

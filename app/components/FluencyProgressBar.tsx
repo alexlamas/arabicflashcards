@@ -87,6 +87,10 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
           const learningInSegment = Math.max(0, Math.min(totalWithLearning - segmentStart, segmentEnd - segmentStart));
           const learningPercent = (learningInSegment / (segmentEnd - segmentStart)) * 100;
 
+          // Show minimum fill in first segment so bar isn't empty
+          const isFirstSegment = level.threshold === 0;
+          const showMinimum = isFirstSegment && learningPercent === 0;
+
           return (
             <div
               key={level.name}
@@ -95,8 +99,8 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
             >
               {/* Learning fill */}
               <div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-300 to-teal-300 transition-all duration-500"
-                style={{ width: `${learningPercent}%` }}
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-300 to-teal-300 transition-all duration-500 rounded-full"
+                style={{ width: showMinimum ? '12px' : `${learningPercent}%` }}
               />
               {/* Learned fill */}
               <div
