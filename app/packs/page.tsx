@@ -166,10 +166,10 @@ export default async function PacksIndexPage() {
                       <Link
                         key={pack.id}
                         href={`/packs/${slugify(pack.name)}`}
-                        className="bg-white rounded-2xl p-2 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all group"
+                        className="bg-white rounded-2xl p-2 border-[0.5px] border-gray-300 hover:border-gray-400 hover:shadow-sm transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0 border border-gray-300 shadow-sm">
+                          <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                             {pack.image_url ? (
                               <Image
                                 src={pack.image_url}
