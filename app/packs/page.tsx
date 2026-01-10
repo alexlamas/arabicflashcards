@@ -166,7 +166,7 @@ export default async function PacksIndexPage() {
                       <Link
                         key={pack.id}
                         href={`/packs/${slugify(pack.name)}`}
-                        className="bg-white rounded-3xl p-3 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all group"
+                        className="bg-white rounded-2xl p-2 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all group"
                       >
                         <div className="flex items-center gap-4">
                           <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0 border border-gray-300 shadow-sm">
@@ -176,16 +176,16 @@ export default async function PacksIndexPage() {
                                 alt={pack.name}
                                 width={80}
                                 height={80}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-3xl">
+                              <div className="w-full h-full flex items-center justify-center text-3xl transition-transform duration-300 group-hover:scale-110">
                                 {pack.icon || "📚"}
                               </div>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
+                            <h3 className="font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">
                               {pack.name}
                             </h3>
                             {wordCounts[pack.id] && (
