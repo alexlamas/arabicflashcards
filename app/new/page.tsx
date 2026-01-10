@@ -921,12 +921,12 @@ export default function NewLandingPage() {
               <Link href="/packs" className="hover:text-gray-900 transition-colors">
                 All Packs
               </Link>
-              <span className="flex items-center gap-1">
-                Made with <Heart weight="fill" className="text-red-500 w-4 h-4" /> by a fellow telmeez.
-              </span>
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400">
+            <p className="flex items-center justify-center gap-1 mb-2">
+              Made with <Heart weight="fill" className="text-red-500 w-4 h-4" /> by a fellow telmeez.
+            </p>
             <p>&copy; {new Date().getFullYear()} Yalla Flash</p>
           </div>
         </div>
