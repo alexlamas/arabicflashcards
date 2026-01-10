@@ -923,11 +923,12 @@ export default function NewLandingPage() {
               </Link>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400">
-            <p className="flex items-center justify-center gap-1 mb-2">
-              Made with <Heart weight="fill" className="text-red-500 w-4 h-4" /> by a fellow telmeez.
-            </p>
-            <p>&copy; {new Date().getFullYear()} Yalla Flash</p>
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 flex items-center justify-center gap-1">
+            <span>Made with</span>
+            <Heart weight="fill" className="text-red-500 w-4 h-4" />
+            <span>by a fellow telmeez.</span>
+            <span className="mx-2">·</span>
+            <span>&copy; {new Date().getFullYear()} Yalla Flash</span>
           </div>
         </div>
       </footer>
