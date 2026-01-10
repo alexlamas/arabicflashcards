@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Word } from "../types/word";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TrendUp, Fire } from "@phosphor-icons/react";
+import { TrendUp, TrendDown, Fire } from "@phosphor-icons/react";
 
 const LEVELS = [
   { name: "Tourist", threshold: 0, endThreshold: 50 },
@@ -152,7 +152,7 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
             <>
               <div className="h-4 w-px bg-gray-200" />
               <div className="flex items-center gap-1">
-                <Fire className="w-4 h-4 text-orange-500" weight="fill" />
+                <Fire className="w-4 h-4 text-red-500" weight="fill" />
                 <span className="font-semibold text-heading">{streak}</span>
                 <span className="hidden md:inline text-body">day streak</span>
               </div>
@@ -174,17 +174,16 @@ function WeeklyStats({ thisWeek, lastWeek }: { thisWeek: number; lastWeek?: numb
   return (
     <div className="flex items-center gap-2 md:gap-3">
       <div className="flex items-center gap-1">
-        <TrendUp className="w-4 h-4 text-emerald-500" weight="bold" />
         <span className="font-semibold text-heading">{thisWeek}</span>
-        <span className="hidden md:inline text-body">reviews this week</span>
+        <span className="hidden md:inline text-body">{thisWeek === 1 ? "review" : "reviews"} this week</span>
       </div>
       {percentChange !== null && (
-        <span className={`text-xs px-2 py-0.5 rounded-full ${
+        <span className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-0.5 ${
           isUp
             ? "bg-emerald-50 text-emerald-700 font-medium"
-            : "bg-amber-50 text-amber-700 font-medium"
+            : "bg-red-50 text-red-600 font-medium"
         }`}>
-          {isUp ? "↑" : "↓"}{Math.abs(percentChange)}%<span className="hidden md:inline"> vs last week</span>
+          {isUp ? <TrendUp className="w-3 h-3 mr-0.5" weight="bold" /> : <TrendDown className="w-3 h-3 mr-0.5" weight="bold" />}{Math.abs(percentChange)}%<span className="hidden md:inline"> vs last week</span>
         </span>
       )}
     </div>

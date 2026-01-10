@@ -55,7 +55,7 @@ export function createSupabaseMock() {
     },
     setUser: (user: { id: string; email?: string } | null) => {
       chainableMock.auth.getUser.mockResolvedValue({
-        data: { user },
+        data: { user: user as null },
         error: null,
       });
     },
