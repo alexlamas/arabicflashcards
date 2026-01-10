@@ -161,7 +161,7 @@ export default async function PacksIndexPage() {
                   <h2 className="font-pphatton text-xl font-bold text-gray-900 mb-4 capitalize">
                     {level}
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {levelPacks.map((pack) => (
                       <Link
                         key={pack.id}
