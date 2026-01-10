@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Metadata } from "next";
 import localFont from "next/font/local";
+import { Hotjar } from "./components/Hotjar";
 import "./globals.css";
 import { SchemaOrg } from "./schema";
 
@@ -136,6 +137,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${ppHatton.variable} antialiased min-h-screen`}
       >
         {children}
+        <Hotjar />
         <Analytics />
         <SpeedInsights />
         <SchemaOrg />
