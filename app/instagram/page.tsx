@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { Shuffle } from "@phosphor-icons/react";
+import { Shuffle, DownloadSimple } from "@phosphor-icons/react";
+import html2canvas from "html2canvas";
 
 export default function InstagramTemplate() {
   const [arabic, setArabic] = useState("كتير");
@@ -13,8 +14,53 @@ export default function InstagramTemplate() {
   const [imageUrl, setImageUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [caption, setCaption] = useState("");
+  const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const prompt = `${english}, simple illustration, black ink on white background`;
+
+  const generateCaption = async () => {
+    setIsGeneratingCaption(true);
+    try {
+      const response = await fetch("/api/generate-caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ arabic, transliteration, english }),
+      });
+      const data = await response.json();
+      if (data.caption) {
+        setCaption(data.caption);
+      }
+    } catch (error) {
+      console.error("Error generating caption:", error);
+    } finally {
+      setIsGeneratingCaption(false);
+    }
+  };
+
+  const downloadCard = async () => {
+    if (!cardRef.current) return;
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2, // 1080x1080 output
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+      });
+      const link = document.createElement("a");
+      link.download = `yallaflash-${english.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (error) {
+      console.error("Error downloading:", error);
+      alert("Failed to download image");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const shuffleWord = async () => {
     setIsShuffling(true);
@@ -122,20 +168,51 @@ export default function InstagramTemplate() {
             <p className="text-xs text-gray-500 mb-1">Prompt:</p>
             <p className="text-xs text-gray-700 font-mono">{prompt}</p>
           </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={generateImage}
+              disabled={isGenerating}
+              className="flex-1"
+            >
+              {isGenerating ? "Generating..." : "Generate Image"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={downloadCard}
+              disabled={isDownloading}
+            >
+              <DownloadSimple className="w-4 h-4" />
+            </Button>
+          </div>
           <Button
-            onClick={generateImage}
-            disabled={isGenerating}
+            variant="outline"
+            onClick={generateCaption}
+            disabled={isGeneratingCaption}
             className="w-full"
           >
-            {isGenerating ? "Generating..." : "Generate Image"}
+            {isGeneratingCaption ? "Writing..." : "Generate Caption"}
           </Button>
-          <p className="text-xs text-gray-400">
-            Screenshot the card below (1080x1080)
-          </p>
+          {caption && (
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-gray-500">Caption:</p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(caption);
+                  }}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{caption}</p>
+            </div>
+          )}
         </div>
 
         {/* Instagram Card - 1:1 aspect ratio */}
         <div
+          ref={cardRef}
           className="bg-white rounded-2xl shadow-lg relative overflow-hidden"
           style={{ width: 540, height: 540 }}
         >

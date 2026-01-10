@@ -110,7 +110,7 @@ export function WordDetailModal({
       onOpenChange={(open) => !open && onClose()}
       modal={true}
     >
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader className="flex flex-row items-start justify-between pr-10">
               <div className="flex-1">
                 <DialogTitle className="text-2xl font-semibold flex items-center gap-3">
