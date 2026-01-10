@@ -14,6 +14,7 @@ import {
   Heart,
   CaretDown,
 } from "@phosphor-icons/react";
+import { PublicFooter } from "../components/PublicFooter";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { StarterPackService, StarterPack, PackWord } from "../services/starterPackService";
 
@@ -904,32 +905,16 @@ export default function NewLandingPage() {
         </motion.div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 bg-gray-50">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/avatars/pomegranate.svg"
-                alt="Yalla Flash"
-                width={32}
-                height={32}
-              />
-              <span className="font-pphatton font-bold text-gray-900">Yalla Flash</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/packs" className="hover:text-gray-900 transition-colors">
-                All Packs
-              </Link>
-            </div>
-          </div>
-          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 flex items-center justify-center gap-1">
-            <span>Made with</span>
+      <PublicFooter
+        maxWidth="max-w-3xl"
+        customBottom={
+          <span className="flex items-center justify-center gap-1">
+            Made with
             <Heart weight="fill" className="text-red-500 w-4 h-4" />
-            <span>by a fellow telmeez.</span>
-          </div>
-        </div>
-      </footer>
+            by a fellow telmeez.
+          </span>
+        }
+      />
     </div>
   );
 }
