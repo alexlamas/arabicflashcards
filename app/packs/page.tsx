@@ -187,11 +187,6 @@ export default async function PacksIndexPage() {
                           <span>{wordCounts[pack.id]} words</span>
                         )}
                       </div>
-                      {pack.description && (
-                        <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                          {pack.description}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </Link>
