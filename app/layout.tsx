@@ -63,12 +63,12 @@ export const metadata: Metadata = {
     "Finally, a fun way to learn Lebanese Arabic! Smart flashcards that know when you're about to forget. From 'Kifak' to fluent - start your journey today!",
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico?v=2" },
+      { url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png?v=2", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
     ],
   },
   keywords: [
