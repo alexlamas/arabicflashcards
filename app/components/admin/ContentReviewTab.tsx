@@ -401,6 +401,12 @@ export function ContentReviewTab() {
         </div>
       ) : currentItem ? (
         <div className="space-y-4">
+          {/* Progress bar */}
+          <Progress
+            value={((currentIndex + 1) / reviewableItems.length) * 100}
+            className="h-1.5"
+          />
+
           {/* Progress indicator */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
