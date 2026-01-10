@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ClaudeService } from "@/app/services/claudeService";
 import { WordType } from "@/app/types/word";
-import { getTransliterationPrompt } from "@/app/config/transliterationRules";
+import { TransliterationService } from "@/app/services/transliterationService";
 
 export async function POST(req: Request) {
   try {
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
     }
 
     // Otherwise generate a new translation
-    const transliterationRules = getTransliterationPrompt();
+    const transliterationRules = await TransliterationService.getTransliterationPrompt();
     const prompt = `Translate this word to Lebanese Arabic, unless it is already given in Arabic: ${text}
 
 ${transliterationRules}

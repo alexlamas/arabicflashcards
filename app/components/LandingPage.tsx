@@ -19,7 +19,7 @@ import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { StarterPackService, StarterPack, PackWord } from "../services/starterPackService";
 
 export function LandingPage() {
-  const { setShowAuthDialog } = useAuth();
+  const { showAuthDialog, setShowAuthDialog } = useAuth();
   const [packs, setPacks] = useState<StarterPack[]>([]);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
@@ -55,7 +55,7 @@ export function LandingPage() {
   // Auto-scroll carousel
   useEffect(() => {
     const carousel = carouselRef.current;
-    if (!carousel || isCarouselPaused || packs.length === 0) return;
+    if (!carousel || isCarouselPaused || showAuthDialog || packs.length === 0) return;
 
     const scrollSpeed = 0.5; // pixels per frame
     let animationId: number;
@@ -83,7 +83,7 @@ export function LandingPage() {
       animationId = requestAnimationFrame(scroll);
       return () => cancelAnimationFrame(animationId);
     }
-  }, [isCarouselPaused, packs.length]);
+  }, [isCarouselPaused, showAuthDialog, packs.length]);
 
   // Track scroll to hide chevron
   useEffect(() => {

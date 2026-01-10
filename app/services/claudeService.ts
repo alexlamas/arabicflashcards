@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { getTransliterationPrompt } from "@/app/config/transliterationRules";
+import { TransliterationService } from "./transliterationService";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -51,12 +51,15 @@ export class ClaudeService {
     transliteration: string;
   }> {
     try {
+      // Get transliteration rules from database
+      const transliterationPrompt = await TransliterationService.getTransliterationPrompt();
+
       const contextInfo = [];
       if (type) contextInfo.push(`Word type: ${type}`);
       if (notes) contextInfo.push(`Additional notes: ${notes}`);
-      
-      const contextSection = contextInfo.length > 0 
-        ? `\nContext information about the word:\n${contextInfo.join('\n')}\n` 
+
+      const contextSection = contextInfo.length > 0
+        ? `\nContext information about the word:\n${contextInfo.join('\n')}\n`
         : '';
 
       // Check what existing data we have
@@ -94,7 +97,7 @@ Guidelines:
 - Ensure consistency between all three versions (Arabic, transliteration, English)
 - Be culturally appropriate
 
-${getTransliterationPrompt()}
+${transliterationPrompt}
 
 Return ONLY a JSON object with this exact structure:
 {
@@ -123,7 +126,7 @@ Guidelines:
 - Be culturally appropriate
 - Vary sentence structures for creativity
 
-${getTransliterationPrompt()}
+${transliterationPrompt}
 
 Return ONLY a JSON object with this exact structure:
 {
