@@ -18,10 +18,10 @@ export default function InstagramTemplate() {
   const [caption, setCaption] = useState("");
 
   const cardRefs = {
-    classic: useRef<HTMLDivElement>(null),
-    polaroid: useRef<HTMLDivElement>(null),
-    modern: useRef<HTMLDivElement>(null),
-    minimal: useRef<HTMLDivElement>(null),
+    dark1: useRef<HTMLDivElement>(null),
+    dark2: useRef<HTMLDivElement>(null),
+    dark3: useRef<HTMLDivElement>(null),
+    dark4: useRef<HTMLDivElement>(null),
   };
 
   const prompt = `${english}, simple illustration, black ink on white background`;
@@ -155,98 +155,11 @@ export default function InstagramTemplate() {
         {/* Card Styles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
 
-          {/* Style 1: Classic */}
+          {/* Dark 1: With logo bottom-right */}
           <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-600 text-center">Classic</p>
+            <p className="text-sm font-medium text-gray-600 text-center">With Logo</p>
             <div
-              ref={cardRefs.classic}
-              className="bg-white relative overflow-hidden"
-              style={{ width: 400, height: 400 }}
-            >
-              <div className="absolute inset-4 border-2 border-gray-100 rounded-3xl" />
-              {imageUrl ? (
-                <>
-                  <div className="h-[52%] p-5 pb-0">
-                    <div className="w-full h-full rounded-2xl overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                  <div className="h-[48%] flex flex-col items-center justify-center px-8">
-                    <h1 className="text-5xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
-                    <p className="text-lg text-gray-400 mb-1">{transliteration}</p>
-                    <p className="text-lg text-gray-700 font-medium">{english}</p>
-                    <div className="absolute bottom-5 flex items-center gap-2">
-                      <Image src="/avatars/pomegranate.svg" alt="" width={18} height={18} />
-                      <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center px-10">
-                  <p className="text-sm text-gray-400 uppercase tracking-widest mb-6">Word of the Day</p>
-                  <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
-                  <p className="text-xl text-gray-400 mb-2">{transliteration}</p>
-                  <p className="text-xl text-gray-700 font-medium">{english}</p>
-                  <div className="absolute bottom-5 flex items-center gap-2">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={18} height={18} />
-                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
-                  </div>
-                </div>
-              )}
-            </div>
-            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("classic")} disabled={isDownloading === "classic"}>
-              <DownloadSimple className="w-4 h-4 mr-2" />
-              {isDownloading === "classic" ? "..." : "Download"}
-            </Button>
-          </div>
-
-          {/* Style 2: Polaroid */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-600 text-center">Polaroid</p>
-            <div
-              ref={cardRefs.polaroid}
-              className="bg-white relative"
-              style={{ width: 400, height: 400, boxShadow: "inset 0 0 0 12px white, inset 0 0 0 13px #e5e5e5" }}
-            >
-              {imageUrl ? (
-                <>
-                  <div className="h-[62%] p-3 pb-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="h-[38%] flex flex-col items-center justify-center px-6 pb-8">
-                    <h1 className="text-4xl font-arabic text-gray-900 mb-1" dir="rtl">{arabic}</h1>
-                    <p className="text-base text-gray-500">{transliteration} · {english}</p>
-                    <div className="absolute bottom-8 flex items-center gap-2">
-                      <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
-                      <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center px-8">
-                  <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
-                  <p className="text-xl text-gray-500 mb-1">{transliteration}</p>
-                  <p className="text-xl text-gray-700 font-medium">{english}</p>
-                  <div className="absolute bottom-8 flex items-center gap-2">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
-                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
-                  </div>
-                </div>
-              )}
-            </div>
-            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("polaroid")} disabled={isDownloading === "polaroid"}>
-              <DownloadSimple className="w-4 h-4 mr-2" />
-              {isDownloading === "polaroid" ? "..." : "Download"}
-            </Button>
-          </div>
-
-          {/* Style 3: Modern */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-600 text-center">Modern</p>
-            <div
-              ref={cardRefs.modern}
+              ref={cardRefs.dark1}
               className="relative overflow-hidden"
               style={{ width: 400, height: 400, background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)" }}
             >
@@ -271,62 +184,120 @@ export default function InstagramTemplate() {
                   <h1 className="text-6xl font-arabic text-white mb-3" dir="rtl">{arabic}</h1>
                   <p className="text-xl text-gray-400 mb-2">{transliteration}</p>
                   <p className="text-xl text-gray-300 font-medium">{english}</p>
-                  <div className="absolute bottom-5 flex items-center gap-2">
+                  <div className="absolute bottom-6 right-6 flex items-center gap-2">
                     <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
                     <span className="font-pphatton font-bold text-white text-sm">Yalla Flash</span>
                   </div>
                 </div>
               )}
             </div>
-            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("modern")} disabled={isDownloading === "modern"}>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("dark1")} disabled={isDownloading === "dark1"}>
               <DownloadSimple className="w-4 h-4 mr-2" />
-              {isDownloading === "modern" ? "..." : "Download"}
+              {isDownloading === "dark1" ? "..." : "Download"}
             </Button>
           </div>
 
-          {/* Style 4: Minimal */}
+          {/* Dark 2: Clean, no logo */}
           <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-600 text-center">Minimal</p>
+            <p className="text-sm font-medium text-gray-600 text-center">Clean (No Logo)</p>
             <div
-              ref={cardRefs.minimal}
-              className="bg-[#fafafa] relative overflow-hidden"
-              style={{ width: 400, height: 400 }}
+              ref={cardRefs.dark2}
+              className="relative overflow-hidden"
+              style={{ width: 400, height: 400, background: "#1a1a1a" }}
             >
               {imageUrl ? (
-                <div className="h-full flex flex-col">
-                  <div className="flex-1 flex items-center justify-center p-8">
-                    <div className="w-40 h-40 rounded-full overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
-                    </div>
+                <>
+                  <div className="absolute top-8 left-8 right-8 bottom-32 rounded-xl overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
                   </div>
-                  <div className="text-center pb-14">
-                    <h1 className="text-5xl font-arabic text-gray-900 mb-2" dir="rtl">{arabic}</h1>
-                    <p className="text-base text-gray-400 mb-1">{transliteration}</p>
-                    <p className="text-lg text-gray-600">{english}</p>
+                  <div className="absolute bottom-0 left-0 right-0 p-8">
+                    <h1 className="text-5xl font-arabic text-white mb-2" dir="rtl">{arabic}</h1>
+                    <p className="text-lg text-gray-400">{transliteration} · {english}</p>
                   </div>
-                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
-                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
-                  </div>
-                </div>
+                </>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center">
-                  <div className="w-20 h-px bg-gray-300 mb-8" />
-                  <h1 className="text-6xl font-arabic text-gray-900 mb-3" dir="rtl">{arabic}</h1>
-                  <p className="text-xl text-gray-400 mb-2">{transliteration}</p>
-                  <p className="text-xl text-gray-600">{english}</p>
-                  <div className="w-20 h-px bg-gray-300 mt-8" />
-                  <div className="absolute bottom-5 flex items-center gap-2">
-                    <Image src="/avatars/pomegranate.svg" alt="" width={16} height={16} />
-                    <span className="font-pphatton font-bold text-gray-900 text-sm">Yalla Flash</span>
-                  </div>
+                <div className="h-full flex flex-col items-center justify-center px-10">
+                  <h1 className="text-7xl font-arabic text-white mb-4" dir="rtl">{arabic}</h1>
+                  <p className="text-xl text-gray-500 mb-2">{transliteration}</p>
+                  <p className="text-xl text-gray-400">{english}</p>
                 </div>
               )}
             </div>
-            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("minimal")} disabled={isDownloading === "minimal"}>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("dark2")} disabled={isDownloading === "dark2"}>
               <DownloadSimple className="w-4 h-4 mr-2" />
-              {isDownloading === "minimal" ? "..." : "Download"}
+              {isDownloading === "dark2" ? "..." : "Download"}
+            </Button>
+          </div>
+
+          {/* Dark 3: Full bleed image with text overlay */}
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-600 text-center">Full Bleed</p>
+            <div
+              ref={cardRefs.dark3}
+              className="relative overflow-hidden"
+              style={{ width: 400, height: 400, background: "#0f0f0f" }}
+            >
+              {imageUrl ? (
+                <>
+                  <div className="absolute inset-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={english} className="w-full h-full object-cover opacity-60" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-8">
+                    <h1 className="text-5xl font-arabic text-white mb-2" dir="rtl">{arabic}</h1>
+                    <p className="text-lg text-gray-300">{transliteration}</p>
+                    <p className="text-lg text-white/80 font-medium">{english}</p>
+                  </div>
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center px-10">
+                  <h1 className="text-7xl font-arabic text-white mb-4" dir="rtl">{arabic}</h1>
+                  <p className="text-xl text-gray-500 mb-2">{transliteration}</p>
+                  <p className="text-xl text-gray-400">{english}</p>
+                </div>
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("dark3")} disabled={isDownloading === "dark3"}>
+              <DownloadSimple className="w-4 h-4 mr-2" />
+              {isDownloading === "dark3" ? "..." : "Download"}
+            </Button>
+          </div>
+
+          {/* Dark 4: Centered with subtle border */}
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-600 text-center">Framed</p>
+            <div
+              ref={cardRefs.dark4}
+              className="relative overflow-hidden"
+              style={{ width: 400, height: 400, background: "#111111" }}
+            >
+              <div className="absolute inset-4 border border-gray-700 rounded-lg" />
+              {imageUrl ? (
+                <>
+                  <div className="absolute top-10 left-10 right-10 h-48 rounded-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute bottom-10 left-10 right-10 text-center">
+                    <h1 className="text-4xl font-arabic text-white mb-2" dir="rtl">{arabic}</h1>
+                    <p className="text-base text-gray-500">{transliteration}</p>
+                    <p className="text-base text-gray-400">{english}</p>
+                  </div>
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center px-12">
+                  <h1 className="text-6xl font-arabic text-white mb-4" dir="rtl">{arabic}</h1>
+                  <div className="w-16 h-px bg-gray-700 my-4" />
+                  <p className="text-lg text-gray-500 mb-1">{transliteration}</p>
+                  <p className="text-lg text-gray-400">{english}</p>
+                </div>
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => downloadCard("dark4")} disabled={isDownloading === "dark4"}>
+              <DownloadSimple className="w-4 h-4 mr-2" />
+              {isDownloading === "dark4" ? "..." : "Download"}
             </Button>
           </div>
 
