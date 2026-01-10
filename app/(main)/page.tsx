@@ -2,7 +2,7 @@
 
 import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
-import NewLandingPage from "../new/page";
+import { LandingPage } from "../components/LandingPage";
 import { Dashboard } from "../components/Dashboard";
 
 function HomeContent() {
@@ -15,7 +15,7 @@ function HomeContent() {
 
   // Show landing page for non-authenticated users
   if (!session) {
-    return <NewLandingPage />;
+    return <LandingPage />;
   }
 
   // Show loading for authenticated users while words are loading

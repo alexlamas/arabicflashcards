@@ -14,11 +14,11 @@ import {
   CaretDown,
 } from "@phosphor-icons/react";
 import Script from "next/script";
-import { PublicFooter } from "../components/PublicFooter";
+import { PublicFooter } from "./PublicFooter";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { StarterPackService, StarterPack, PackWord } from "../services/starterPackService";
 
-export default function NewLandingPage() {
+export function LandingPage() {
   const { setShowAuthDialog } = useAuth();
   const [packs, setPacks] = useState<StarterPack[]>([]);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});

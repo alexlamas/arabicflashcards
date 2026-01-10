@@ -24,7 +24,7 @@ export function PublicCTA() {
             <p className="text-gray-400 mb-8 max-w-md mx-auto">
               Join learners building real Lebanese Arabic fluency, one word at a time.
             </p>
-            <Link href="/new">
+            <Link href="/">
               <Button
                 size="lg"
                 className="bg-white hover:bg-gray-100 text-gray-900 rounded-full px-10 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"

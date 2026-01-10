@@ -8,7 +8,7 @@ export default function NotFound() {
       {/* Navigation */}
       <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
         <div className="h-12 flex items-center bg-white border border-gray-200 rounded-full shadow-sm px-4 pr-1.5 gap-2">
-          <Link href="/new" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/avatars/pomegranate.svg"
               alt="Yalla Flash"
@@ -22,12 +22,12 @@ export default function NotFound() {
 
           <div className="flex-1" />
 
-          <Link href="/new">
+          <Link href="/">
             <Button variant="ghost" className="rounded-full">
               Log in
             </Button>
           </Link>
-          <Link href="/new">
+          <Link href="/">
             <Button className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 text-sm font-medium">
               Start free
             </Button>
@@ -46,7 +46,7 @@ export default function NotFound() {
             Looks like this page got lost in translation. Let&apos;s get you back on track.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/new">
+            <Link href="/">
               <Button
                 size="lg"
                 className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8"
