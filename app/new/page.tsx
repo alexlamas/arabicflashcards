@@ -11,7 +11,6 @@ import {
   PlayCircle,
   X,
   Star,
-  Heart,
   CaretDown,
 } from "@phosphor-icons/react";
 import { PublicFooter } from "../components/PublicFooter";
@@ -905,16 +904,7 @@ export default function NewLandingPage() {
         </motion.div>
       </section>
 
-      <PublicFooter
-        maxWidth="max-w-3xl"
-        customBottom={
-          <span className="flex items-center justify-center gap-1">
-            Made with
-            <Heart weight="fill" className="text-red-500 w-4 h-4" />
-            by a fellow telmeez.
-          </span>
-        }
-      />
+      <PublicFooter maxWidth="max-w-3xl" />
     </div>
   );
 }

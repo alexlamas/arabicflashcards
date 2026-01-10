@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 
-export function PackCTA() {
+export function PublicCTA() {
   return (
     <div className="py-24 px-4 bg-gray-50">
       <div className="max-w-2xl mx-auto">

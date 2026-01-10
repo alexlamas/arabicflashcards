@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Button } from "@/components/ui/button";
-import { PackCTA } from "./PackCTA";
+import { PublicCTA } from "../../components/PublicCTA";
 import { PublicFooter } from "../../components/PublicFooter";
 
 // Create a Supabase client for server-side static generation
@@ -316,7 +316,7 @@ export default async function PackPreviewPage({
         )}
 
         {/* CTA */}
-        <PackCTA />
+        <PublicCTA />
 
         <PublicFooter />
       </div>

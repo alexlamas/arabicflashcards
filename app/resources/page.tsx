@@ -3,16 +3,17 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Button } from "@/components/ui/button";
+import { PublicCTA } from "../components/PublicCTA";
 import { PublicFooter } from "../components/PublicFooter";
 
 export const metadata: Metadata = {
   title: "Lebanese Arabic Learning Resources | Yalla Flash",
   description:
-    "Curated collection of the best resources for learning Lebanese Arabic: YouTube channels, podcasts, apps, dictionaries, tutors, and more.",
+    "Curated collection of the best resources for learning Lebanese Arabic including dictionaries and courses.",
   openGraph: {
     title: "Lebanese Arabic Learning Resources",
     description:
-      "Curated collection of the best resources for learning Lebanese Arabic: YouTube channels, podcasts, apps, dictionaries, tutors, and more.",
+      "Curated collection of the best resources for learning Lebanese Arabic including dictionaries and courses.",
     url: "https://yallaflash.com/resources",
     siteName: "Yalla Flash",
     type: "website",
@@ -41,150 +42,91 @@ interface Resource {
   name: string;
   url: string;
   description: string;
+  image?: string;
 }
 
 interface ResourceCategory {
   title: string;
-  icon: string;
   resources: Resource[];
 }
 
 const resourceCategories: ResourceCategory[] = [
   {
     title: "Dictionaries",
-    icon: "📖",
     resources: [
       {
         name: "Arwords",
         url: "https://arwords.com",
         description:
           "Comprehensive Lebanese Arabic dictionary with audio pronunciations and example sentences.",
+        image: "/resources/arwords.png",
       },
     ],
   },
   {
-    title: "YouTube Channels",
-    icon: "📺",
+    title: "Tutors",
     resources: [
       {
-        name: "Learn Lebanese Arabic with Heba",
-        url: "https://www.youtube.com/@LearnLebaneseArabicwithHeba",
+        name: "Lea on Preply",
+        url: "https://preply.com/en/tutor/3401447",
         description:
-          "Popular channel with engaging lessons about everyday Lebanese Arabic from the suburbs of Beirut.",
-      },
-      {
-        name: "The Nassra Arabic Method",
-        url: "https://www.youtube.com/@nassraarabicmethod",
-        description:
-          "Over 600 videos covering Levantine Arabic including Lebanese, Syrian, Palestinian, and Jordanian dialects.",
-      },
-      {
-        name: "ArabicPod101",
-        url: "https://www.youtube.com/@ArabicPod101",
-        description:
-          "Structured Arabic lessons for all levels with a mix of Modern Standard and dialect content.",
-      },
-    ],
-  },
-  {
-    title: "Podcasts",
-    icon: "🎧",
-    resources: [
-      {
-        name: "Levantine Arabic, Made Easier",
-        url: "https://podcasts.apple.com/us/podcast/levantine-arabic-made-easier/id1516944621",
-        description:
-          "Lebanese native Carol Haidar interviews people in Arabic on various topics. Great for intermediate to advanced learners.",
-      },
-      {
-        name: "The Arabic We Speak",
-        url: "https://thearabicwespeak.com/",
-        description:
-          "Created by Jordanian teachers Amani and Dalal, covering Levantine Arabic for all levels with free transcripts.",
-      },
-      {
-        name: "Learn Levantine Arabic On The Go",
-        url: "https://podcasts.apple.com/us/podcast/learn-levantine-arabic-on-the-go/id1489820598",
-        description:
-          "Audio lessons with transcripts by Khaled Nassra for beginners to intermediate learners.",
-      },
-    ],
-  },
-  {
-    title: "Apps",
-    icon: "📱",
-    resources: [
-      {
-        name: "Tandem",
-        url: "https://www.tandem.net/",
-        description:
-          "Language exchange app to practice speaking with native Lebanese Arabic speakers.",
-      },
-      {
-        name: "HelloTalk",
-        url: "https://www.hellotalk.com/",
-        description:
-          "Connect with native speakers for text and voice conversations with built-in translation tools.",
-      },
-      {
-        name: "Memrise",
-        url: "https://www.memrise.com/",
-        description:
-          "Vocabulary building app with spaced repetition. Search for user-created Lebanese Arabic courses.",
-      },
-    ],
-  },
-  {
-    title: "Online Tutors",
-    icon: "👩‍🏫",
-    resources: [
-      {
-        name: "italki - Lebanese Arabic Teachers",
-        url: "https://www.italki.com/en/teachers/lebanese-arabic",
-        description:
-          "Find native Lebanese Arabic tutors for one-on-one online lessons at various price points.",
-      },
-      {
-        name: "Levantine Online",
-        url: "https://www.levantineonline.com/",
-        description:
-          "Dedicated platform for learning Levantine Arabic with native teachers.",
+          "My Lebanese Arabic teacher. She's patient, fun, and great at explaining things. Highly recommend!",
+        image: "/resources/lea.jpg",
       },
     ],
   },
   {
     title: "Courses",
-    icon: "🎓",
     resources: [
-      {
-        name: "Pimsleur Eastern Arabic",
-        url: "https://www.pimsleur.com/learn-arabic-eastern",
-        description:
-          "Audio-based course focusing on Levantine Arabic. Great for building conversation skills and pronunciation.",
-      },
       {
         name: "Simple and Easy Arabic",
         url: "https://www.patreon.com/c/simpleandeasyarabic",
         description:
-          "Patreon community with Lebanese Arabic lessons and resources.",
+          "Patreon community focused on Levantine Arabic with lessons and resources.",
+        image: "/resources/sae.png",
       },
     ],
   },
   {
-    title: "Textbooks",
-    icon: "📚",
+    title: "YouTube",
     resources: [
       {
-        name: "Shwayy 'an Haali",
-        url: "https://www.amazon.com/Shwayy-Haali-Listening-Reading-Levantine/dp/1626166366",
+        name: "Beirut I Love You",
+        url: "https://www.youtube.com/watch?v=eJYAwC_4yRc&list=PLs0AE9DVDiVW1gk07ke2PT8_PDE2fxIGO",
         description:
-          "Listening and reading practice for Levantine Arabic with accompanying audio.",
+          "Lebanese Arabic video series with real conversations and cultural content.",
+        image: "/resources/beirut.jpg",
+      },
+    ],
+  },
+  {
+    title: "Books",
+    resources: [
+      {
+        name: "Saifi Arabic",
+        url: "https://store.saifiarabic.com/",
+        description:
+          "Lebanese Arabic textbooks and learning materials from the Saifi Institute in Beirut.",
+        image: "/resources/saifi-books.png",
+      },
+    ],
+  },
+  {
+    title: "Schools",
+    resources: [
+      {
+        name: "Saifi Institute",
+        url: "https://saifiarabic.com/",
+        description:
+          "Arabic language school in Beirut offering Lebanese Arabic courses.",
+        image: "/resources/saifi.jpeg",
       },
       {
-        name: "Arabic Express: Speak Lebanese",
-        url: "https://www.amazon.com/Arabic-Express-Speak-Lebanese-Complete/dp/B0CVTL9YGY",
+        name: "Levantine Institute",
+        url: "https://www.levantineinstitute.com/",
         description:
-          "Comprehensive and user-friendly course for learning Lebanese Arabic from scratch.",
+          "Language school specializing in Levantine Arabic with locations in Lebanon and Jordan.",
+        image: "/resources/levit.png",
       },
     ],
   },
@@ -261,8 +203,7 @@ export default function ResourcesPage() {
             Lebanese Arabic Resources
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl">
-            A curated collection of the best resources for learning Lebanese
-            Arabic. From YouTube channels and podcasts to apps and tutors.
+            A curated collection of resources for learning Lebanese Arabic.
           </p>
         </div>
 
@@ -271,9 +212,8 @@ export default function ResourcesPage() {
           <div className="space-y-12">
             {resourceCategories.map((category) => (
               <section key={category.title}>
-                <h2 className="font-pphatton text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span>{category.icon}</span>
-                  <span>{category.title}</span>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                  {category.title}
                 </h2>
                 <div className="grid gap-4">
                   {category.resources.map((resource) => (
@@ -282,19 +222,33 @@ export default function ResourcesPage() {
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block bg-gray-50 hover:bg-gray-100 rounded-xl p-5 border border-gray-200 transition-colors"
+                      className="block bg-gray-50 hover:bg-gray-100 rounded-xl p-4 border border-gray-200 transition-colors"
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
+                      <div className="flex items-center gap-4">
+                        {resource.image && (
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white border border-gray-200">
+                            <Image
+                              src={resource.image}
+                              alt={resource.name}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-gray-900 mb-1">
                             {resource.name}
                           </h3>
-                          <p className="text-gray-600 text-sm">
+                          <p className="text-gray-600 text-sm mb-1">
                             {resource.description}
+                          </p>
+                          <p className="text-gray-400 text-xs truncate">
+                            {new URL(resource.url).hostname.replace("www.", "")}
                           </p>
                         </div>
                         <svg
-                          className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5"
+                          className="w-5 h-5 text-gray-400 flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -315,23 +269,7 @@ export default function ResourcesPage() {
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="bg-gray-900 py-16">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="font-pphatton text-2xl sm:text-3xl font-bold text-white mb-4">
-              Ready to start learning?
-            </h2>
-            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-              Yalla Flash uses spaced repetition to help you memorize Lebanese
-              Arabic vocabulary effectively.
-            </p>
-            <Link href="/new">
-              <Button className="bg-white hover:bg-gray-100 text-gray-900 rounded-full px-8 py-6 text-lg font-medium">
-                Start learning free
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <PublicCTA />
 
         <PublicFooter />
       </div>

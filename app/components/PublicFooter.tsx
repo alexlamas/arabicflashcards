@@ -1,15 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { Heart } from "@phosphor-icons/react";
 
 interface PublicFooterProps {
   maxWidth?: string;
-  customBottom?: React.ReactNode;
 }
 
-export function PublicFooter({
-  maxWidth = "max-w-4xl",
-  customBottom,
-}: PublicFooterProps) {
+export function PublicFooter({ maxWidth = "max-w-4xl" }: PublicFooterProps) {
   return (
     <footer className="py-12 px-4 bg-gray-50">
       <div className={`${maxWidth} mx-auto`}>
@@ -26,10 +25,7 @@ export function PublicFooter({
             </span>
           </Link>
           <div className="flex items-center gap-6 text-sm text-gray-500">
-            <Link
-              href="/new"
-              className="hover:text-gray-900 transition-colors"
-            >
+            <Link href="/new" className="hover:text-gray-900 transition-colors">
               Home
             </Link>
             <Link
@@ -46,8 +42,10 @@ export function PublicFooter({
             </Link>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400">
-          {customBottom || <p>&copy; {new Date().getFullYear()} Yalla Flash</p>}
+        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 flex items-center justify-center gap-1">
+          <span>Made with</span>
+          <Heart weight="fill" className="text-red-500 w-4 h-4" />
+          <span>by a fellow telmeez.</span>
         </div>
       </div>
     </footer>
