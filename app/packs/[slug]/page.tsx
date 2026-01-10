@@ -202,7 +202,7 @@ export default async function PackPreviewPage({
         </nav>
 
         {/* Hero */}
-        <div className="max-w-4xl mx-auto px-4 pt-24 pb-12">
+        <div className="max-w-4xl mx-auto px-4 pt-28 pb-12">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Pack Image */}
             <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
