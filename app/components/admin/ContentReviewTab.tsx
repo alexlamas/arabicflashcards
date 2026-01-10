@@ -297,7 +297,7 @@ export function ContentReviewTab() {
                   }}
                   className={cn(
                     "w-full rounded-lg hover:bg-gray-50 transition-colors",
-                    selectedPack === pack.id && "ring-2 ring-primary ring-offset-1"
+                    selectedPack === pack.id && "bg-gray-50"
                   )}
                 >
                   {renderPackItem(pack, selectedPack === pack.id)}
