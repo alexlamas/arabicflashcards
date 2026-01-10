@@ -13,6 +13,7 @@ import {
   Star,
   CaretDown,
 } from "@phosphor-icons/react";
+import Script from "next/script";
 import { PublicFooter } from "../components/PublicFooter";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { StarterPackService, StarterPack, PackWord } from "../services/starterPackService";
@@ -164,8 +165,52 @@ export default function NewLandingPage() {
     }
   };
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "How long does it take to learn Lebanese Arabic?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "With consistent daily practice of 10-15 minutes using spaced repetition, you can learn 300-500 common Lebanese Arabic words in 2-3 months. This covers most everyday conversations. Fluency takes longer, but you'll start understanding and speaking basic Lebanese Arabic within weeks.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is Lebanese Arabic different from Modern Standard Arabic?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes, Lebanese Arabic (Ammiya) is quite different from Modern Standard Arabic (MSA). Lebanese Arabic is the spoken dialect used in daily life in Lebanon, with simpler grammar, different pronunciation, and many borrowed words from French, Turkish, and Aramaic. MSA is used in formal writing and news broadcasts but isn't spoken naturally.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I learn Lebanese Arabic online for free?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes! Yalla Flash offers free Lebanese Arabic flashcards with spaced repetition to help you learn vocabulary efficiently. You can start with essential phrases and common words, then progress to more advanced vocabulary packs.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What are the most important Lebanese Arabic phrases to learn first?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Start with greetings (Marhaba, Kifak/Kifik), thank you (Merci, Shukran), yes/no (Eh, La2), and common expressions like Yalla (let's go), Habibi (my dear), and Inshallah (God willing). These phrases are used constantly in Lebanese conversations.",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Simple nav */}
       <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4">
         <div className="h-12 flex items-center bg-white border border-gray-200 rounded-full shadow-sm px-4 pr-1.5 gap-2">
