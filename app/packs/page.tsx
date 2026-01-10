@@ -166,20 +166,20 @@ export default async function PacksIndexPage() {
                       <Link
                         key={pack.id}
                         href={`/packs/${slugify(pack.name)}`}
-                        className="bg-white rounded-xl p-5 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all group"
+                        className="bg-white rounded-xl p-3 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all group"
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
+                        <div className="flex items-center gap-4">
+                          <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
                             {pack.image_url ? (
                               <Image
                                 src={pack.image_url}
                                 alt={pack.name}
-                                width={56}
-                                height={56}
+                                width={80}
+                                height={80}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-2xl">
+                              <div className="w-full h-full flex items-center justify-center text-3xl">
                                 {pack.icon || "📚"}
                               </div>
                             )}
