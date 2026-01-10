@@ -22,7 +22,7 @@ import {
   ChatCircle,
   CaretDown,
   List,
-  Wrench,
+  Terminal,
 } from "@phosphor-icons/react";
 import { useWords } from "../contexts/WordsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -204,7 +204,7 @@ export function TopNav() {
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
-                      <Wrench className="w-4 h-4 mr-2" />
+                      <Terminal className="w-4 h-4 mr-2" />
                       Admin
                     </DropdownMenuItem>
                     {isAdmin && (
@@ -304,7 +304,7 @@ export function TopNav() {
                   <div className="border-t my-2 mx-4" />
                   <MobileNavLink
                     active={pathname === "/admin"}
-                    icon={Wrench}
+                    icon={Terminal}
                     onClick={() => handleNavigate("/admin")}
                   >
                     Admin
