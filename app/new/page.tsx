@@ -927,8 +927,6 @@ export default function NewLandingPage() {
             <span>Made with</span>
             <Heart weight="fill" className="text-red-500 w-4 h-4" />
             <span>by a fellow telmeez.</span>
-            <span className="mx-2">·</span>
-            <span>&copy; {new Date().getFullYear()} Yalla Flash</span>
           </div>
         </div>
       </footer>
