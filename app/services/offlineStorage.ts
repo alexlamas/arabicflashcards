@@ -47,7 +47,6 @@ export class OfflineStorage {
 
   static getState(): OfflineState {
     if (!this.isStorageAvailable()) {
-      console.warn("LocalStorage not available, using memory fallback");
       return { ...this.memoryFallback };
     }
 
@@ -61,15 +60,13 @@ export class OfflineStorage {
       // Clean up expired actions on read
       state.pendingActions = OfflineQueue.filterValidActions(state.pendingActions);
       return state;
-    } catch (error) {
-      console.error("Failed to parse offline state:", error);
+    } catch {
       return { ...DEFAULT_STATE };
     }
   }
 
   static setState(state: OfflineState): boolean {
     if (!this.isStorageAvailable()) {
-      console.warn("Cannot save offline state: LocalStorage not available");
       this.memoryFallback = state;
       return false;
     }
@@ -81,9 +78,7 @@ export class OfflineStorage {
       localStorage.setItem(this.getStorageKey(), JSON.stringify(limitedState));
       return true;
     } catch (error) {
-      console.error("Failed to save offline state:", error);
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.error("Storage quota exceeded, clearing old data...");
         this.clearOldData();
         // Try again with cleared data
         try {
@@ -192,8 +187,7 @@ export class OfflineStorage {
     
     // Limit number of words
     if (limited.words.length > STORAGE_LIMITS.MAX_WORDS) {
-      console.warn(`Word limit exceeded: ${limited.words.length} > ${STORAGE_LIMITS.MAX_WORDS}`);
-      // Keep words, but log warning for monitoring
+      // Word limit exceeded - keep words but note for monitoring
     }
     
     return limited;

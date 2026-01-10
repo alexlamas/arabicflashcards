@@ -30,7 +30,6 @@ export const ProfileService = {
       .single();
 
     if (error && error.code !== "PGRST116") {
-      console.error("Error fetching profile:", error);
       return null;
     }
 
@@ -54,7 +53,6 @@ export const ProfileService = {
       .single();
 
     if (error) {
-      console.error("Error updating profile:", error);
       return null;
     }
 

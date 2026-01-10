@@ -48,7 +48,6 @@ export async function GET() {
     const { data: authUsers, error: authError } = await adminClient.auth.admin.listUsers();
 
     if (authError) {
-      console.error("Error fetching auth users:", authError);
       return NextResponse.json(
         { error: "Failed to fetch users" },
         { status: 500 }
@@ -93,8 +92,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(users);
-  } catch (error) {
-    console.error("Error in /api/admin/users:", error);
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

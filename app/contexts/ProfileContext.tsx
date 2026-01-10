@@ -84,8 +84,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (data) {
         setCachedProfile(session.user.id, data);
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
+    } catch {
     } finally {
       setIsLoading(false);
     }

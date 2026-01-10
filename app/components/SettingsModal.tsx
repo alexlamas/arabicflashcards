@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { AVATAR_OPTIONS } from "../services/profileService";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { profile, updateProfile } = useProfile();
   const { session } = useAuth();
+  const { toast } = useToast();
   const [firstName, setFirstName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("pomegranate");
   const [isSaving, setIsSaving] = useState(false);
@@ -43,8 +45,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         avatar: selectedAvatar,
       });
       onClose();
-    } catch (error) {
-      console.error("Error saving profile:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to save settings",
+      });
     } finally {
       setIsSaving(false);
     }

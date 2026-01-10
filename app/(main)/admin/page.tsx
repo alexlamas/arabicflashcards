@@ -131,8 +131,11 @@ export default function AdminPage() {
         const packsData = await AdminService.getAllStarterPacks();
         setPacks(packsData);
       }
-    } catch (err) {
-      console.error("Error loading data:", err);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to load data",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -142,8 +145,11 @@ export default function AdminPage() {
     try {
       const contents = await AdminService.getPackContents(packId);
       setPackContents(contents);
-    } catch (error) {
-      console.error("Error loading pack contents:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to load pack contents",
+      });
     }
   }
 
@@ -165,8 +171,11 @@ export default function AdminPage() {
       setIsCreatingPack(false);
       setPackForm({ name: "", description: "", level: "beginner", is_active: true });
       loadData();
-    } catch (error) {
-      console.error("Error creating pack:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to create pack",
+      });
     } finally {
       setSaving(false);
     }
@@ -179,8 +188,11 @@ export default function AdminPage() {
       await AdminService.updateStarterPack(editingPack.id, packForm);
       setEditingPack(null);
       loadData();
-    } catch (error) {
-      console.error("Error updating pack:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to update pack",
+      });
     } finally {
       setSaving(false);
     }
@@ -191,8 +203,11 @@ export default function AdminPage() {
     try {
       await AdminService.deleteStarterPack(packId);
       loadData();
-    } catch (error) {
-      console.error("Error deleting pack:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to delete pack",
+      });
     }
   }
 
@@ -206,8 +221,11 @@ export default function AdminPage() {
       setWordForm({ arabic: "", english: "", transliteration: "", type: "noun", notes: "" });
       loadPackContents(expandedPack);
       loadData();
-    } catch (error) {
-      console.error("Error adding word:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to add word",
+      });
     } finally {
       setSaving(false);
     }
@@ -220,8 +238,11 @@ export default function AdminPage() {
       await AdminService.updateStarterPackWord(editingWord.id, wordForm);
       setEditingWord(null);
       loadPackContents(expandedPack);
-    } catch (error) {
-      console.error("Error updating word:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to update word",
+      });
     } finally {
       setSaving(false);
     }
@@ -234,8 +255,11 @@ export default function AdminPage() {
       await AdminService.deleteStarterPackWord(wordId);
       loadPackContents(expandedPack);
       loadData();
-    } catch (error) {
-      console.error("Error deleting word:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to delete word",
+      });
     }
   }
 
@@ -260,7 +284,6 @@ export default function AdminPage() {
         setUserRoles(prev => ({ ...prev, [userId]: [newRole] }));
       }
     } catch (error) {
-      console.error("Error changing role:", error);
       toast({
         variant: "destructive",
         title: "Failed to update role",

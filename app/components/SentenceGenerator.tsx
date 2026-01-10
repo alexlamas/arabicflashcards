@@ -13,6 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 interface SentenceGeneratorProps {
   word: {
@@ -34,6 +35,7 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
   const [sentence, setSentence] = useState<GeneratedSentence | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   React.useEffect(() => {
     const generateSentence = async () => {
@@ -60,9 +62,12 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
 
         const data = await response.json();
         setSentence(data);
-      } catch (error) {
-        console.error("Error:", error);
+      } catch {
         setError("Failed to generate sentence. Please try again.");
+        toast({
+          variant: "destructive",
+          title: "Failed to generate sentence",
+        });
       } finally {
         setIsGenerating(false);
       }
@@ -71,7 +76,7 @@ export default function SentenceGenerator({ word }: SentenceGeneratorProps) {
     if (isOpen && !sentence && !isGenerating) {
       generateSentence();
     }
-  }, [isOpen, sentence, isGenerating, word, setError, setSentence]);
+  }, [isOpen, sentence, isGenerating, word, setError, setSentence, toast]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

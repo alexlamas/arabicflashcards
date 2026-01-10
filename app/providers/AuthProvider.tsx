@@ -46,8 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (process.env.NODE_ENV === "development") {
         window.location.reload();
       }
-    } catch (error) {
-      console.error("Error during sign out:", error);
+    } catch {
     } finally {
       setIsLoading(false);
     }

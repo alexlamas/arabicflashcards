@@ -37,7 +37,6 @@ export class UserService {
       .eq("user_id", userId);
 
     if (error) {
-      console.error("Error fetching user roles:", error);
       return [];
     }
 
@@ -98,7 +97,6 @@ export class UserService {
       .select("user_id, role");
 
     if (error) {
-      console.error("Error fetching all user roles:", error);
       return {};
     }
 

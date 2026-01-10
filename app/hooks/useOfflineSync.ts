@@ -37,8 +37,7 @@ export function useOfflineSync(): UseOfflineSyncReturn {
       try {
         const result = await onlineAction();
         return result;
-      } catch (error) {
-        console.error("Online action failed, falling back to offline:", error);
+      } catch {
         offlineAction();
         return fallbackValue;
       }

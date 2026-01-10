@@ -18,8 +18,7 @@ export function useOfflineNavigation() {
       try {
         // Always try router first - it will handle offline gracefully with service worker
         router.push(path);
-      } catch (error) {
-        console.error("Navigation error:", error);
+      } catch {
         // Only use location.href as last resort
         if (!getOnlineStatus()) {
           window.location.href = path;

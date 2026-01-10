@@ -21,6 +21,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { WordService } from "../services/wordService";
 import { SentenceService } from "../services/sentenceService";
 import { useWords } from "../contexts/WordsContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface WordDetailModalProps {
   word: Word | null;
@@ -44,6 +45,7 @@ export function WordDetailModal({
   onWordUpdate,
 }: WordDetailModalProps) {
   const { session } = useAuth();
+  const { toast } = useToast();
   const isPackWord = !!word?.pack_id;
   // Users can add notes/examples to any word, but can only edit/delete custom words
   const canAddNotes = !!session?.user;
@@ -92,8 +94,11 @@ export function WordDetailModal({
 
       await handleWordDeleted(word.id);
       onClose();
-    } catch (err) {
-      console.error("Failed to delete word:", err);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to delete word",
+      });
     } finally {
       setIsDeleting(false);
     }

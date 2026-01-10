@@ -32,8 +32,7 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
         session.user.id
       );
       setReviewCount(count);
-    } catch (err) {
-      console.error("Error fetching review count:", err);
+    } catch {
     }
   }, [session]);
 
@@ -113,7 +112,6 @@ export function WordsProvider({ children }: { children: React.ReactNode }) {
       await fetchReviewCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load words");
-      console.error("Error loading words:", err);
 
       let cachedWords = OfflineStorage.getWords();
       if (cachedWords.length > 0) {

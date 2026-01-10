@@ -170,7 +170,6 @@ export class PackService {
       .not("words.pack_id", "is", null);
 
     if (error) {
-      console.error("Error fetching user started packs:", error);
       return [];
     }
 

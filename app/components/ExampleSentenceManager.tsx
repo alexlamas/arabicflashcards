@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import { Sentence, SentenceInput } from "../types/word";
 import { SentenceService } from "../services/sentenceService";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExampleSentenceManagerProps {
   wordId: string;
@@ -36,6 +37,7 @@ export function ExampleSentenceManager({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Load sentences on mount
   useEffect(() => {
@@ -46,8 +48,15 @@ export function ExampleSentenceManager({
   }, [wordId]);
 
   const loadSentences = async () => {
-    const loaded = await SentenceService.getSentencesForWord(wordId);
-    setSentences(loaded);
+    try {
+      const loaded = await SentenceService.getSentencesForWord(wordId);
+      setSentences(loaded);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to load sentences",
+      });
+    }
   };
 
   const handleAddNew = () => {
@@ -92,9 +101,12 @@ export function ExampleSentenceManager({
       setEditingId(null);
       setIsAddingNew(false);
       setEditFormData(null);
-    } catch (err) {
+    } catch {
       setError("Failed to save sentence");
-      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Failed to save sentence",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -139,7 +151,6 @@ export function ExampleSentenceManager({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.error("API Error:", response.status, errorData);
         throw new Error(errorData?.error || `API Error: ${response.status}`);
       }
 
@@ -149,8 +160,7 @@ export function ExampleSentenceManager({
         transliteration: data.transliteration,
         english: data.english,
       });
-    } catch (error) {
-      console.error("Error:", error);
+    } catch {
       setError("Failed to generate example sentence. Please try again.");
     } finally {
       setIsGenerating(false);

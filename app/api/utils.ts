@@ -17,8 +17,6 @@ const ERROR_STATUS_CODES = {
 } as const;
 
 export function handleApiError(error: unknown, defaultMessage: string): NextResponse<ErrorResponse> {
-  console.error("API Error:", error);
-  
   if (error instanceof Error) {
     if (error.name === "AbortError") {
       return NextResponse.json(

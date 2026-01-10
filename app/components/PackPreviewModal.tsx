@@ -42,6 +42,7 @@ import {
   User,
   BookOpen,
 } from "@phosphor-icons/react";
+import { useToast } from "@/hooks/use-toast";
 
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
@@ -120,6 +121,7 @@ export function PackPreviewModal({
   const [loading, setLoading] = useState(false);
   const [learnedCount, setLearnedCount] = useState(0);
   const [activeTab, setActiveTab] = useState<TabType>("words");
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!pack || !isOpen) return;
@@ -181,15 +183,18 @@ export function PackPreviewModal({
           })));
           setLearnedCount(0);
         }
-      } catch (error) {
-        console.error("Error loading pack words:", error);
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Failed to load pack",
+        });
       } finally {
         setLoading(false);
       }
     }
 
     loadWords();
-  }, [pack, isOpen, isInstalled, userWords]);
+  }, [pack, isOpen, isInstalled, userWords, toast]);
 
   if (!pack) return null;
 

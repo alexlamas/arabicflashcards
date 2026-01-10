@@ -94,7 +94,6 @@ export async function POST(req: Request) {
           ]);
 
         if (progressError) {
-          console.error("Progress insert error:", progressError);
         }
       }
 
@@ -114,7 +113,6 @@ export async function POST(req: Request) {
         .single();
 
       if (error) {
-        console.error("Supabase error:", error);
         return NextResponse.json(
           { error: "Failed to save word to database" },
           { status: 500 }
@@ -156,9 +154,7 @@ Do not provide any additional text or explanations.`;
       };
 
       return NextResponse.json(response);
-    } catch (parseError) {
-      console.error("JSON Parse error:", parseError);
-      console.error("Failed to parse response:", rawResponse);
+    } catch {
       return NextResponse.json(
         {
           error: "Invalid response format from translation service",
@@ -167,7 +163,6 @@ Do not provide any additional text or explanations.`;
       );
     }
   } catch (error) {
-    console.error("Error in /api/words/create:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

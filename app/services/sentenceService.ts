@@ -16,7 +16,6 @@ export class SentenceService {
       .eq("word_id", wordId);
 
     if (error) {
-      console.error("Error fetching sentences for word:", error);
       return [];
     }
 
@@ -37,7 +36,6 @@ export class SentenceService {
       .eq("sentence_id", sentenceId);
 
     if (error) {
-      console.error("Error fetching words for sentence:", error);
       return [];
     }
 
@@ -73,7 +71,6 @@ export class SentenceService {
       .single();
 
     if (sentenceError) {
-      console.error("Error creating sentence:", sentenceError);
       return null;
     }
 
@@ -86,7 +83,6 @@ export class SentenceService {
       });
 
     if (linkError) {
-      console.error("Error linking sentence to word:", linkError);
       // Delete the orphaned sentence
       await supabase.from("sentences").delete().eq("id", sentenceData.id);
       return null;
@@ -115,7 +111,6 @@ export class SentenceService {
       .single();
 
     if (error) {
-      console.error("Error updating sentence:", error);
       return null;
     }
 
@@ -135,7 +130,6 @@ export class SentenceService {
       .eq("id", sentenceId);
 
     if (error) {
-      console.error("Error deleting sentence:", error);
       return false;
     }
 
@@ -159,7 +153,6 @@ export class SentenceService {
       });
 
     if (error) {
-      console.error("Error linking sentence to word:", error);
       return false;
     }
 
@@ -182,7 +175,6 @@ export class SentenceService {
       .eq("sentence_id", sentenceId);
 
     if (error) {
-      console.error("Error unlinking sentence from word:", error);
       return false;
     }
 

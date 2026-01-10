@@ -20,9 +20,11 @@ import {
   Balloon,
 } from "@phosphor-icons/react";
 import { ArrowRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function Review() {
   const { session } = useAuth();
+  const { toast } = useToast();
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [currentWordSentences, setCurrentWordSentences] = useState<Sentence[]>([]);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -50,13 +52,16 @@ export function Review() {
       );
       setCurrentWord(words?.[0] || null);
       setIsFlipped(false);
-    } catch (error) {
-      console.error("Error loading word:", error);
+    } catch {
       setError("Failed to load words. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Failed to load word",
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [session]);
+  }, [session, toast]);
 
   // Load the first word when component mounts
 

@@ -133,7 +133,6 @@ export function TopNav() {
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
             <NavLink
-              href="/"
               active={pathname === "/"}
               icon={HouseSimple}
               onClick={() => handleNavigate("/")}
@@ -141,7 +140,6 @@ export function TopNav() {
               Home
             </NavLink>
             <NavLink
-              href="/my-words"
               active={pathname === "/my-words"}
               icon={CardsThree}
               onClick={() => handleNavigate("/my-words")}
@@ -149,7 +147,6 @@ export function TopNav() {
               My words
             </NavLink>
             <NavLink
-              href="/memory-game"
               active={pathname === "/memory-game"}
               icon={GameController}
               onClick={() => handleNavigate("/memory-game")}
@@ -157,7 +154,6 @@ export function TopNav() {
               Play
             </NavLink>
             <NavLink
-              href="/review"
               active={pathname === "/review"}
               icon={PlayCircle}
               badge={reviewCount}
@@ -281,7 +277,6 @@ export function TopNav() {
           <div className="md:hidden mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
             <div className="py-2">
               <MobileNavLink
-                href="/"
                 active={pathname === "/"}
                 icon={HouseSimple}
                 onClick={() => handleNavigate("/")}
@@ -289,7 +284,6 @@ export function TopNav() {
                 Home
               </MobileNavLink>
               <MobileNavLink
-                href="/my-words"
                 active={pathname === "/my-words"}
                 icon={CardsThree}
                 onClick={() => handleNavigate("/my-words")}
@@ -297,7 +291,6 @@ export function TopNav() {
                 My words
               </MobileNavLink>
               <MobileNavLink
-                href="/memory-game"
                 active={pathname === "/memory-game"}
                 icon={GameController}
                 onClick={() => handleNavigate("/memory-game")}
@@ -305,7 +298,6 @@ export function TopNav() {
                 Play
               </MobileNavLink>
               <MobileNavLink
-                href="/review"
                 active={pathname === "/review"}
                 icon={PlayCircle}
                 badge={reviewCount}
@@ -320,7 +312,6 @@ export function TopNav() {
                   <div className="border-t my-2 mx-4" />
                   {isReviewer && (
                     <MobileNavLink
-                      href="/content-editor"
                       active={pathname === "/content-editor"}
                       icon={NotePencil}
                       onClick={() => handleNavigate("/content-editor")}
@@ -331,7 +322,6 @@ export function TopNav() {
                   {isAdmin && (
                     <>
                       <MobileNavLink
-                        href="/admin"
                         active={pathname === "/admin"}
                         icon={GearSix}
                         onClick={() => handleNavigate("/admin")}
@@ -339,7 +329,6 @@ export function TopNav() {
                         Admin
                       </MobileNavLink>
                       <MobileNavLink
-                        href="/design-system"
                         active={pathname === "/design-system"}
                         icon={Swatches}
                         onClick={() => handleNavigate("/design-system")}

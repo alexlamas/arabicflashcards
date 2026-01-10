@@ -134,8 +134,7 @@ export default function NewLandingPage() {
         ]);
         setPacks(availablePacks);
         setPackWordCounts(wordCounts);
-      } catch (error) {
-        console.error("Error loading packs:", error);
+      } catch {
       }
     }
     loadPacks();
@@ -158,8 +157,7 @@ export default function NewLandingPage() {
     try {
       const { words } = await StarterPackService.getPackContents(pack.id);
       setPreviewWords(words.slice(0, 6)); // Show first 6 words
-    } catch (error) {
-      console.error("Error loading preview:", error);
+    } catch {
     } finally {
       setLoadingPreview(false);
     }

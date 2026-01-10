@@ -112,8 +112,11 @@ export function Dashboard() {
           }
         });
         setPackSentenceCounts(sentenceCounts);
-      } catch (error) {
-        console.error("Error loading packs:", error);
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Failed to load packs",
+        });
       } finally {
         setLoadingPacks(false);
       }
@@ -165,7 +168,6 @@ export function Dashboard() {
         description: "The pack has been uninstalled from your library.",
       });
     } catch (error) {
-      console.error("Error uninstalling pack:", error);
       toast({
         variant: "destructive",
         title: "Failed to uninstall pack",
@@ -188,7 +190,6 @@ export function Dashboard() {
         description: "The pack has been added to your library.",
       });
     } catch (error) {
-      console.error("Error installing pack:", error);
       toast({
         variant: "destructive",
         title: "Failed to install pack",

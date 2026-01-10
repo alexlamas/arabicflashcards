@@ -8,7 +8,6 @@ const isValidDate = (dateString: string | null | undefined): boolean => {
 
 export function calculateDueWords(words: Word[], limit?: number): Word[] {
   if (!Array.isArray(words)) {
-    console.warn("calculateDueWords: words is not an array");
     return [];
   }
 
@@ -22,7 +21,6 @@ export function calculateDueWords(words: Word[], limit?: number): Word[] {
 
     // Validate the review date
     if (!isValidDate(word.next_review_date)) {
-      console.warn(`Invalid review date for word: ${word.english}`);
       return false;
     }
 
@@ -30,8 +28,7 @@ export function calculateDueWords(words: Word[], limit?: number): Word[] {
     try {
       const reviewDate = new Date(word.next_review_date);
       return reviewDate <= now;
-    } catch (error) {
-      console.error(`Error parsing date for word ${word.english}:`, error);
+    } catch {
       return false;
     }
   });

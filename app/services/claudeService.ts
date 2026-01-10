@@ -30,8 +30,7 @@ export class ClaudeService {
   static async chatCompletion(prompt: string): Promise<string> {
     try {
       return await this.createMessage(prompt);
-    } catch (error) {
-      console.error("Error in Claude chat completion:", error);
+    } catch {
       throw new Error("Failed to get completion from Claude");
     }
   }
@@ -141,17 +140,10 @@ No additional text or explanations. Just the JSON.`;
       try {
         const parsed = JSON.parse(response);
         return parsed;
-      } catch (parseError) {
-        console.error("Failed to parse Claude response:", response);
-        console.error("Parse error:", parseError);
+      } catch {
         throw new Error("Invalid response format from Claude");
       }
     } catch (error) {
-      console.error("Error generating sentence - full error:", error);
-      if (error instanceof Error) {
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
       throw error;
     }
   }

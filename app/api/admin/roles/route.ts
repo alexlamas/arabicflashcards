@@ -59,7 +59,6 @@ export async function GET() {
       .select("user_id, role");
 
     if (error) {
-      console.error("Error fetching roles:", error);
       return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
     }
 
@@ -73,8 +72,7 @@ export async function GET() {
     });
 
     return NextResponse.json(rolesByUser);
-  } catch (error) {
-    console.error("Error in GET /api/admin/roles:", error);
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -112,7 +110,6 @@ export async function PUT(request: NextRequest) {
       .eq("user_id", userId);
 
     if (deleteError) {
-      console.error("Error removing old roles:", deleteError);
       return NextResponse.json({ error: "Failed to update role" }, { status: 500 });
     }
 
@@ -123,14 +120,12 @@ export async function PUT(request: NextRequest) {
         .insert([{ user_id: userId, role }]);
 
       if (insertError) {
-        console.error("Error inserting new role:", insertError);
         return NextResponse.json({ error: "Failed to update role" }, { status: 500 });
       }
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error in PUT /api/admin/roles:", error);
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

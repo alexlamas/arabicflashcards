@@ -31,7 +31,6 @@ export async function POST(req: Request) {
     
     return NextResponse.json(sentence);
   } catch (error) {
-    console.error('Error in generate-sentence API:', error);
     return handleApiError(error, 'Failed to generate sentence');
   }
 }

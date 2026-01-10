@@ -15,6 +15,7 @@ import {
 } from "../../services/contentReviewService";
 import type { Word, Sentence } from "../../types/word";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface PackWithStats extends StarterPack {
   total: number;
@@ -25,6 +26,7 @@ export default function ContentEditorPage() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const { isReviewer, isLoading: isRolesLoading } = useUserRoles();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [packs, setPacks] = useState<PackWithStats[]>([]);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
@@ -68,7 +70,6 @@ export default function ContentEditorPage() {
       .order("name");
 
     if (error) {
-      console.error("Error loading packs:", error);
       setIsLoadingPacks(false);
       return;
     }
@@ -95,8 +96,11 @@ export default function ContentEditorPage() {
     try {
       const filteredWords = await ContentReviewService.getWords(packId, wordFilter);
       setWords(filteredWords);
-    } catch (error) {
-      console.error("Error loading content:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to load content",
+      });
       setWords([]);
     } finally {
       setIsLoading(false);
@@ -135,11 +139,14 @@ export default function ContentEditorPage() {
         if (currentIndex < words.length - 1) {
           setCurrentIndex(currentIndex + 1);
         }
-      } catch (error) {
-        console.error("Error approving word:", error);
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Failed to approve word",
+        });
       }
     },
-    [words, currentIndex, selectedPack]
+    [words, currentIndex, selectedPack, toast]
   );
 
   const handleUnapprove = useCallback(async () => {
@@ -158,10 +165,13 @@ export default function ContentEditorPage() {
       );
 
       updatePackStats(selectedPack, -1);
-    } catch (error) {
-      console.error("Error unapproving word:", error);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to unapprove word",
+      });
     }
-  }, [words, currentIndex, selectedPack]);
+  }, [words, currentIndex, selectedPack, toast]);
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
@@ -190,11 +200,14 @@ export default function ContentEditorPage() {
             ),
           }))
         );
-      } catch (error) {
-        console.error("Error approving sentence:", error);
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Failed to approve sentence",
+        });
       }
     },
-    []
+    [toast]
   );
 
   if (isAuthLoading || isRolesLoading) {

@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface BoostReviewProps {
   userId: string;
@@ -20,6 +21,7 @@ export default function BoostReview({
 }: BoostReviewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleBoost = async () => {
     setIsLoading(true);
@@ -56,9 +58,12 @@ export default function BoostReview({
             .eq("id", id)
         )
       );
-    } catch (err) {
-      console.error("Error boosting reviews:", err);
+    } catch {
       setError("Failed to boost reviews. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Failed to boost reviews",
+      });
     } finally {
       setIsLoading(false);
       loadNextWord();

@@ -46,8 +46,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
         setMessage("");
         setIsSubmitted(false);
       }, 1500);
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
+    } catch {
       toast({
         variant: "destructive",
         title: "Failed to submit feedback",

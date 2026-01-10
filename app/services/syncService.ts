@@ -34,8 +34,8 @@ export class SyncService {
     this.listeners.forEach((listener) => {
       try {
         listener(syncing);
-      } catch (error) {
-        console.error("Error in sync listener:", error);
+      } catch {
+        // Listener error - continue notifying other listeners
       }
     });
   }
@@ -60,7 +60,7 @@ export class SyncService {
         } catch (error) {
           // If word doesn't exist, skip the update instead of failing
           if (error instanceof Error && error.message.includes("not found")) {
-            console.warn(`Word ${action.payload.id} not found, skipping update`);
+            // Word not found, skipping update
           } else {
             throw error;
           }
@@ -164,7 +164,6 @@ export class SyncService {
           OfflineStorage.removeAction(action.id);
           result.syncedCount++;
         } catch (error) {
-          console.error(`Failed to sync action ${action.type}:`, error);
           OfflineStorage.updateAction(action.id, OfflineQueue.incrementRetries);
           result.failedCount++;
           result.errors.push(error instanceof Error ? error : new Error(String(error)));
@@ -176,14 +175,12 @@ export class SyncService {
         const freshWords = await WordService.getAllWords();
         OfflineStorage.setWords(freshWords);
       } catch (error) {
-        console.error("Failed to refresh words after sync:", error);
         result.errors.push(error instanceof Error ? error : new Error("Failed to refresh data"));
       }
       
       result.success = result.failedCount === 0;
       return result;
     } catch (error) {
-      console.error("Sync failed:", error);
       return {
         success: false,
         syncedCount: result.syncedCount,
@@ -203,14 +200,13 @@ export class SyncService {
         OfflineStorage.setWords(words);
         return words;
       }
-    } catch (error) {
-      console.error("Failed to load data from server:", error);
+    } catch {
+      // Failed to load data from server
     }
     
     // Fallback to offline data
     const offlineWords = OfflineStorage.getWords();
     if (offlineWords.length > 0) {
-      console.log("Using offline data");
       return offlineWords;
     }
     
@@ -227,15 +223,13 @@ export class SyncService {
 
   static setupConnectivityListeners(): () => void {
     const handleOnline = async () => {
-      console.log("Connection restored, syncing...");
       if (OfflineStorage.hasPendingActions()) {
-        const result = await this.syncPendingActions();
-        console.log(`Sync completed: ${result.syncedCount} synced, ${result.failedCount} failed`);
+        await this.syncPendingActions();
       }
     };
 
     const handleOffline = () => {
-      console.log("Connection lost, working offline");
+      // Connection lost, working offline
     };
 
     window.addEventListener("online", handleOnline);

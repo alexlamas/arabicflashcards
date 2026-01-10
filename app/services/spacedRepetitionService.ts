@@ -34,7 +34,6 @@ export class SpacedRepetitionService {
         count,
       };
     } catch (error) {
-      console.error("Error starting learning:", error);
       throw error;
     }
   }
@@ -84,8 +83,7 @@ export class SpacedRepetitionService {
           word_id: item.word_id,
         };
       });
-    } catch (error) {
-      console.error("Error in getDueWords:", error);
+    } catch {
       // Fallback to offline data on error
       const cachedWords = OfflineStorage.getWords();
       const dueWords = calculateDueWords(cachedWords, limit);
@@ -113,8 +111,7 @@ export class SpacedRepetitionService {
 
       if (error) throw error;
       return count || 0;
-    } catch (error) {
-      console.error("Error getting due words count:", error);
+    } catch {
       // Fallback to offline data on error
       const cachedWords = OfflineStorage.getWords();
       return countDueWords(cachedWords);
@@ -169,7 +166,6 @@ export class SpacedRepetitionService {
         nextReview: nextReviewDate,
       };
     } catch (error) {
-      console.error("Error in processReview:", error);
       throw error;
     }
   }
@@ -204,8 +200,7 @@ export class SpacedRepetitionService {
         thisWeek: thisWeekCount || 0,
         lastWeek: lastWeekCount || 0,
       };
-    } catch (error) {
-      console.error("Error getting weekly review stats:", error);
+    } catch {
       return { thisWeek: 0, lastWeek: 0 };
     }
   }

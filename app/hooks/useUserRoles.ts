@@ -24,8 +24,7 @@ export function useUserRoles() {
         setRoles(userRoles);
         setIsAdmin(userRoles.some(r => r.role === 'admin'));
         setIsReviewer(userRoles.some(r => r.role === 'reviewer' || r.role === 'admin'));
-      } catch (error) {
-        console.error("Error fetching user roles:", error);
+      } catch {
         setRoles([]);
         setIsAdmin(false);
         setIsReviewer(false);
