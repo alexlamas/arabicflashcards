@@ -3,6 +3,16 @@ import { createClient } from "@/utils/supabase/client";
 // Review status type (kept for backwards compatibility, not currently used in schema)
 export type ReviewStatus = 'needs_review' | 'approved';
 
+/**
+ * Convert a pack name to a URL-friendly slug
+ */
+export function slugifyPackName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export interface Pack {
   id: string;
   name: string;
@@ -90,6 +100,42 @@ export class PackService {
       .from("words")
       .select("*")
       .eq("pack_id", packId)
+      .order("english");
+
+    if (wordsError) throw wordsError;
+
+    return {
+      pack,
+      words: words || []
+    };
+  }
+
+  /**
+   * Get a pack by its URL slug
+   */
+  static async getPackBySlug(slug: string): Promise<{
+    pack: Pack;
+    words: PackWord[];
+  } | null> {
+    const supabase = createClient();
+
+    // Get all active packs
+    const { data: packs, error } = await supabase
+      .from("packs")
+      .select("*")
+      .eq("is_active", true);
+
+    if (error) throw error;
+
+    // Find the pack whose slugified name matches
+    const pack = (packs || []).find(p => slugifyPackName(p.name) === slug);
+    if (!pack) return null;
+
+    // Get pack words
+    const { data: words, error: wordsError } = await supabase
+      .from("words")
+      .select("*")
+      .eq("pack_id", pack.id)
       .order("english");
 
     if (wordsError) throw wordsError;
