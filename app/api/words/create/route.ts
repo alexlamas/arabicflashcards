@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { ClaudeService } from "@/app/services/claudeService";
 import { WordType } from "@/app/types/word";
 import { TransliterationService } from "@/app/services/transliterationService";
+import { checkAIUsage, incrementUsage } from "@/app/services/aiUsageService";
 
 export async function POST(req: Request) {
   try {
@@ -127,6 +128,24 @@ export async function POST(req: Request) {
     }
 
     // Otherwise generate a new translation
+    // Check authentication for AI usage
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Check AI usage limits
+    const usageCheck = await checkAIUsage(user.id);
+    if (!usageCheck.allowed) {
+      return NextResponse.json(
+        { error: usageCheck.reason, limitReached: true },
+        { status: 429 }
+      );
+    }
+
     const transliterationRules = await TransliterationService.getTransliterationPrompt();
     const prompt = `Translate this word to Lebanese Arabic, unless it is already given in Arabic: ${text}
 
@@ -152,6 +171,9 @@ Do not provide any additional text or explanations.`;
         transliteration: wordData.transliteration,
         type: wordData.type as WordType,
       };
+
+      // Increment usage after successful AI call
+      await incrementUsage(user.id);
 
       return NextResponse.json(response);
     } catch {
