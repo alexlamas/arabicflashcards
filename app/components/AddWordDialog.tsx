@@ -234,6 +234,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
   // Handle drag and drop
   const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = useRef(0);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -243,18 +244,25 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    dragCounterRef.current = 0;
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
