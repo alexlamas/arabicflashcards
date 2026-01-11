@@ -315,19 +315,27 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
   }, [isPlaying, player, song]);
 
   const handlePlayPause = useCallback(() => {
-    if (!player) return;
+    if (!player || !song) return;
     if (isPlaying) {
       player.pauseVideo();
     } else {
+      // If before first lyric, skip to it
+      const currentTime = player.getCurrentTime();
+      const firstLyricTime = song.lyrics[0]?.time || 0;
+      if (currentTime < firstLyricTime - 2) {
+        player.seekTo(firstLyricTime, true);
+      }
       player.playVideo();
     }
-  }, [player, isPlaying]);
+  }, [player, isPlaying, song]);
 
   const handleRestart = useCallback(() => {
-    if (!player) return;
-    player.seekTo(0, true);
+    if (!player || !song) return;
+    // Restart from first lyric, not from 0
+    const firstLyricTime = song.lyrics[0]?.time || 0;
+    player.seekTo(firstLyricTime, true);
     player.playVideo();
-  }, [player]);
+  }, [player, song]);
 
   const handleLineClick = useCallback(
     (index: number) => {
