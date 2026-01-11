@@ -1,9 +1,13 @@
 import { createClient } from "@/utils/supabase/client";
 
+export type FluencyLevel = "beginner" | "intermediate" | "advanced";
+
 export interface UserProfile {
   id: string;
   first_name: string | null;
   avatar: string | null;
+  fluency: FluencyLevel | null;
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +40,12 @@ export const ProfileService = {
     return data;
   },
 
-  async updateProfile(profile: { first_name?: string; avatar?: string }): Promise<UserProfile | null> {
+  async updateProfile(profile: {
+    first_name?: string;
+    avatar?: string;
+    fluency?: FluencyLevel;
+    onboarding_completed?: boolean;
+  }): Promise<UserProfile | null> {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

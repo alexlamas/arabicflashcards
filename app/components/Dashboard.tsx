@@ -15,6 +15,7 @@ import { PackPreviewModal } from "./PackPreviewModal";
 import { DashboardPackCard } from "./DashboardPackCard";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { FluencyProgressBar } from "./FluencyProgressBar";
+import { AppTour } from "./AppTour";
 
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
@@ -24,11 +25,11 @@ const LEVEL_CONFIG: Record<PackLevel, { label: string; color: string; bgColor: s
   advanced: { label: "Advanced", color: "text-purple-600", bgColor: "bg-purple-100" },
 };
 
-const LEVEL_ORDER: PackLevel[] = ["beginner", "intermediate", "advanced"];
+const DEFAULT_LEVEL_ORDER: PackLevel[] = ["beginner", "intermediate", "advanced"];
 
 export function Dashboard() {
   const { session } = useAuth();
-  const { firstName: profileFirstName } = useProfile();
+  const { firstName: profileFirstName, fluency: userFluency } = useProfile();
   const {
     words,
     reviewCount,
@@ -161,6 +162,15 @@ export function Dashboard() {
     return grouped;
   }, [availablePacks, installedPackIds]);
 
+  // Sort level order based on user fluency (recommended level first)
+  const levelOrder = useMemo(() => {
+    if (!userFluency) return DEFAULT_LEVEL_ORDER;
+    return [
+      userFluency as PackLevel,
+      ...DEFAULT_LEVEL_ORDER.filter(l => l !== userFluency)
+    ];
+  }, [userFluency]);
+
   const handleUninstallPack = async (packId: string) => {
     setUninstallingPackId(packId);
     try {
@@ -283,16 +293,22 @@ export function Dashboard() {
       )}
 
       {/* Available Packs by Level */}
-      {!loadingPacks && LEVEL_ORDER.map(level => {
+      {!loadingPacks && levelOrder.map(level => {
         const packs = availablePacksByLevel[level];
         if (packs.length === 0) return null;
 
         const config = LEVEL_CONFIG[level];
+        const isRecommended = level === userFluency;
 
         return (
           <div key={level}>
             <div className="flex items-baseline gap-2 mb-4">
               <h2 className="text-lg font-semibold">{config.label}</h2>
+              {isRecommended && (
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                  Recommended for you
+                </span>
+              )}
               <span className="text-sm text-disabled">•</span>
               <span className="text-sm text-subtle">{packs.length} {packs.length === 1 ? "pack" : "packs"} available</span>
             </div>
@@ -329,6 +345,9 @@ export function Dashboard() {
         isInstalling={installingPackId === selectedPack?.id}
         isUninstalling={uninstallingPackId === selectedPack?.id}
       />
+
+      {/* Post-onboarding tour */}
+      <AppTour />
     </div>
   );
 }

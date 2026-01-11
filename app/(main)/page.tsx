@@ -1,21 +1,38 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 import { useWords } from "../contexts/WordsContext";
+import { useProfile } from "../contexts/ProfileContext";
 import { LandingPage } from "../components/LandingPage";
 import { Dashboard } from "../components/Dashboard";
 
 function HomeContent() {
+  const router = useRouter();
   const { session, isLoading: isAuthLoading } = useAuth();
   const { isLoading: isWordsLoading } = useWords();
+  const { onboardingCompleted, isLoading: isProfileLoading } = useProfile();
 
-  if (isAuthLoading) {
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (!isAuthLoading && !isProfileLoading && session && !onboardingCompleted) {
+      router.replace("/onboarding");
+    }
+  }, [isAuthLoading, isProfileLoading, session, onboardingCompleted, router]);
+
+  if (isAuthLoading || (session && isProfileLoading)) {
     return null;
   }
 
   // Show landing page for non-authenticated users
   if (!session) {
     return <LandingPage />;
+  }
+
+  // Redirect to onboarding if not completed (don't render anything while redirecting)
+  if (!onboardingCompleted) {
+    return null;
   }
 
   // Show loading for authenticated users while words are loading

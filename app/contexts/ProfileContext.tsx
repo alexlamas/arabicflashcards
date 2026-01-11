@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { ProfileService, UserProfile } from "../services/profileService";
+import { ProfileService, UserProfile, FluencyLevel } from "../services/profileService";
 import { useAuth } from "./AuthContext";
 
 const PROFILE_CACHE_KEY = "cached_profile";
@@ -12,7 +12,14 @@ interface ProfileContextType {
   isLoading: boolean;
   firstName: string | null;
   avatar: string;
-  updateProfile: (profile: { first_name?: string; avatar?: string }) => Promise<void>;
+  fluency: FluencyLevel | null;
+  onboardingCompleted: boolean;
+  updateProfile: (profile: {
+    first_name?: string;
+    avatar?: string;
+    fluency?: FluencyLevel;
+    onboarding_completed?: boolean;
+  }) => Promise<void>;
   refetchProfile: () => Promise<void>;
 }
 
@@ -111,7 +118,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  const updateProfile = async (profileData: { first_name?: string; avatar?: string }) => {
+  const updateProfile = async (profileData: {
+    first_name?: string;
+    avatar?: string;
+    fluency?: FluencyLevel;
+    onboarding_completed?: boolean;
+  }) => {
     const updated = await ProfileService.updateProfile(profileData);
     if (updated) {
       setProfile(updated);
@@ -123,6 +135,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const firstName = profile?.first_name || null;
   const avatar = profile?.avatar || "pomegranate";
+  const fluency = profile?.fluency || null;
+  const onboardingCompleted = profile?.onboarding_completed ?? false;
 
   return (
     <ProfileContext.Provider
@@ -131,6 +145,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         isLoading,
         firstName,
         avatar,
+        fluency,
+        onboardingCompleted,
         updateProfile,
         refetchProfile: fetchProfile,
       }}
