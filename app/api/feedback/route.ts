@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     if (resend && notificationEmail) {
       try {
         await resend.emails.send({
-          from: "Yalla Flash <noreply@yallaflash.app>",
+          from: "Yalla Flash <onboarding@resend.dev>",
           to: notificationEmail,
           subject: "New feedback received",
           html: `
