@@ -563,14 +563,14 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   onClick={() => handleLineClick(index)}
                   className={`relative w-full text-left p-4 rounded-xl transition-all overflow-hidden border-2 ${
                     currentLineIndex === index
-                      ? "border-emerald-500 bg-emerald-50"
+                      ? "border-emerald-500 bg-emerald-50/50"
                       : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 >
                   {/* Progress circle */}
                   {currentLineIndex === index && (
                     <div
-                      className="absolute bottom-0 left-0 bg-emerald-200/30 rounded-full blur-md transition-all duration-100"
+                      className="absolute bottom-0 left-0 bg-emerald-200/20 rounded-full blur-md transition-all duration-100"
                       style={{
                         width: `${lineProgress * 2.5}%`,
                         aspectRatio: '1',
