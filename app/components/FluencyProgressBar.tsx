@@ -55,8 +55,8 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
 
   return (
     <div className="border-t border-gray-200 bg-white p-5">
-      {/* Level labels (above bar) */}
-      <div className="flex gap-1 mb-2">
+      {/* Level labels (above bar) - hidden on mobile */}
+      <div className="hidden md:flex gap-1 mb-2">
         {LEVELS.map((level) => {
           const width = ((level.endThreshold - level.threshold) / MAX_WORDS) * 100;
           return (

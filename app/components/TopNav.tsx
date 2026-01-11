@@ -86,11 +86,12 @@ function MobileNavLink({  active, badge, icon: Icon, children, onClick }: Mobile
     <button
       onClick={onClick}
       className={cn(
-        "w-full px-4 py-3 text-left text-base font-medium transition-colors flex items-center gap-3",
+        "w-full px-4 py-3 mx-2 text-left text-base font-medium transition-colors flex items-center gap-3 rounded-xl",
         active
           ? "bg-gray-100 text-heading"
           : "text-body hover:bg-gray-50"
       )}
+      style={{ width: "calc(100% - 16px)" }}
     >
       <Icon className="h-5 w-5" />
       {children}
@@ -133,7 +134,7 @@ export function TopNav() {
         >
           {/* Top bar row */}
           <div
-            className="h-12 flex items-center gap-1"
+            className="h-12 flex items-center gap-1 relative"
             onClick={() => {
               // Only toggle menu on mobile (md breakpoint is 768px)
               if (window.innerWidth < 768) {
@@ -141,10 +142,22 @@ export function TopNav() {
               }
             }}
           >
-            {/* Mobile hamburger - on left */}
+            {/* Mobile: hamburger */}
             <div className="md:hidden rounded-full p-2">
               <List className="h-5 w-5" />
             </div>
+
+            {/* Mobile: current page (centered) */}
+            {!isMobileMenuOpen && (
+              <div className="md:hidden absolute left-1/2 -translate-x-1/2 text-sm font-medium text-heading flex items-center gap-1.5">
+                {pathname === "/" && <><HouseSimple className="h-4 w-4" />Home</>}
+                {pathname === "/my-words" && <><CardsThree className="h-4 w-4" />My words</>}
+                {pathname === "/memory-game" && <><GameController className="h-4 w-4" />Play</>}
+                {pathname === "/review" && <><PlayCircle className="h-4 w-4" />Review</>}
+                {pathname === "/admin" && <><Cube className="h-4 w-4" />Admin</>}
+                {pathname === "/design-system" && <><Swatches className="h-4 w-4" />Design system</>}
+              </div>
+            )}
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
@@ -292,17 +305,17 @@ export function TopNav() {
           </div>
 
           {/* Mobile avatar on right - only show when profile is loaded */}
-          <div className="md:hidden flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="md:hidden flex items-center mr-0.5" onClick={(e) => e.stopPropagation()}>
             {/* AI Usage chip */}
             {usage && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center rounded-full px-2 py-1.5 h-auto gap-1.5 text-sm font-medium bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 transition-colors cursor-pointer">
+                  <button className="flex items-center rounded-full px-3 py-2 h-auto gap-2 text-sm font-medium bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 transition-colors cursor-pointer">
                     <Coin className="h-5 w-5 text-purple-500" weight="fill" />
                     <span>{isUnlimited ? "∞" : usage.limit - usage.count}</span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent align="center" className="w-72 p-0 overflow-hidden">
+                <PopoverContent align="end" className="w-72 p-0 overflow-hidden">
                   <div className="bg-purple-50 p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center">

@@ -64,6 +64,9 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
     ? `${fluency.label} · ${fluency.wordsToNext} more to ${fluency.nextLevel}`
     : `${fluency.label} · You've reached the top!`;
 
+  // Shorter subtitle for mobile
+  const levelSubtitleMobile = fluency.label;
+
   if (isLoading) {
     return (
       <div className="relative overflow-hidden p-8 bg-gradient-to-br from-gray-100 to-gray-50">
@@ -137,7 +140,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
           <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
             <div>
               <h1 className="text-3xl font-semibold font-pphatton mt-2 text-heading">{fluency.greeting}, {firstName}!</h1>
-              <p className="text-sm text-subtle py-1">{levelSubtitle}</p>
+              <p className="text-sm text-subtle py-1"><span className="md:hidden">{levelSubtitleMobile}</span><span className="hidden md:inline">{levelSubtitle}</span></p>
             </div>
             <Link href="/review">
               <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 transition hover:to-teal-400 font-medium rounded-full pl-2.5 gap-1">
@@ -175,7 +178,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
         <div className="flex-1 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
           <div>
             <h1 className="text-3xl font-semibold font-pphatton mt-2 text-heading">Mabrouk, {firstName}!</h1>
-            <p className="text-sm text-subtle py-1">{levelSubtitle}</p>
+            <p className="text-sm text-subtle py-1"><span className="md:hidden">{levelSubtitleMobile}</span><span className="hidden md:inline">{levelSubtitle}</span></p>
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-sky-100 border border-sky-200 rounded-full">
             <Sun className="w-4 h-4 text-sky-500" weight="fill" />
