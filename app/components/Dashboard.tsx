@@ -312,14 +312,15 @@ export function Dashboard() {
 
         return (
           <div key={level}>
-            <div className="flex items-baseline gap-2 mb-4">
-              <h2 className="text-lg font-semibold">{config.label}</h2>
-              {isRecommended && (
-                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                  Recommended for you
-                </span>
-              )}
-              <span className="text-sm text-disabled">•</span>
+            <div className="mb-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">{config.label}</h2>
+                {isRecommended && (
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                    Recommended for you
+                  </span>
+                )}
+              </div>
               <span className="text-sm text-subtle">{packs.length} {packs.length === 1 ? "pack" : "packs"} available</span>
             </div>
 
