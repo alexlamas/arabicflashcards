@@ -10,7 +10,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import { AVATAR_OPTIONS, FluencyLevel } from "../../services/profileService";
 import { PackService, Pack } from "../../services/packService";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Check, Loader2, Sparkle } from "lucide-react";
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { Star } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const FLUENCY_OPTIONS: {
@@ -21,17 +22,17 @@ const FLUENCY_OPTIONS: {
   {
     value: "beginner",
     label: "Beginner",
-    description: "I'm just starting to learn Arabic",
+    description: "Just starting out",
   },
   {
     value: "intermediate",
     label: "Intermediate",
-    description: "I know some words and basic phrases",
+    description: "Know some basics",
   },
   {
     value: "advanced",
     label: "Advanced",
-    description: "I can hold conversations in Arabic",
+    description: "Can have conversations",
   },
 ];
 
@@ -108,7 +109,6 @@ export default function OnboardingPage() {
 
     setIsSaving(true);
     try {
-      // Save profile
       await updateProfile({
         first_name: name.trim() || undefined,
         avatar,
@@ -116,10 +116,8 @@ export default function OnboardingPage() {
         onboarding_completed: true,
       });
 
-      // Start the selected pack
       await PackService.startPack(selectedPack);
 
-      // Redirect to home with tour flag
       localStorage.setItem("show_app_tour", "true");
       router.replace("/");
     } catch (error) {
@@ -131,16 +129,11 @@ export default function OnboardingPage() {
 
   function canProceed() {
     switch (step) {
-      case 1:
-        return true; // Name is optional
-      case 2:
-        return true; // Avatar has default
-      case 3:
-        return fluency !== null;
-      case 4:
-        return selectedPack !== null;
-      default:
-        return false;
+      case 1: return true;
+      case 2: return true;
+      case 3: return fluency !== null;
+      case 4: return selectedPack !== null;
+      default: return false;
     }
   }
 
@@ -152,7 +145,6 @@ export default function OnboardingPage() {
     }
   }
 
-  // Show loading while checking auth/profile
   if (isAuthLoading || isProfileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -161,40 +153,33 @@ export default function OnboardingPage() {
     );
   }
 
-  // Don't render if should redirect
   if (!session || onboardingCompleted) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
-      {/* Progress indicator */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200">
-        <div
-          className="h-full bg-emerald-500 transition-all duration-300"
-          style={{ width: `${(step / 4) * 100}%` }}
-        />
-      </div>
-
-      {/* Step indicators */}
-      <div className="flex justify-center gap-2 pt-8">
-        {[1, 2, 3, 4].map((s) => (
-          <div
-            key={s}
-            className={cn(
-              "w-2 h-2 rounded-full transition-all",
-              s === step
-                ? "bg-emerald-500 w-6"
-                : s < step
-                  ? "bg-emerald-500"
-                  : "bg-gray-300"
-            )}
-          />
-        ))}
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header */}
+      <div className="p-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Yalla Flash" width={28} height={28} />
+          <span className="font-semibold text-lg">Yalla Flash</span>
+        </div>
+        <div className="flex gap-1.5">
+          {[1, 2, 3, 4].map((s) => (
+            <div
+              key={s}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-300",
+                s === step ? "bg-gray-900 w-6" : s < step ? "bg-gray-900 w-2" : "bg-gray-200 w-2"
+              )}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+      <div className="flex-1 flex flex-col px-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -202,47 +187,47 @@ export default function OnboardingPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-md"
+            className="flex-1 flex flex-col"
           >
-            {/* Step 1: Welcome + Name */}
+            {/* Step 1: Name */}
             {step === 1 && (
-              <div className="text-center space-y-6">
-                <div className="text-4xl mb-2">مرحبا</div>
-                <h1 className="text-2xl font-bold text-heading">
-                  Welcome to Arabic Flashcards
+              <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  What&apos;s your name?
                 </h1>
-                <p className="text-subtle">
-                  Let&apos;s get you set up in just a few steps
+                <p className="text-gray-500 mb-8">
+                  So we know what to call you
                 </p>
-                <div className="pt-4">
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="What should we call you?"
-                    className="text-center text-lg h-12"
-                    autoFocus
-                  />
-                </div>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="text-lg h-14 rounded-xl"
+                  autoFocus
+                />
+                <p className="text-sm text-gray-400 mt-2">You can skip this</p>
               </div>
             )}
 
             {/* Step 2: Avatar */}
             {step === 2 && (
-              <div className="text-center space-y-6">
-                <h1 className="text-2xl font-bold text-heading">
-                  Choose your avatar
+              <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Pick an avatar
                 </h1>
-                <p className="text-subtle">Pick one that represents you</p>
-                <div className="flex justify-center gap-4 pt-4">
+                <p className="text-gray-500 mb-8">
+                  Choose one that represents you
+                </p>
+                <div className="grid grid-cols-5 gap-3">
                   {AVATAR_OPTIONS.map((option) => (
                     <button
                       key={option.id}
                       onClick={() => setAvatar(option.id)}
                       className={cn(
-                        "relative w-16 h-16 rounded-full overflow-hidden border-3 transition-all",
+                        "relative aspect-square rounded-2xl overflow-hidden transition-all duration-200",
                         avatar === option.id
-                          ? "border-emerald-500 ring-4 ring-emerald-100 scale-110"
-                          : "border-gray-200 hover:border-gray-300 hover:scale-105"
+                          ? "ring-4 ring-gray-900 ring-offset-2 scale-105"
+                          : "hover:scale-105 opacity-60 hover:opacity-100"
                       )}
                     >
                       <Image
@@ -259,36 +244,38 @@ export default function OnboardingPage() {
 
             {/* Step 3: Fluency */}
             {step === 3 && (
-              <div className="text-center space-y-6">
-                <h1 className="text-2xl font-bold text-heading">
-                  What&apos;s your level?
+              <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Your Arabic level?
                 </h1>
-                <p className="text-subtle">
-                  This helps us recommend the right content
+                <p className="text-gray-500 mb-8">
+                  We&apos;ll recommend packs for you
                 </p>
-                <div className="space-y-3 pt-4">
+                <div className="space-y-3">
                   {FLUENCY_OPTIONS.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => setFluency(option.value)}
                       className={cn(
-                        "w-full p-4 rounded-xl border-2 text-left transition-all",
+                        "w-full p-4 rounded-2xl text-left transition-all duration-200 border-2",
                         fluency === option.value
-                          ? "border-emerald-500 bg-emerald-50"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          ? "border-gray-900 bg-gray-50"
+                          : "border-gray-200 hover:border-gray-300"
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-heading">
+                          <div className="font-semibold text-gray-900">
                             {option.label}
                           </div>
-                          <div className="text-sm text-subtle">
+                          <div className="text-sm text-gray-500">
                             {option.description}
                           </div>
                         </div>
                         {fluency === option.value && (
-                          <Check className="h-5 w-5 text-emerald-500" />
+                          <div className="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center">
+                            <Check className="h-4 w-4 text-white" />
+                          </div>
                         )}
                       </div>
                     </button>
@@ -299,52 +286,69 @@ export default function OnboardingPage() {
 
             {/* Step 4: Pack Selection */}
             {step === 4 && (
-              <div className="text-center space-y-6">
-                <h1 className="text-2xl font-bold text-heading">
-                  Pick a pack to start
+              <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full py-4">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Choose your first pack
                 </h1>
-                <p className="text-subtle">
-                  You can add more packs later from the home page
+                <p className="text-gray-500 mb-6">
+                  Pick one to start learning. You can add more later.
                 </p>
                 {isLoadingPacks ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <div className="space-y-3 pt-4 max-h-[50vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4">
                     {packs.map((pack) => {
                       const isRecommended = pack.level === fluency;
+                      const isSelected = selectedPack === pack.id;
                       return (
                         <button
                           key={pack.id}
                           onClick={() => setSelectedPack(pack.id)}
                           className={cn(
-                            "w-full p-4 rounded-xl border-2 text-left transition-all",
-                            selectedPack === pack.id
-                              ? "border-emerald-500 bg-emerald-50"
-                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                            "relative rounded-2xl overflow-hidden text-left transition-all duration-200 bg-white border-2 group",
+                            isSelected
+                              ? "border-gray-900 shadow-lg scale-[1.02]"
+                              : "border-gray-100 hover:border-gray-300 hover:shadow-md"
                           )}
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-heading">
-                                  {pack.name}
-                                </span>
-                                {isRecommended && (
-                                  <span className="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                                    <Sparkle className="h-3 w-3" />
-                                    Recommended
-                                  </span>
-                                )}
+                          {/* Pack Image */}
+                          <div className="aspect-square relative bg-gray-100">
+                            {pack.image_url ? (
+                              <Image
+                                src={pack.image_url}
+                                alt={pack.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-4xl">
+                                📚
                               </div>
-                              <div className="text-sm text-subtle">
-                                {pack.wordCount} words · {pack.level || "All levels"}
-                              </div>
-                            </div>
-                            {selectedPack === pack.id && (
-                              <Check className="h-5 w-5 text-emerald-500" />
                             )}
+                            {/* Recommended badge */}
+                            {isRecommended && (
+                              <div className="absolute top-2 left-2 bg-amber-400 text-amber-900 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+                                <Star weight="fill" className="w-3 h-3" />
+                                For you
+                              </div>
+                            )}
+                            {/* Selected checkmark */}
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center">
+                                <Check className="h-4 w-4 text-white" />
+                              </div>
+                            )}
+                          </div>
+                          {/* Pack Info */}
+                          <div className="p-3">
+                            <h3 className="font-semibold text-gray-900 truncate">
+                              {pack.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {pack.wordCount} words
+                            </p>
                           </div>
                         </button>
                       );
@@ -358,12 +362,13 @@ export default function OnboardingPage() {
       </div>
 
       {/* Bottom button */}
-      <div className="p-4 pb-8">
+      <div className="p-6 border-t bg-white">
         <div className="max-w-md mx-auto">
           <Button
             onClick={handleNext}
             disabled={!canProceed() || isSaving}
-            className="w-full h-12 text-base rounded-full"
+            size="lg"
+            className="w-full h-14 text-base rounded-xl bg-gray-900 hover:bg-gray-800"
           >
             {isSaving ? (
               <Loader2 className="h-5 w-5 animate-spin" />
