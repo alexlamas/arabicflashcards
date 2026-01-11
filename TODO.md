@@ -10,6 +10,8 @@
 - [x] Word detail modal (tap to expand)
 - [x] My Words page with tabs (all/learning/learned)
 - [x] Design system page
+- [x] Streaks + motivation
+- [x] Bulk import word lists
 
 ## MVP (ship this)
 
@@ -19,17 +21,22 @@
 
 ## V2 (near-term)
 
+- [ ] Make packs feel more progressive on home screen (like a journey)
+- [ ] Add more games (beyond memory game)
+- [ ] Explore how images might help learning faster
 - [ ] Placement test or manual word selection when installing packs (skip already-known words)
 - [ ] Audio pronunciation
 - [ ] Fluency progress (% toward core vocabulary)
 - [ ] Fluency milestone celebrations
 - [ ] Pack unlock progression
+- [~] Mobile responsivity improvements (in progress)
 
 ## V3+ (later)
 
-- [ ] Streaks + motivation
+- [ ] AI chatbot for answering questions
+- [ ] Payments for AI credits
+- [ ] Mobile app
 - [ ] Weekly/monthly stats improvements
 - [ ] Onboarding for new users
 - [ ] Social (share progress, leaderboards)
 - [ ] Full offline mode
-- [ ] Import word lists

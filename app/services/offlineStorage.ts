@@ -195,20 +195,28 @@ export class OfflineStorage {
 
   private static clearOldData(): void {
     const state = this.getState();
-    
+
     // Remove oldest actions (keep 10% of limit)
     const keepCount = Math.floor(STORAGE_LIMITS.MAX_ACTIONS * 0.1);
     state.pendingActions = state.pendingActions
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, keepCount);
-    
+
     // Clear old sync data if needed
     const oneWeekAgo = Date.now() - STORAGE_LIMITS.MAX_ACTION_AGE_MS;
     if (state.lastSync < oneWeekAgo) {
       state.words = [];
       state.lastSync = 0;
     }
-    
-    this.setState(state);
+
+    // Write directly to avoid recursion (don't call setState here)
+    if (this.isStorageAvailable()) {
+      try {
+        const limitedState = this.applyLimits(state);
+        localStorage.setItem(this.getStorageKey(), JSON.stringify(limitedState));
+      } catch {
+        // If we still can't write, just give up
+      }
+    }
   }
 }

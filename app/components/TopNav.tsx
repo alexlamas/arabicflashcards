@@ -127,16 +127,26 @@ export function TopNav() {
       <AuthDialog />
 
       <nav className="fixed top-0 pt-4 bg-white left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
-        <div className="h-12 flex items-center gap-1 bg-white border border-gray-200 rounded-full shadow-sm px-2 pr-1">
-          {/* Mobile hamburger - on left */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden rounded-full"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        <div
+          className={cn(
+            "bg-white border border-gray-200 shadow-sm px-2 pr-1 md:cursor-default cursor-pointer transition-all duration-200",
+            isMobileMenuOpen ? "rounded-2xl" : "rounded-full"
+          )}
+        >
+          {/* Top bar row */}
+          <div
+            className="h-12 flex items-center gap-1"
+            onClick={(e) => {
+              // Only toggle menu on mobile (md breakpoint is 768px)
+              if (window.innerWidth < 768) {
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+              }
+            }}
           >
-            <List className="h-5 w-5" />
-          </Button>
+            {/* Mobile hamburger - on left */}
+            <div className="md:hidden rounded-full p-2">
+              <List className="h-5 w-5" />
+            </div>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
@@ -284,7 +294,7 @@ export function TopNav() {
           </div>
 
           {/* Mobile avatar on right - only show when profile is loaded */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {/* AI Usage chip */}
             {usage && (
               <Popover>
@@ -329,47 +339,12 @@ export function TopNav() {
                 </PopoverContent>
               </Popover>
             )}
-            {!isProfileLoading && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full animate-in fade-in duration-300">
-                    <Image
-                      src={avatarImage}
-                      alt="Avatar"
-                      width={28}
-                      height={28}
-                      className="rounded-full"
-                    />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled className="text-xs text-subtle">
-                    {session?.user?.email}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                    <GearSix className="w-4 h-4 mr-2" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsFeedbackOpen(true)}>
-                    <ChatCircle className="w-4 h-4 mr-2" />
-                    Send feedback
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <SignOut className="w-4 h-4 mr-2" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
           </div>
-        </div>
+          </div>
 
-        {/* Mobile dropdown menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
-            <div className="py-2">
+          {/* Mobile expanded menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 py-2">
               <MobileNavLink
                 active={pathname === "/"}
                 icon={HouseSimple}
@@ -403,7 +378,7 @@ export function TopNav() {
               {/* Admin section */}
               {(isAdmin || isReviewer) && (
                 <>
-                  <div className="border-t my-2 mx-4" />
+                  <div className="border-t my-2 mx-2" />
                   <MobileNavLink
                     active={pathname === "/admin"}
                     icon={Cube}
@@ -422,9 +397,42 @@ export function TopNav() {
                   )}
                 </>
               )}
+
+              {/* Account section */}
+              <div className="border-t my-2 mx-2" />
+              <MobileNavLink
+                active={false}
+                icon={GearSix}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsSettingsOpen(true);
+                }}
+              >
+                Settings
+              </MobileNavLink>
+              <MobileNavLink
+                active={false}
+                icon={ChatCircle}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsFeedbackOpen(true);
+                }}
+              >
+                Send feedback
+              </MobileNavLink>
+              <MobileNavLink
+                active={false}
+                icon={SignOut}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleLogout();
+                }}
+              >
+                Log out
+              </MobileNavLink>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </nav>
 
       <SettingsModal
