@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { PublicFooter } from "../components/PublicFooter";
@@ -38,27 +40,34 @@ export const metadata: Metadata = {
 };
 
 interface Song {
+  id: string;
   slug: string;
   title: string;
   artist: string;
-  thumbnail: string;
-  wordCount: number;
-  level: "beginner" | "intermediate" | "advanced";
+  youtube_id: string;
+  description: string | null;
 }
 
-// This would eventually come from a database
-const SONGS: Song[] = [
-  {
-    slug: "bhibbak-ya-lebnan",
-    title: "Bahebak Ya Lebnan",
-    artist: "Fairuz",
-    thumbnail: "https://img.youtube.com/vi/Q5U5eWfsIO4/maxresdefault.jpg",
-    wordCount: 30,
-    level: "beginner",
-  },
-];
+async function getPublishedSongs(): Promise<Song[]> {
+  const supabase = await createClient(cookies());
 
-export default function SongsPage() {
+  const { data: songs, error } = await supabase
+    .from("songs")
+    .select("id, slug, title, artist, youtube_id, description")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching songs:", error);
+    return [];
+  }
+
+  return songs || [];
+}
+
+export default async function SongsPage() {
+  const songs = await getPublishedSongs();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -106,15 +115,15 @@ export default function SongsPage() {
       <div className="bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {SONGS.map((song) => (
+            {songs.map((song) => (
               <Link
-                key={song.slug}
+                key={song.id}
                 href={`/songs/${song.slug}`}
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all"
               >
                 <div className="aspect-video relative bg-gray-100">
                   <Image
-                    src={song.thumbnail}
+                    src={`https://img.youtube.com/vi/${song.youtube_id}/maxresdefault.jpg`}
                     alt={song.title}
                     fill
                     className="object-cover"
@@ -132,12 +141,11 @@ export default function SongsPage() {
                   <h2 className="font-semibold text-heading text-lg mb-2">
                     {song.title}
                   </h2>
-                  <div className="flex items-center gap-3 text-sm text-subtle">
-                    <span className="px-2 py-0.5 bg-gray-100 rounded-full capitalize">
-                      {song.level}
-                    </span>
-                    <span>{song.wordCount} words</span>
-                  </div>
+                  {song.description && (
+                    <p className="text-sm text-subtle line-clamp-2">
+                      {song.description}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}
