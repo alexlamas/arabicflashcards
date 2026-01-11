@@ -40,6 +40,7 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
   // Determine active tab from pathname
   let activeTab = "review";
   if (pathname.includes("/packs")) activeTab = "packs";
+  else if (pathname.includes("/songs")) activeTab = "songs";
   else if (pathname.includes("/instagram")) activeTab = "instagram";
   else if (pathname.includes("/users")) activeTab = "users";
   else if (pathname.includes("/design-system")) activeTab = "design-system";
@@ -50,6 +51,7 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
     ] : []),
     { key: "review", label: "Review", href: "/admin/review" },
     { key: "packs", label: "Packs", href: "/admin/packs" },
+    { key: "songs", label: "Songs", href: "/admin/songs" },
     ...(isAdmin ? [
       { key: "instagram", label: "Instagram", href: "/admin/instagram" },
       { key: "design-system", label: "Design system", href: "/admin/design-system" },

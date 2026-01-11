@@ -564,7 +564,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   onClick={() => handleLineClick(index)}
                   className={`relative w-full text-left p-4 rounded-xl transition-all overflow-hidden border ${
                     currentLineIndex === index
-                      ? "border-emerald-300 bg-emerald-50/50"
+                      ? "border-emerald-300/40 bg-emerald-50/20"
                       : "border-gray-100 bg-white hover:border-gray-200"
                   }`}
                 >
@@ -578,9 +578,9 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     </p>
                     {currentLineIndex === index ? (
                       <p
-                        className="text-sm bg-clip-text text-transparent w-fit"
+                        className="text-base bg-clip-text text-transparent w-fit"
                         style={{
-                          backgroundImage: `linear-gradient(to right, #10b981 ${lineProgress}%, #374151 ${lineProgress}%)`
+                          backgroundImage: `linear-gradient(to right, #0ca270ff ${lineProgress}%, #3741518c ${lineProgress}%)`
                         }}
                       >
                         {line.transliteration}
@@ -608,25 +608,26 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="mt-4 pt-4 border-t border-emerald-200">
-                            <p className="text-xs text-emerald-600 font-medium mb-2">
-                              TAP A WORD TO LEARN IT
+                          <div className="mt-4 pt-4 border-t border-gray-900/10">
+                            <p className="text-xs text-body/50 font-medium mb-2">
+                              Tap a word to learn it
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {line.words.map((word, wordIndex) => (
-                                <button
+                                <Button
                                   key={wordIndex}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedWord(word);
                                   }}
-                                  className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors shadow-sm"
+                                  variant="outline"
+
                                 >
                                   <span className="text-lg font-arabic">{word.arabic}</span>
                                   <span className="text-xs text-gray-500 ml-2">
                                     {word.english}
                                   </span>
-                                </button>
+                                </Button>
                               ))}
                             </div>
                           </div>
