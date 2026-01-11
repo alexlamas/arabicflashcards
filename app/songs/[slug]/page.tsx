@@ -567,11 +567,15 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                       : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 >
-                  {/* Progress bar */}
+                  {/* Progress circle */}
                   {currentLineIndex === index && (
                     <div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-200/70 to-emerald-100/50 rounded-r-full blur-sm transition-all duration-100"
-                      style={{ width: `${lineProgress}%` }}
+                      className="absolute top-1/2 left-0 -translate-y-1/2 bg-emerald-200/50 rounded-full blur-md transition-all duration-100"
+                      style={{
+                        width: `${lineProgress * 2.5}%`,
+                        aspectRatio: '1',
+                        transform: `translateX(-50%) translateY(-50%)`
+                      }}
                     />
                   )}
                   <div className="relative space-y-1">
