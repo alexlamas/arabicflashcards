@@ -562,7 +562,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   key={index}
                   ref={(el) => { lyricRefs.current[index] = el; }}
                   onClick={() => handleLineClick(index)}
-                  className={`relative w-full text-left p-4 rounded-xl transition-all overflow-hidden border-2 ${
+                  className={`relative w-full text-left p-4 rounded-xl transition-all overflow-hidden border ${
                     currentLineIndex === index
                       ? "border-emerald-500 bg-emerald-50/50"
                       : "border-gray-200 bg-white hover:border-gray-300"
