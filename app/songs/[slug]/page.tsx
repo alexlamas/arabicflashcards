@@ -589,7 +589,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     </p>
                     {currentLineIndex === index ? (
                       <p
-                        className="text-sm bg-clip-text text-transparent"
+                        className="text-sm bg-clip-text text-transparent w-fit"
                         style={{
                           backgroundImage: `linear-gradient(to right, #10b981 ${lineProgress}%, #374151 ${lineProgress}%)`
                         }}
