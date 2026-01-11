@@ -323,20 +323,43 @@ export default function SongEditorPage({
   async function handleSetTimestamp(lineId: string, field: 'start_time' | 'end_time') {
     if (!player || !song) return;
     const time = player.getCurrentTime();
+
+    // Find the current line index
+    const lineIndex = song.lines.findIndex(l => l.id === lineId);
+    const nextLine = lineIndex >= 0 ? song.lines[lineIndex + 1] : null;
+
     try {
+      // Update the current line
       await SongService.updateLine(lineId, {
         [field]: time,
       });
-      // Update local state instead of reloading
-      setSong({
-        ...song,
-        lines: song.lines.map(line =>
-          line.id === lineId
-            ? { ...line, [field]: time }
+
+      // If setting end time, also set the next line's start time (with tiny gap)
+      let updatedLines = song.lines.map(line =>
+        line.id === lineId
+          ? { ...line, [field]: time }
+          : line
+      );
+
+      if (field === 'end_time' && nextLine) {
+        const nextStartTime = time + 0.05; // 50ms gap
+        await SongService.updateLine(nextLine.id, {
+          start_time: nextStartTime,
+        });
+        updatedLines = updatedLines.map(line =>
+          line.id === nextLine.id
+            ? { ...line, start_time: nextStartTime }
             : line
-        )
-      });
-      toast({ title: `Set ${field === 'start_time' ? 'start' : 'end'} time to ${formatTime(time)}` });
+        );
+      }
+
+      setSong({ ...song, lines: updatedLines });
+
+      if (field === 'end_time' && nextLine) {
+        toast({ title: `Set end → next start at ${formatTime(time)}` });
+      } else {
+        toast({ title: `Set ${field === 'start_time' ? 'start' : 'end'} time to ${formatTime(time)}` });
+      }
     } catch {
       toast({ variant: "destructive", title: "Failed to set timestamp" });
     }
