@@ -123,7 +123,7 @@ export default async function SongsPage() {
               >
                 <div className="aspect-video relative bg-gray-100">
                   <Image
-                    src={`https://img.youtube.com/vi/${song.youtube_id}/maxresdefault.jpg`}
+                    src={`https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`}
                     alt={song.title}
                     fill
                     className="object-cover"

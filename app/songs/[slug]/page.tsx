@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = song.description ||
     `Learn Lebanese Arabic by singing along to "${song.title}" by ${song.artist}. Interactive lyrics with translations, word-by-word breakdowns, and flashcard integration.`;
 
-  const ogImage = `https://img.youtube.com/vi/${song.youtube_id}/maxresdefault.jpg`;
+  const ogImage = `https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`;
 
   return {
     title,
@@ -88,8 +88,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [
         {
           url: ogImage,
-          width: 1280,
-          height: 720,
+          width: 480,
+          height: 360,
           alt: `${song.title} by ${song.artist}`,
         },
       ],
