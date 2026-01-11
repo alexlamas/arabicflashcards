@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { createClient } from "@/utils/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +18,6 @@ interface FeedbackModalProps {
 }
 
 export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
-  const { session } = useAuth();
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -30,15 +27,16 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
 
     setIsSubmitting(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.from("feedback").insert({
-        user_id: session?.user?.id,
-        email: session?.user?.email,
-        message: message.trim(),
-        page_url: window.location.href,
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: message.trim(),
+          pageUrl: window.location.href,
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to submit");
 
       setIsSubmitted(true);
       setTimeout(() => {
