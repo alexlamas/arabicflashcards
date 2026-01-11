@@ -237,6 +237,8 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const justClickedRef = useRef(false);
   const lyricRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showTopFade, setShowTopFade] = useState(false);
 
   // Unwrap params
   useEffect(() => {
@@ -483,9 +485,17 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
 
           {/* Right Side - Lyrics (Scrollable) */}
           <div className="lg:w-[40%] flex flex-col min-h-0 relative">
-            {/* Fade gradient at top - only visible when content scrolls under it */}
-            <div className="absolute top-0 left-0 right-2 h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
-            <div className="overflow-y-auto flex-1 space-y-2 pr-2">
+            {/* Fade gradient at top - only visible when scrolled */}
+            {showTopFade && (
+              <div className="absolute top-0 left-0 right-2 h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+            )}
+            {/* Fade gradient at bottom */}
+            <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+            <div
+              ref={lyricsContainerRef}
+              onScroll={(e) => setShowTopFade(e.currentTarget.scrollTop > 10)}
+              className="overflow-y-auto flex-1 space-y-2 pr-2"
+            >
               {song.lyrics.map((line, index) => (
                 <button
                   key={index}
