@@ -49,7 +49,7 @@ function ProgressRing({ percent, size = 64, strokeWidth = 3, color = "#10b981" }
 export type PackStatus = "completed" | "in-progress" | "not-started";
 
 interface PackJourneyNodeProps {
-  pack: StarterPack & { tier?: number };
+  pack: StarterPack;
   status: PackStatus;
   progressPercent: number;
   progressCount?: { learned: number; total: number };
