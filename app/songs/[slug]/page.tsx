@@ -570,7 +570,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   {/* Progress bar */}
                   {currentLineIndex === index && (
                     <div
-                      className="absolute inset-0 bg-emerald-100 transition-all duration-100"
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-100/60 to-emerald-50/30 rounded-r-full transition-all duration-100"
                       style={{ width: `${lineProgress}%` }}
                     />
                   )}
