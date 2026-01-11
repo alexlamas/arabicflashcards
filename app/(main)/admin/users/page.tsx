@@ -63,7 +63,7 @@ export default function AdminUsersPage() {
   const [togglingRole, setTogglingRole] = useState<string | null>(null);
 
   // Sorting state
-  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortField, setSortField] = useState<SortField>('last_sign_in_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   // Delete user confirmation state
