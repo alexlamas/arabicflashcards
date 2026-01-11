@@ -350,6 +350,29 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
     };
   }, [song]);
 
+  // Handle spacebar for play/pause
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Ignore if typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (player) {
+          if (isPlaying) {
+            player.pauseVideo();
+          } else {
+            player.playVideo();
+          }
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [player, isPlaying]);
+
   // Sync lyrics with playback
   useEffect(() => {
     if (!player || !song) return;
