@@ -41,6 +41,7 @@ import { useOfflineNavigation } from "../hooks/useOfflineNavigation";
 import { useUserRoles } from "../hooks/useUserRoles";
 import { useAIUsage } from "../hooks/useAIUsage";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavLinkProps {
   active: boolean;
@@ -128,15 +129,12 @@ export function TopNav() {
 
       <nav className="fixed top-0 pt-4 bg-white left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
         <div
-          className={cn(
-            "bg-white border border-gray-200 shadow-sm px-2 pr-1 md:cursor-default cursor-pointer transition-all duration-200",
-            isMobileMenuOpen ? "rounded-2xl" : "rounded-full"
-          )}
+          className="bg-white border border-gray-200 shadow-sm px-2 pr-1 md:cursor-default cursor-pointer rounded-[24px]"
         >
           {/* Top bar row */}
           <div
             className="h-12 flex items-center gap-1"
-            onClick={(e) => {
+            onClick={() => {
               // Only toggle menu on mobile (md breakpoint is 768px)
               if (window.innerWidth < 768) {
                 setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -343,8 +341,16 @@ export function TopNav() {
           </div>
 
           {/* Mobile expanded menu */}
+          <AnimatePresence>
           {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 py-2">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="border-t border-gray-200 py-2">
               <MobileNavLink
                 active={pathname === "/"}
                 icon={HouseSimple}
@@ -430,8 +436,10 @@ export function TopNav() {
               >
                 Log out
               </MobileNavLink>
-            </div>
+              </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </nav>
 
