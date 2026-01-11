@@ -397,20 +397,21 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         </div>
       </nav>
 
-      {/* Header */}
-      <div className="max-w-6xl mx-auto px-4 pt-24 pb-6">
-        <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
-        <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading">
-          {song.title}
-        </h1>
-      </div>
+      {/* Main Content - Fixed height layout */}
+      <div className="max-w-6xl mx-auto px-4 pt-24 h-[calc(100vh-2rem)] flex flex-col">
+        {/* Header */}
+        <div className="pb-4">
+          <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
+          <h1 className="font-pphatton text-2xl sm:text-3xl font-bold text-heading">
+            {song.title}
+          </h1>
+        </div>
 
-      {/* Main Content - Side by Side */}
-      <div className="max-w-6xl mx-auto px-4 pb-12">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Side - Video (Sticky) */}
-          <div className="lg:w-[55%]">
-            <div className="lg:sticky lg:top-24 space-y-4">
+        {/* Content - Side by Side */}
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+          {/* Left Side - Video */}
+          <div className="lg:w-[55%] flex-shrink-0">
+            <div className="space-y-4">
               {/* YouTube Player */}
               <div className="aspect-video bg-black rounded-2xl overflow-hidden">
                 <div id="youtube-player" className="w-full h-full" />
@@ -447,8 +448,8 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           </div>
 
           {/* Right Side - Lyrics (Scrollable) */}
-          <div className="lg:w-[45%]">
-            <div className="space-y-2">
+          <div className="lg:w-[45%] flex flex-col min-h-0">
+            <div className="overflow-y-auto flex-1 space-y-2 pr-2">
               {song.lyrics.map((line, index) => (
                 <button
                   key={index}
@@ -564,14 +565,6 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-8 px-4">
-        <div className="max-w-4xl mx-auto text-center text-sm text-gray-500">
-          <p>
-            Video from YouTube. Translations by Yalla Flash.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
