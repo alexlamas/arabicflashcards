@@ -70,17 +70,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const title = `${song.title} by ${song.artist} - Learn Lebanese Arabic | Yalla Flash`;
+  const title = `${song.title} Lyrics & English Translation - ${song.artist} | Yalla Flash`;
   const description = song.description ||
-    `Learn Lebanese Arabic by singing along to "${song.title}" by ${song.artist}. Interactive lyrics with translations, word-by-word breakdowns, and flashcard integration.`;
+    `${song.title} by ${song.artist} - Arabic lyrics with English translation and transliteration. Learn Lebanese Arabic with word-by-word breakdowns.`;
 
   const ogImage = `https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`;
 
   return {
     title,
     description,
+    keywords: [
+      song.title,
+      song.artist,
+      `${song.title} lyrics`,
+      `${song.title} translation`,
+      `${song.title} english`,
+      `${song.artist} songs`,
+      'Lebanese Arabic',
+      'Arabic lyrics',
+    ],
     openGraph: {
-      title: `${song.title} by ${song.artist}`,
+      title: `${song.title} Lyrics & Translation - ${song.artist}`,
       description,
       url: `https://yallaflash.com/songs/${slug}`,
       siteName: "Yalla Flash",
