@@ -334,12 +334,12 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
     };
   }, [isPlaying, player, song]);
 
-  // Auto-scroll to current lyric
+  // Auto-scroll to current lyric (keep it centered)
   useEffect(() => {
     if (currentLineIndex >= 0 && lyricRefs.current[currentLineIndex]) {
       lyricRefs.current[currentLineIndex]?.scrollIntoView({
         behavior: "smooth",
-        block: "nearest",
+        block: "center",
       });
     }
   }, [currentLineIndex]);
