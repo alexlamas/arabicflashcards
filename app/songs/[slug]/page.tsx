@@ -507,7 +507,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         {/* Content - Side by Side */}
         <div className="flex flex-col lg:flex-row gap-8 flex-1 min-h-0">
           {/* Left Side - Video */}
-          <div className="lg:w-[60%] flex-shrink-0">
+          <div className="lg:w-1/2 flex-shrink-0">
             <div className="space-y-4">
               {/* YouTube Player */}
               <div className="aspect-video bg-black rounded-2xl overflow-hidden">
@@ -545,7 +545,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           </div>
 
           {/* Right Side - Lyrics (Scrollable) */}
-          <div className="lg:w-[40%] flex flex-col min-h-0 relative">
+          <div className="lg:w-1/2 flex flex-col min-h-0 relative">
             {/* Fade gradient at top - only visible when scrolled */}
             {showTopFade && (
               <div className="absolute top-0 left-0 right-4 h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
