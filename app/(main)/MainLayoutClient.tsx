@@ -41,11 +41,14 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Hide nav on onboarding page
+  const isOnboarding = pathname === "/onboarding";
+
   return (
     <>
       <ServiceWorkerRegistration />
-      <TopNav />
-      <main className="pt-16">{children}</main>
+      {!isOnboarding && <TopNav />}
+      <main className={isOnboarding ? "" : "pt-16"}>{children}</main>
       <OfflineIndicator />
     </>
   );
