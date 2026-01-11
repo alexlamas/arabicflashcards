@@ -16,19 +16,6 @@ import { FluencyProgressBar } from "./FluencyProgressBar";
 import { PackJourney } from "./PackJourney";
 
 
-// Get initial pack IDs from URL (runs once, before component mounts)
-function getInitialPackIds(): string[] {
-  if (typeof window === "undefined") return [];
-  const params = new URLSearchParams(window.location.search);
-  const installed = params.get("installed");
-  if (installed) {
-    // Clean up URL immediately
-    window.history.replaceState({}, "", "/");
-    return installed.split(",").filter(Boolean);
-  }
-  return [];
-}
-
 export function Dashboard() {
   const { session } = useAuth();
   const { firstName: profileFirstName } = useProfile();
@@ -40,7 +27,7 @@ export function Dashboard() {
   } = useWords();
 
   const [availablePacks, setAvailablePacks] = useState<StarterPack[]>([]);
-  const [installedPackIds, setInstalledPackIds] = useState<string[]>(getInitialPackIds);
+  const [installedPackIds, setInstalledPackIds] = useState<string[]>([]);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
   const [loadingPacks, setLoadingPacks] = useState(true);
   const [installingPackId, setInstallingPackId] = useState<string | null>(null);

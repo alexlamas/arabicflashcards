@@ -121,6 +121,7 @@ export default function OnboardingPage() {
 
     setIsSaving(true);
     try {
+      // Update profile and start packs
       await updateProfile({
         first_name: name.trim() || undefined,
         avatar,
@@ -128,13 +129,11 @@ export default function OnboardingPage() {
         onboarding_completed: true,
       });
 
-      // Start all selected packs
       await Promise.all(selectedPacks.map(packId => PackService.startPack(packId)));
 
-      // Pass installed pack IDs via URL for immediate display
-      const params = new URLSearchParams();
-      params.set("installed", selectedPacks.join(","));
-      router.replace(`/?${params.toString()}`);
+      // Use hard navigation to ensure clean state - this is the only reliable way
+      // to avoid race conditions with React context updates
+      window.location.href = "/";
     } catch (error) {
       console.error("Failed to complete onboarding:", error);
     } finally {
