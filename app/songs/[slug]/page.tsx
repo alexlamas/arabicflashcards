@@ -32,9 +32,9 @@ interface Song {
 const SONGS: Record<string, Song> = {
   "bhibbak-ya-lebnan": {
     slug: "bhibbak-ya-lebnan",
-    title: "Bhibbak Ya Lebnan",
+    title: "Bahebak Ya Lebnan",
     artist: "Fairuz",
-    youtubeId: "rVF3GKPW6TY",
+    youtubeId: "Q5U5eWfsIO4",
     description: "One of Fairuz's most beloved songs, expressing love for Lebanon. Perfect for learning emotional vocabulary and patriotic expressions in Lebanese Arabic.",
     lyrics: [
       {

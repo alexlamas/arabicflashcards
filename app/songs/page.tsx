@@ -50,9 +50,9 @@ interface Song {
 const SONGS: Song[] = [
   {
     slug: "bhibbak-ya-lebnan",
-    title: "Bhibbak Ya Lebnan",
+    title: "Bahebak Ya Lebnan",
     artist: "Fairuz",
-    thumbnail: "https://img.youtube.com/vi/rVF3GKPW6TY/maxresdefault.jpg",
+    thumbnail: "https://img.youtube.com/vi/Q5U5eWfsIO4/maxresdefault.jpg",
     wordCount: 24,
     level: "beginner",
   },
