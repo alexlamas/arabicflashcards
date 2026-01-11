@@ -389,31 +389,31 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         </div>
       </nav>
 
-      {/* Main Content - Side by Side */}
-      <div className="max-w-7xl mx-auto px-4 pt-24 pb-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Side - Video (Sticky) */}
-          <div className="lg:w-1/2">
-            <div className="lg:sticky lg:top-24">
-              {/* Song Info */}
-              <div className="mb-4">
-                <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
-                <h1 className="font-pphatton text-2xl sm:text-3xl font-bold text-heading">
-                  {song.title}
-                </h1>
-              </div>
+      {/* Header */}
+      <div className="max-w-6xl mx-auto px-4 pt-24 pb-6">
+        <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
+        <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading">
+          {song.title}
+        </h1>
+      </div>
 
+      {/* Main Content - Side by Side */}
+      <div className="max-w-6xl mx-auto px-4 pb-12">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Side - Video (Sticky) */}
+          <div className="lg:w-[55%]">
+            <div className="lg:sticky lg:top-24 space-y-4">
               {/* YouTube Player */}
               <div className="aspect-video bg-black rounded-2xl overflow-hidden">
                 <div id="youtube-player" className="w-full h-full" />
               </div>
 
               {/* Playback Controls */}
-              <div className="flex items-center justify-center gap-4 mt-4">
+              <div className="flex items-center justify-center gap-3">
                 <Button
                   variant="outline"
                   size="icon"
-                  className="rounded-full"
+                  className="rounded-full h-10 w-10"
                   onClick={handleRestart}
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -436,12 +436,12 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
               </div>
 
               {/* CTA */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+              <div className="p-4 bg-gray-50 rounded-xl text-center">
                 <p className="text-sm text-body mb-3">
                   Want to learn all these words with flashcards?
                 </p>
                 <Link href="/">
-                  <Button className="w-full rounded-full bg-gray-900 hover:bg-gray-800">
+                  <Button className="rounded-full bg-gray-900 hover:bg-gray-800 px-6">
                     Start learning free
                   </Button>
                 </Link>
@@ -450,11 +450,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           </div>
 
           {/* Right Side - Lyrics (Scrollable) */}
-          <div className="lg:w-1/2">
-            <h2 className="font-pphatton text-xl font-bold text-heading mb-4">
-              Lyrics
-            </h2>
-
+          <div className="lg:w-[45%]">
             <div className="space-y-2">
               {song.lyrics.map((line, index) => (
                 <button
