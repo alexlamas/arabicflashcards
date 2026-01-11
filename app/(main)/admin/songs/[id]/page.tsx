@@ -142,6 +142,7 @@ export default function SongEditorPage({
     if (songId) {
       loadSong();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [songId]);
 
   async function loadSong() {
@@ -205,6 +206,7 @@ export default function SongEditorPage({
         clearInterval(timeIntervalRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [song?.youtube_id]);
 
   // Track current time

@@ -251,30 +251,6 @@ const SONGS: Record<string, Song> = {
 };
 
 // YouTube Player types
-declare global {
-  interface Window {
-    YT: {
-      Player: new (
-        elementId: string,
-        config: {
-          videoId: string;
-          playerVars?: Record<string, number | string>;
-          events?: {
-            onReady?: (event: { target: YouTubePlayer }) => void;
-            onStateChange?: (event: { data: number }) => void;
-          };
-        }
-      ) => YouTubePlayer;
-      PlayerState: {
-        PLAYING: number;
-        PAUSED: number;
-        ENDED: number;
-      };
-    };
-    onYouTubeIframeAPIReady: () => void;
-  }
-}
-
 interface YouTubePlayer {
   playVideo: () => void;
   pauseVideo: () => void;
