@@ -285,75 +285,86 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         </div>
       </nav>
 
-      {/* Hero */}
-      <div className="max-w-4xl mx-auto px-4 pt-28 pb-8">
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="flex-1">
-            <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
-            <h1 className="font-pphatton text-3xl sm:text-4xl font-bold text-heading mb-3">
-              {song.title}
-            </h1>
-            <p className="text-body">{song.description}</p>
+      {/* Main Content - Side by Side */}
+      <div className="max-w-7xl mx-auto px-4 pt-24 pb-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Side - Video (Sticky) */}
+          <div className="lg:w-1/2">
+            <div className="lg:sticky lg:top-24">
+              {/* Song Info */}
+              <div className="mb-4">
+                <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
+                <h1 className="font-pphatton text-2xl sm:text-3xl font-bold text-heading">
+                  {song.title}
+                </h1>
+              </div>
+
+              {/* YouTube Player */}
+              <div className="aspect-video bg-black rounded-2xl overflow-hidden">
+                <div id="youtube-player" className="w-full h-full" />
+              </div>
+
+              {/* Playback Controls */}
+              <div className="flex items-center justify-center gap-4 mt-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={handleRestart}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="lg"
+                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8"
+                  onClick={handlePlayPause}
+                >
+                  {isPlaying ? (
+                    <>
+                      <Pause className="w-5 h-5 mr-2" /> Pause
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 mr-2" /> Play
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                <p className="text-sm text-body mb-3">
+                  Want to learn all these words with flashcards?
+                </p>
+                <Link href="/">
+                  <Button className="w-full rounded-full bg-gray-900 hover:bg-gray-800">
+                    Start learning free
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* YouTube Player */}
-      <div className="max-w-4xl mx-auto px-4 mb-8">
-        <div className="aspect-video bg-black rounded-2xl overflow-hidden">
-          <div id="youtube-player" className="w-full h-full" />
-        </div>
+          {/* Right Side - Lyrics (Scrollable) */}
+          <div className="lg:w-1/2">
+            <h2 className="font-pphatton text-xl font-bold text-heading mb-4">
+              Lyrics
+            </h2>
 
-        {/* Playback Controls */}
-        <div className="flex items-center justify-center gap-4 mt-4">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-            onClick={handleRestart}
-          >
-            <RotateCcw className="w-4 h-4" />
-          </Button>
-          <Button
-            size="lg"
-            className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8"
-            onClick={handlePlayPause}
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="w-5 h-5 mr-2" /> Pause
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5 mr-2" /> Play
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Lyrics */}
-      <div className="bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="font-pphatton text-2xl font-bold text-heading mb-6">
-            Lyrics
-          </h2>
-
-          <div className="space-y-2">
-            {song.lyrics.map((line, index) => (
-              <button
-                key={index}
-                onClick={() => handleLineClick(index)}
-                className={`w-full text-left p-4 rounded-xl transition-all ${
-                  currentLineIndex === index
-                    ? "bg-emerald-100 border-2 border-emerald-500 scale-[1.02]"
-                    : "bg-white border border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6">
-                  <div className="flex-1">
+            <div className="space-y-2">
+              {song.lyrics.map((line, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleLineClick(index)}
+                  className={`w-full text-left p-4 rounded-xl transition-all ${
+                    currentLineIndex === index
+                      ? "bg-emerald-100 border-2 border-emerald-500"
+                      : "bg-white border border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="space-y-1">
                     <p
-                      className={`text-2xl font-arabic mb-1 ${
+                      className={`text-2xl font-arabic ${
                         currentLineIndex === index ? "text-emerald-900" : "text-heading"
                       }`}
                     >
@@ -361,13 +372,11 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     </p>
                     <p
                       className={`text-sm ${
-                        currentLineIndex === index ? "text-emerald-700" : "text-body"
+                        currentLineIndex === index ? "text-emerald-700" : "text-subtle"
                       }`}
                     >
                       {line.transliteration}
                     </p>
-                  </div>
-                  <div className="sm:text-right">
                     <p
                       className={`${
                         currentLineIndex === index ? "text-emerald-800" : "text-body"
@@ -376,35 +385,35 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                       {line.english}
                     </p>
                   </div>
-                </div>
 
-                {/* Word breakdown */}
-                {currentLineIndex === index && line.words && (
-                  <div className="mt-4 pt-4 border-t border-emerald-200">
-                    <p className="text-xs text-emerald-600 font-medium mb-2">
-                      CLICK A WORD TO LEARN IT
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {line.words.map((word, wordIndex) => (
-                        <button
-                          key={wordIndex}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedWord(word);
-                          }}
-                          className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
-                        >
-                          <span className="text-lg font-arabic">{word.arabic}</span>
-                          <span className="text-xs text-gray-500 ml-2">
-                            {word.english}
-                          </span>
-                        </button>
-                      ))}
+                  {/* Word breakdown */}
+                  {currentLineIndex === index && line.words && (
+                    <div className="mt-4 pt-4 border-t border-emerald-200">
+                      <p className="text-xs text-emerald-600 font-medium mb-2">
+                        TAP A WORD TO LEARN IT
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {line.words.map((word, wordIndex) => (
+                          <button
+                            key={wordIndex}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedWord(word);
+                            }}
+                            className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
+                          >
+                            <span className="text-lg font-arabic">{word.arabic}</span>
+                            <span className="text-xs text-gray-500 ml-2">
+                              {word.english}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </button>
-            ))}
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -445,27 +454,6 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           </div>
         </div>
       )}
-
-      {/* CTA */}
-      <div className="py-16 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-pphatton text-2xl font-bold text-heading mb-4">
-            Want to learn all these words?
-          </h2>
-          <p className="text-body mb-6">
-            Add this song&apos;s vocabulary to your flashcards and master them with
-            spaced repetition.
-          </p>
-          <Link href="/">
-            <Button
-              size="lg"
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8"
-            >
-              Start learning free
-            </Button>
-          </Link>
-        </div>
-      </div>
 
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8 px-4">
