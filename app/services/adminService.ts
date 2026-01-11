@@ -7,6 +7,8 @@ export interface AdminUser {
   created_at: string;
   email_confirmed: boolean;
   word_count: number;
+  review_count: number;
+  ai_credits_used: number;
   last_review_date: string | null;
   last_sign_in_at: string | null;
 }

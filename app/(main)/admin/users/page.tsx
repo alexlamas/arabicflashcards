@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 
-type SortField = 'email' | 'word_count' | 'last_sign_in_at' | 'last_review_date' | 'created_at';
+type SortField = 'email' | 'word_count' | 'review_count' | 'ai_credits_used' | 'last_sign_in_at' | 'last_review_date' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 
 export default function AdminUsersPage() {
@@ -280,7 +280,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="p-4 pt-12 max-w-4xl mx-auto">
+    <div className="p-4 pt-12 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-semibold">Users</h1>
         <Button size="sm" variant="outline" className="rounded-full" onClick={() => setIsAddingUser(true)}>
@@ -312,7 +312,7 @@ export default function AdminUsersPage() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-sm truncate">{user.email}</p>
                       <p className="text-xs text-gray-500">
-                        {user.word_count} words · Joined {new Date(user.created_at).toLocaleDateString()}
+                        {user.word_count} words · {user.review_count} reviews · {user.ai_credits_used} AI
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         Last login: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
@@ -372,6 +372,8 @@ export default function AdminUsersPage() {
                   <SortableHeader field="email">Email</SortableHeader>
                   <TableHead>Role</TableHead>
                   <SortableHeader field="word_count">Words</SortableHeader>
+                  <SortableHeader field="review_count">Reviews</SortableHeader>
+                  <SortableHeader field="ai_credits_used">AI</SortableHeader>
                   <SortableHeader field="last_sign_in_at">Last login</SortableHeader>
                   <SortableHeader field="last_review_date">Last review</SortableHeader>
                   <SortableHeader field="created_at">Joined</SortableHeader>
@@ -404,6 +406,8 @@ export default function AdminUsersPage() {
                         </Select>
                       </TableCell>
                       <TableCell>{user.word_count}</TableCell>
+                      <TableCell>{user.review_count}</TableCell>
+                      <TableCell>{user.ai_credits_used}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {user.last_sign_in_at ? (
                           <Tooltip>

@@ -68,12 +68,13 @@ export async function GET() {
 
     const { data: progress } = await adminClient
       .from("word_progress")
-      .select("user_id, updated_at")
+      .select("user_id, updated_at, review_count")
       .order("updated_at", { ascending: false });
 
-    // Count words per user
+    // Count words per user and sum review counts
     const wordCounts = new Map<string, number>();
     const lastReviewDates = new Map<string, string>();
+    const reviewCounts = new Map<string, number>();
 
     for (const word of words || []) {
       if (word.user_id) {
@@ -85,6 +86,22 @@ export async function GET() {
       if (p.updated_at && !lastReviewDates.has(p.user_id)) {
         lastReviewDates.set(p.user_id, p.updated_at);
       }
+      // Sum up review counts
+      if (p.review_count) {
+        reviewCounts.set(p.user_id, (reviewCounts.get(p.user_id) || 0) + p.review_count);
+      }
+    }
+
+    // Get AI usage per user
+    const { data: aiUsage } = await adminClient
+      .from("ai_usage")
+      .select("user_id, count");
+
+    const aiUsageCounts = new Map<string, number>();
+    for (const usage of aiUsage || []) {
+      if (usage.user_id) {
+        aiUsageCounts.set(usage.user_id, (aiUsageCounts.get(usage.user_id) || 0) + (usage.count || 0));
+      }
     }
 
     // Map auth users to admin user format
@@ -94,6 +111,8 @@ export async function GET() {
       created_at: authUser.created_at,
       email_confirmed: !!authUser.email_confirmed_at,
       word_count: wordCounts.get(authUser.id) || 0,
+      review_count: reviewCounts.get(authUser.id) || 0,
+      ai_credits_used: aiUsageCounts.get(authUser.id) || 0,
       last_review_date: lastReviewDates.get(authUser.id) || null,
       last_sign_in_at: authUser.last_sign_in_at || null,
     }));
