@@ -88,41 +88,52 @@ export function Dashboard() {
     return progress;
   }, [words, installedPackIds, packWordCounts]);
 
-  useEffect(() => {
-    async function loadPacks() {
-      try {
-        const [packs, installed, wordCounts] = await Promise.all([
-          StarterPackService.getAvailablePacks(),
-          StarterPackService.getUserImportedPacks(),
-          StarterPackService.getPackWordCounts(),
-        ]);
-        setAvailablePacks(packs);
-        setInstalledPackIds(installed);
-        setPackWordCounts(wordCounts);
+  async function loadPacks() {
+    try {
+      const [packs, installed, wordCounts] = await Promise.all([
+        StarterPackService.getAvailablePacks(),
+        StarterPackService.getUserImportedPacks(),
+        StarterPackService.getPackWordCounts(),
+      ]);
+      setAvailablePacks(packs);
+      setInstalledPackIds(installed);
+      setPackWordCounts(wordCounts);
 
-        // Fetch sentence counts per pack
-        const supabase = createClient();
-        const { data: sentenceData } = await supabase
-          .from("sentences")
-          .select("pack_id")
-          .not("pack_id", "is", null);
+      // Fetch sentence counts per pack
+      const supabase = createClient();
+      const { data: sentenceData } = await supabase
+        .from("sentences")
+        .select("pack_id")
+        .not("pack_id", "is", null);
 
-        const sentenceCounts: Record<string, number> = {};
-        (sentenceData || []).forEach(row => {
-          if (row.pack_id) {
-            sentenceCounts[row.pack_id] = (sentenceCounts[row.pack_id] || 0) + 1;
-          }
-        });
-        setPackSentenceCounts(sentenceCounts);
-      } catch {
-        toast({
-          variant: "destructive",
-          title: "Failed to load packs",
-        });
-      } finally {
-        setLoadingPacks(false);
-      }
+      const sentenceCounts: Record<string, number> = {};
+      (sentenceData || []).forEach(row => {
+        if (row.pack_id) {
+          sentenceCounts[row.pack_id] = (sentenceCounts[row.pack_id] || 0) + 1;
+        }
+      });
+      setPackSentenceCounts(sentenceCounts);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to load packs",
+      });
+    } finally {
+      setLoadingPacks(false);
     }
+  }
+
+  // Check if we need to refresh after onboarding
+  useEffect(() => {
+    const needsRefresh = localStorage.getItem("refresh_after_onboarding") === "true";
+    if (needsRefresh) {
+      localStorage.removeItem("refresh_after_onboarding");
+      refreshWords(true);
+      loadPacks();
+    }
+  }, [refreshWords]);
+
+  useEffect(() => {
     loadPacks();
   }, []);
 

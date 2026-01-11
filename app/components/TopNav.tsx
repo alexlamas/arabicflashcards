@@ -22,7 +22,6 @@ import {
   CardsThree,
   GearSix,
   HouseSimple,
-  Swatches,
   SignOut,
   ChatCircle,
   CaretDown,
@@ -155,10 +154,9 @@ export function TopNav() {
                 <span className="text-sm font-medium text-heading flex items-center gap-1.5">
                   {pathname === "/" && <><HouseSimple className="h-4 w-4" />Home</>}
                   {pathname === "/my-words" && <><CardsThree className="h-4 w-4" />My words</>}
-                  {pathname === "/memory-game" && <><GameController className="h-4 w-4" />Play</>}
+                  {pathname.startsWith("/play") && <><GameController className="h-4 w-4" />Play</>}
                   {pathname === "/review" && <><PlayCircle className="h-4 w-4" />Review</>}
-                  {pathname === "/admin" && <><Cube className="h-4 w-4" />Admin</>}
-                  {pathname === "/design-system" && <><Swatches className="h-4 w-4" />Design system</>}
+                  {pathname.startsWith("/admin") && <><Cube className="h-4 w-4" />Admin</>}
                 </span>
               </div>
             )}
@@ -181,9 +179,9 @@ export function TopNav() {
               My words
             </NavLink>
             <NavLink
-              active={pathname === "/memory-game"}
+              active={pathname.startsWith("/play")}
               icon={GameController}
-              onClick={() => handleNavigate("/memory-game")}
+              onClick={() => handleNavigate("/play")}
               tourId="play"
             >
               Play
@@ -201,7 +199,7 @@ export function TopNav() {
               <>
                 <div className="w-px h-5 bg-gray-200 mx-1" />
                 <NavLink
-                  active={pathname === "/admin"}
+                  active={pathname.startsWith("/admin")}
                   icon={Cube}
                   onClick={() => handleNavigate("/admin")}
                 >
@@ -292,15 +290,6 @@ export function TopNav() {
                   <ChatCircle className="w-4 h-4 mr-2" />
                   Send feedback
                 </DropdownMenuItem>
-                {isAdmin && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleNavigate("/design-system")}>
-                      <Swatches className="w-4 h-4 mr-2" />
-                      Design system
-                    </DropdownMenuItem>
-                  </>
-                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <SignOut className="w-4 h-4 mr-2" />
@@ -386,9 +375,9 @@ export function TopNav() {
                 My words
               </MobileNavLink>
               <MobileNavLink
-                active={pathname === "/memory-game"}
+                active={pathname.startsWith("/play")}
                 icon={GameController}
-                onClick={() => handleNavigate("/memory-game")}
+                onClick={() => handleNavigate("/play")}
               >
                 Play
               </MobileNavLink>
@@ -406,21 +395,12 @@ export function TopNav() {
                 <>
                   <div className="border-t my-2 mx-2" />
                   <MobileNavLink
-                    active={pathname === "/admin"}
+                    active={pathname.startsWith("/admin")}
                     icon={Cube}
                     onClick={() => handleNavigate("/admin")}
                   >
                     Admin
                   </MobileNavLink>
-                  {isAdmin && (
-                    <MobileNavLink
-                      active={pathname === "/design-system"}
-                      icon={Swatches}
-                      onClick={() => handleNavigate("/design-system")}
-                    >
-                      Design system
-                    </MobileNavLink>
-                  )}
                 </>
               )}
 

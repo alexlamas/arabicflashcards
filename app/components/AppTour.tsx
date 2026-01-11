@@ -1,155 +1,135 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Joyride, { CallBackProps, STATUS, TooltipRenderProps } from "react-joyride";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const TOUR_STEPS = [
   {
-    target: "my-words",
+    target: '[data-tour="my-words"]',
     title: "My Words",
-    description: "Your personal vocabulary library. Add custom words and track your progress.",
-    position: "bottom" as const,
+    content: "Your personal vocabulary library. Add custom words and track your progress.",
+    disableBeacon: true,
+    placement: "bottom" as const,
   },
   {
-    target: "review",
-    title: "Review",
-    description: "Practice words with spaced repetition. Complete daily reviews to build lasting memory.",
-    position: "bottom" as const,
-  },
-  {
-    target: "play",
+    target: '[data-tour="play"]',
     title: "Play",
-    description: "Fun memory games to reinforce what you've learned. Great for a quick practice!",
-    position: "bottom" as const,
+    content: "Fun memory games to reinforce what you've learned. Great for a quick practice!",
+    disableBeacon: true,
+    placement: "bottom" as const,
+  },
+  {
+    target: '[data-tour="review"]',
+    title: "Review",
+    content: "Practice words with spaced repetition. Complete daily reviews to build lasting memory.",
+    disableBeacon: true,
+    placement: "bottom" as const,
   },
 ];
 
 const TOUR_SHOWN_KEY = "app_tour_shown";
 const SHOW_TOUR_KEY = "show_app_tour";
 
+function CustomTooltip({
+  index,
+  step,
+  tooltipProps,
+  primaryProps,
+  skipProps,
+  isLastStep,
+}: TooltipRenderProps) {
+  return (
+    <div {...tooltipProps} className="w-72">
+      <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 relative">
+        {/* Close button */}
+        <button
+          {...skipProps}
+          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <h3 className="font-semibold text-gray-900 mb-1">{step.title}</h3>
+        <p className="text-sm text-gray-500 mb-4">{step.content}</p>
+
+        <div className="flex items-center justify-between">
+          {/* Step indicator */}
+          <div className="flex gap-1">
+            {TOUR_STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  i === index ? "bg-emerald-500" : "bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Next button */}
+          <Button {...primaryProps} size="sm" className="rounded-full">
+            {isLastStep ? "Got it!" : "Next"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AppTour() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [run, setRun] = useState(false);
 
   useEffect(() => {
-    // Check if we should show the tour (set by onboarding)
     const shouldShow = localStorage.getItem(SHOW_TOUR_KEY) === "true";
     const alreadyShown = localStorage.getItem(TOUR_SHOWN_KEY) === "true";
 
     if (shouldShow && !alreadyShown) {
-      // Small delay to let the page render
       const timer = setTimeout(() => {
-        setIsVisible(true);
-        updateTooltipPosition(0);
-      }, 500);
+        setRun(true);
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, []);
 
-  useEffect(() => {
-    if (isVisible) {
-      updateTooltipPosition(currentStep);
+  const handleCallback = (data: CallBackProps) => {
+    const { status } = data;
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
-      // Recalculate on resize
-      const handleResize = () => updateTooltipPosition(currentStep);
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
+    if (finishedStatuses.includes(status)) {
+      setRun(false);
+      localStorage.setItem(TOUR_SHOWN_KEY, "true");
+      localStorage.removeItem(SHOW_TOUR_KEY);
     }
-  }, [currentStep, isVisible]);
-
-  function updateTooltipPosition(stepIndex: number) {
-    const step = TOUR_STEPS[stepIndex];
-    const targetElement = document.querySelector(`[data-tour="${step.target}"]`);
-
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
-      setTooltipPosition({
-        top: rect.bottom + 16,
-        left: rect.left + rect.width / 2,
-      });
-    }
-  }
-
-  function handleNext() {
-    if (currentStep < TOUR_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleClose();
-    }
-  }
-
-  function handleClose() {
-    setIsVisible(false);
-    localStorage.setItem(TOUR_SHOWN_KEY, "true");
-    localStorage.removeItem(SHOW_TOUR_KEY);
-  }
-
-  if (!isVisible) return null;
-
-  const step = TOUR_STEPS[currentStep];
+  };
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 z-[100]"
-        onClick={handleClose}
-      />
-
-      {/* Tooltip */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="fixed z-[101] w-72"
-          style={{
-            top: tooltipPosition.top,
-            left: tooltipPosition.left,
-            transform: "translateX(-50%)",
-          }}
-        >
-          {/* Arrow */}
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-l border-t border-gray-200" />
-
-          {/* Content */}
-          <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 relative">
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            <h3 className="font-semibold text-heading mb-1">{step.title}</h3>
-            <p className="text-sm text-subtle mb-4">{step.description}</p>
-
-            <div className="flex items-center justify-between">
-              {/* Step indicator */}
-              <div className="flex gap-1">
-                {TOUR_STEPS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      i === currentStep ? "bg-emerald-500" : "bg-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Next button */}
-              <Button size="sm" onClick={handleNext} className="rounded-full">
-                {currentStep === TOUR_STEPS.length - 1 ? "Got it!" : "Next"}
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </>
+    <Joyride
+      steps={TOUR_STEPS}
+      run={run}
+      continuous
+      callback={handleCallback}
+      tooltipComponent={CustomTooltip}
+      floaterProps={{
+        hideArrow: true,
+        styles: {
+          floater: {
+            filter: "none",
+          },
+        },
+      }}
+      disableScrolling
+      styles={{
+        options: {
+          zIndex: 1000,
+          overlayColor: "rgba(0, 0, 0, 0.3)",
+        },
+        spotlight: {
+          borderRadius: 9999,
+          boxShadow: "0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 0 9999px rgba(0, 0, 0, 0.3)",
+        },
+      }}
+      spotlightPadding={4}
+    />
   );
 }

@@ -164,6 +164,11 @@ Key tables:
 - Client: `utils/supabase/client.ts` (browser)
 - Server: `utils/supabase/server.ts` (server components)
 
+## Branding
+
+- **Logo**: The app logo is a red pomegranate (`/public/logo.svg`)
+- **Brand font**: PP Hatton (`font-title` or `font-pphatton` in Tailwind)
+
 ## Style Guide
 
 ### Text formatting

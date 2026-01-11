@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { clsx } from "clsx";
 import { SearchBar } from "./SearchBar";
 import { MagnifyingGlass, CaretDown, X } from "@phosphor-icons/react";
@@ -15,6 +16,7 @@ import {
 export interface TabConfig {
   key: string;
   label: string;
+  href?: string;
   count?: number;
   dot?: "learning" | "learned" | null;
 }
@@ -110,7 +112,7 @@ export function SubNav({
         )}
 
         {/* Mobile: Tab dropdown (hidden when search is open) */}
-        {tabs && onTabChange && !mobileSearchOpen && (
+        {tabs && !mobileSearchOpen && (
           <div className="md:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -127,16 +129,29 @@ export function SubNav({
                 {tabs.map((tab) => (
                   <DropdownMenuItem
                     key={tab.key}
-                    onClick={() => onTabChange(tab.key)}
+                    asChild={!!tab.href}
+                    onClick={() => !tab.href && onTabChange?.(tab.key)}
                     className={clsx(
                       "flex items-center gap-2",
                       activeTab === tab.key && "bg-gray-100"
                     )}
                   >
-                    {getTabDot(tab.dot)}
-                    {tab.label}
-                    {tab.count !== undefined && (
-                      <span className="text-xs text-neutral-400 ml-auto">{tab.count}</span>
+                    {tab.href ? (
+                      <Link href={tab.href} className="flex items-center gap-2 w-full">
+                        {getTabDot(tab.dot)}
+                        {tab.label}
+                        {tab.count !== undefined && (
+                          <span className="text-xs text-neutral-400 ml-auto">{tab.count}</span>
+                        )}
+                      </Link>
+                    ) : (
+                      <>
+                        {getTabDot(tab.dot)}
+                        {tab.label}
+                        {tab.count !== undefined && (
+                          <span className="text-xs text-neutral-400 ml-auto">{tab.count}</span>
+                        )}
+                      </>
                     )}
                   </DropdownMenuItem>
                 ))}
@@ -146,31 +161,49 @@ export function SubNav({
         )}
 
         {/* Desktop: Full tabs */}
-        {tabs && onTabChange && (
+        {tabs && (
           <div className="hidden md:inline-flex items-center rounded-full p-0.5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => onTabChange(tab.key)}
-                className={clsx(
-                  "px-4 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap",
-                  activeTab === tab.key
-                    ? "bg-gray-200/70 shadow-sm text-neutral-900"
-                    : "text-neutral-500 hover:text-neutral-900"
-                )}
-              >
-                {getTabDot(tab.dot)}
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span className={clsx(
-                    "text-xs pt-0.5",
-                    activeTab === tab.key ? "text-neutral-500" : "text-neutral-400"
-                  )}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const tabClasses = clsx(
+                "px-4 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap",
+                activeTab === tab.key
+                  ? "bg-gray-200/70 shadow-sm text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900"
+              );
+
+              const tabContent = (
+                <>
+                  {getTabDot(tab.dot)}
+                  {tab.label}
+                  {tab.count !== undefined && (
+                    <span className={clsx(
+                      "text-xs pt-0.5",
+                      activeTab === tab.key ? "text-neutral-500" : "text-neutral-400"
+                    )}>
+                      {tab.count}
+                    </span>
+                  )}
+                </>
+              );
+
+              if (tab.href) {
+                return (
+                  <Link key={tab.key} href={tab.href} className={tabClasses}>
+                    {tabContent}
+                  </Link>
+                );
+              }
+
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => onTabChange?.(tab.key)}
+                  className={tabClasses}
+                >
+                  {tabContent}
+                </button>
+              );
+            })}
           </div>
         )}
 

@@ -47,7 +47,7 @@ export default function OnboardingPage() {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("pomegranate");
   const [fluency, setFluency] = useState<FluencyLevel | null>(null);
-  const [selectedPack, setSelectedPack] = useState<string | null>(null);
+  const [selectedPacks, setSelectedPacks] = useState<string[]>([]);
   const [packs, setPacks] = useState<PackWithCount[]>([]);
   const [isLoadingPacks, setIsLoadingPacks] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -104,8 +104,20 @@ export default function OnboardingPage() {
     }
   }
 
+  function togglePackSelection(packId: string) {
+    setSelectedPacks(prev => {
+      if (prev.includes(packId)) {
+        return prev.filter(id => id !== packId);
+      }
+      if (prev.length >= 3) {
+        return prev; // Already at max
+      }
+      return [...prev, packId];
+    });
+  }
+
   async function handleComplete() {
-    if (!selectedPack) return;
+    if (selectedPacks.length === 0) return;
 
     setIsSaving(true);
     try {
@@ -116,9 +128,11 @@ export default function OnboardingPage() {
         onboarding_completed: true,
       });
 
-      await PackService.startPack(selectedPack);
+      // Start all selected packs
+      await Promise.all(selectedPacks.map(packId => PackService.startPack(packId)));
 
       localStorage.setItem("show_app_tour", "true");
+      localStorage.setItem("refresh_after_onboarding", "true");
       router.replace("/");
     } catch (error) {
       console.error("Failed to complete onboarding:", error);
@@ -132,7 +146,7 @@ export default function OnboardingPage() {
       case 1: return true;
       case 2: return true;
       case 3: return fluency !== null;
-      case 4: return selectedPack !== null;
+      case 4: return selectedPacks.length > 0;
       default: return false;
     }
   }
@@ -225,6 +239,7 @@ export default function OnboardingPage() {
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleNext()}
                   placeholder="Enter your name"
                   className="text-lg h-14 rounded-xl mb-6"
                   autoFocus
@@ -317,10 +332,10 @@ export default function OnboardingPage() {
               <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full py-4">
                 {stepIndicator}
                 <h1 className="text-3xl font-title text-gray-900 mb-2">
-                  Choose your first pack
+                  Choose your packs
                 </h1>
                 <p className="text-gray-500 mb-6">
-                  Pick one to start learning. You can add more later.
+                  Select up to 3 packs to start learning.
                 </p>
                 {isLoadingPacks ? (
                   <div className="flex-1 flex items-center justify-center">
@@ -328,14 +343,14 @@ export default function OnboardingPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4 mb-6">
-                      {packs.map((pack) => {
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-1 -m-1 mb-6">
+                      {packs.slice(0, 6).map((pack) => {
                         const isRecommended = pack.level === fluency;
-                        const isSelected = selectedPack === pack.id;
+                        const isSelected = selectedPacks.includes(pack.id);
                         return (
                           <button
                             key={pack.id}
-                            onClick={() => setSelectedPack(pack.id)}
+                            onClick={() => togglePackSelection(pack.id)}
                             className={cn(
                               "relative rounded-2xl overflow-hidden text-left transition-all duration-200 bg-white border-2 group",
                               isSelected
@@ -384,7 +399,7 @@ export default function OnboardingPage() {
                         );
                       })}
                     </div>
-                    <div className="max-w-md mx-auto w-full">
+                    <div className="max-w-md">
                       {nextButton}
                     </div>
                   </>
