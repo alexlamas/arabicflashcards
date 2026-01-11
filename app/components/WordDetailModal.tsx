@@ -114,65 +114,69 @@ export function WordDetailModal({
       modal={true}
     >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
-            <DialogHeader className="flex flex-row items-start justify-between pr-10">
-              <div className="flex-1">
-                <DialogTitle className="text-2xl font-semibold flex items-center gap-3">
-                  {word.english}
+            <DialogHeader className="space-y-3">
+              {/* Row 1: Badge on left, actions on right */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
                   <TypeBadge type={word.type} />
-                </DialogTitle>
-              </div>
-              <div className="absolute right-4 top-4 flex items-center gap-1">
-                {isPackWord && (
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 mr-1">
-                    From pack
-                  </span>
-                )}
-                {canEditWord ? (
-                  <>
+                  {isPackWord && (
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                      From pack
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  {canEditWord ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsEditOpen(true)}
+                        title="Edit word"
+                      >
+                        <PencilSimpleIcon weight="bold" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        title="Delete word"
+                        className="hover:bg-red-50 hover:text-red-600"
+                      >
+                        <TrashSimpleIcon weight="bold" />
+                      </Button>
+                    </>
+                  ) : canAddNotes && isPackWord && (
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsEditOpen(true)}
-                      title="Edit word"
+                      title="Add examples"
                     >
                       <PencilSimpleIcon weight="bold" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                      title="Delete word"
-                      className="hover:bg-red-50 hover:text-red-600"
-                    >
-                      <TrashSimpleIcon weight="bold" />
+                  )}
+                  {canAddNotes && (
+                    <EditWord
+                      word={word}
+                      onWordUpdate={handleWordUpdate}
+                      open={isEditOpen}
+                      onOpenChange={setIsEditOpen}
+                      isPackWord={isPackWord}
+                    />
+                  )}
+                  <DialogClose asChild>
+                    <Button variant="ghost" size="icon" onClick={onClose}>
+                      <XIcon weight="bold" />
                     </Button>
-                  </>
-                ) : canAddNotes && isPackWord && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsEditOpen(true)}
-                    title="Add examples"
-                  >
-                    <PencilSimpleIcon weight="bold" />
-                  </Button>
-                )}
-                {canAddNotes && (
-                  <EditWord
-                    word={word}
-                    onWordUpdate={handleWordUpdate}
-                    open={isEditOpen}
-                    onOpenChange={setIsEditOpen}
-                    isPackWord={isPackWord}
-                  />
-                )}
-                <DialogClose asChild>
-                  <Button variant="ghost" size="icon" onClick={onClose}>
-                    <XIcon weight="bold" />
-                  </Button>
-                </DialogClose>
+                  </DialogClose>
+                </div>
               </div>
+              {/* Row 2: Title */}
+              <DialogTitle className="text-2xl font-semibold">
+                {word.english}
+              </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-6 mt-4">

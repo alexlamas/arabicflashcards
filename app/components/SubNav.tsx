@@ -58,22 +58,22 @@ export function SubNav({
   const activeTabConfig = tabs?.find(t => t.key === activeTab);
 
   return (
-    <div className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-4xl pt-3 px-4 md:px-6 z-40 bg-white">
+    <div className="fixed top-16 left-1/2 -translate-x-1/2 w-full max-w-4xl pt-3 px-6 md:px-8 z-40 bg-white">
       <div className="flex items-center gap-2 p-1 border rounded-full bg-gray-50">
 
         {/* Mobile: Collapsible search */}
         {onSearchChange && (
-          <div className="md:hidden">
+          <div className={clsx("md:hidden", mobileSearchOpen && "flex-1")}>
             {mobileSearchOpen ? (
-              <div className="flex items-center gap-1">
-                <div className="relative">
+              <div className="flex items-center gap-1 flex-1">
+                <div className="relative flex-1">
                   <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder={searchPlaceholder || "Search..."}
                     value={searchTerm || ""}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-9 pr-3 rounded-full bg-white w-32"
+                    className="pl-9 pr-3 rounded-full bg-white w-full"
                     autoFocus
                   />
                 </div>
@@ -174,9 +174,12 @@ export function SubNav({
           </div>
         )}
 
-        {/* Right side actions */}
+        {/* Right side actions (hidden on mobile when search is open) */}
         {actions && (
-          <div className="inline-flex gap-2 items-center ml-auto flex-shrink-0">
+          <div className={clsx(
+            "inline-flex gap-2 items-center ml-auto flex-shrink-0",
+            mobileSearchOpen && "hidden md:inline-flex"
+          )}>
             {actions}
           </div>
         )}

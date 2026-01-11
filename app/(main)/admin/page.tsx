@@ -531,57 +531,101 @@ export default function AdminPage() {
                 <p>Run the SQL in <code className="bg-amber-100 px-1 rounded">supabase/005_admin_rls_policies.sql</code> in your Supabase SQL editor to enable admin access to all user data.</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Roles</TableHead>
-                    <TableHead>Words</TableHead>
-                    <TableHead>Joined</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Mobile: Card layout */}
+                <div className="md:hidden space-y-3">
                   {users.map((user) => {
                     const roles = userRoles[user.id] || [];
                     const currentRole = roles.includes('admin') ? 'admin' : roles.includes('reviewer') ? 'reviewer' : 'standard';
                     const isCurrentUser = user.id === session?.user?.id;
 
                     return (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
+                      <div key={user.id} className="border rounded-xl p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">{user.email}</p>
+                            <p className="text-xs text-gray-500">
+                              {user.word_count} words · Joined {new Date(user.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
                           {user.email_confirmed ? (
-                            <span className="text-green-600 text-xs">Confirmed</span>
+                            <span className="text-green-600 text-xs bg-green-50 px-2 py-0.5 rounded-full flex-shrink-0">Confirmed</span>
                           ) : (
-                            <span className="text-amber-600 text-xs">Pending</span>
+                            <span className="text-amber-600 text-xs bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">Pending</span>
                           )}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={currentRole}
-                            onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
-                            disabled={togglingRole === user.id || isCurrentUser}
-                          >
-                            <SelectTrigger className="w-28 h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="standard">Standard</SelectItem>
-                              <SelectItem value="reviewer">Reviewer</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>{user.word_count}</TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                        <Select
+                          value={currentRole}
+                          onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
+                          disabled={togglingRole === user.id || isCurrentUser}
+                        >
+                          <SelectTrigger className="w-full h-9 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="standard">Standard</SelectItem>
+                            <SelectItem value="reviewer">Reviewer</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     );
                   })}
-                </TableBody>
-              </Table>
+                </div>
+
+                {/* Desktop: Table layout */}
+                <Table className="hidden md:table">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Roles</TableHead>
+                      <TableHead>Words</TableHead>
+                      <TableHead>Joined</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => {
+                      const roles = userRoles[user.id] || [];
+                      const currentRole = roles.includes('admin') ? 'admin' : roles.includes('reviewer') ? 'reviewer' : 'standard';
+                      const isCurrentUser = user.id === session?.user?.id;
+
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            {user.email_confirmed ? (
+                              <span className="text-green-600 text-xs">Confirmed</span>
+                            ) : (
+                              <span className="text-amber-600 text-xs">Pending</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={currentRole}
+                              onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
+                              disabled={togglingRole === user.id || isCurrentUser}
+                            >
+                              <SelectTrigger className="w-28 h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="standard">Standard</SelectItem>
+                                <SelectItem value="reviewer">Reviewer</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>{user.word_count}</TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </>
             )}
           </TabsContent>
         </div>
