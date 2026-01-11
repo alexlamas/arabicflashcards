@@ -237,7 +237,7 @@ export function LandingPage() {
             onClick={() => setShowAuthDialog(true)}
             className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 text-sm font-medium"
           >
-            Start free
+            Get started
           </Button>
         </div>
       </nav>
@@ -280,7 +280,7 @@ export function LandingPage() {
               className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8 pl-5 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
               <PlayCircle className="!size-6" weight="fill" />
-              Start learning
+              Start learning for free
             </Button>
           </motion.div>
         </div>

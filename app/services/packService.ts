@@ -19,6 +19,8 @@ export interface Pack {
   description: string | null;
   language: string;
   level: string | null;
+  tier: number | null;
+  sort_order: number | null;
   icon: string | null;
   image_url: string | null;
   is_active: boolean;
@@ -47,7 +49,7 @@ export class PackService {
       .from("packs")
       .select("*")
       .eq("is_active", true)
-      .order("level", { ascending: true })
+      .order("sort_order", { ascending: true, nullsFirst: false })
       .order("name");
 
     if (error) throw error;
@@ -360,6 +362,68 @@ export class PackService {
 
     if (error) throw error;
     return data || [];
+  }
+
+  /**
+   * Mark a word as learned (set next_review_date 6 months out)
+   * Works for both installed pack words and during preview
+   */
+  static async markWordAsLearned(wordId: string): Promise<void> {
+    const supabase = createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
+    // Set next_review_date to 6 months from now
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+
+    const { error } = await supabase
+      .from("word_progress")
+      .upsert({
+        user_id: user.id,
+        word_id: wordId,
+        status: "learned",
+        interval: 180,
+        ease_factor: 2.5,
+        review_count: 1,
+        next_review_date: sixMonthsFromNow.toISOString(),
+      }, {
+        onConflict: "user_id,word_id",
+      });
+
+    if (error) throw error;
+  }
+
+  /**
+   * Mark multiple words as learned at once
+   */
+  static async markWordsAsLearned(wordIds: string[]): Promise<void> {
+    const supabase = createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+
+    const records = wordIds.map(wordId => ({
+      user_id: user.id,
+      word_id: wordId,
+      status: "learned" as const,
+      interval: 180,
+      ease_factor: 2.5,
+      review_count: 1,
+      next_review_date: sixMonthsFromNow.toISOString(),
+    }));
+
+    const { error } = await supabase
+      .from("word_progress")
+      .upsert(records, {
+        onConflict: "user_id,word_id",
+      });
+
+    if (error) throw error;
   }
 }
 

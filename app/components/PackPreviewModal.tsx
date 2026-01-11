@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Dialog,
@@ -17,7 +18,7 @@ import {
 } from "../services/starterPackService";
 import { Word, Sentence } from "../types/word";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, Plus, Check, Trash2 } from "lucide-react";
+import { Loader2, Plus, Check } from "lucide-react";
 import {
   Package,
   Coffee,
@@ -41,6 +42,7 @@ import {
   Smiley,
   User,
   BookOpen,
+  PlayCircle,
 } from "@phosphor-icons/react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -121,7 +123,28 @@ export function PackPreviewModal({
   const [loading, setLoading] = useState(false);
   const [learnedCount, setLearnedCount] = useState(0);
   const [activeTab, setActiveTab] = useState<TabType>("words");
+  const [markingWordId, setMarkingWordId] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
+
+  const handleMarkAsLearned = async (wordId: string) => {
+    setMarkingWordId(wordId);
+    try {
+      await StarterPackService.markWordAsLearned(wordId);
+      setWords(prev => prev.map(w =>
+        w.id === wordId ? { ...w, isLearned: true } : w
+      ));
+      setLearnedCount(prev => prev + 1);
+      toast({ title: "Word marked as learned" });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to mark word as learned",
+      });
+    } finally {
+      setMarkingWordId(null);
+    }
+  };
 
   useEffect(() => {
     if (!pack || !isOpen) return;
@@ -307,9 +330,28 @@ export function PackPreviewModal({
                           )}
                         </div>
                       </div>
-                      {word.isLearned && (
-                        <Check className="w-4 h-4 text-green-600 shrink-0 ml-2" />
-                      )}
+                      <div className="shrink-0 ml-2">
+                        {word.isLearned ? (
+                          <Check className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsLearned(word.id);
+                            }}
+                            disabled={markingWordId === word.id}
+                            className="text-xs h-7 px-2 text-gray-500 hover:text-gray-700"
+                          >
+                            {markingWordId === word.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              "I know this"
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -341,22 +383,31 @@ export function PackPreviewModal({
 
         {/* Action buttons */}
         <DialogFooter className="pt-4 border-t sm:justify-between">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
           {isInstalled ? (
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => onUninstall?.(pack.id)}
               disabled={isUninstalling}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
             >
-              {isUninstalling ? (
+              {isUninstalling && (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Trash2 className="w-4 h-4 mr-2" />
               )}
               Remove pack
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          )}
+          {isInstalled ? (
+            <Button
+              onClick={() => {
+                onClose();
+                router.push("/review");
+              }}
+            >
+              <PlayCircle className="w-4 h-4 mr-2" weight="fill" />
+              Go to review
             </Button>
           ) : (
             <Button

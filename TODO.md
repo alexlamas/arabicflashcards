@@ -18,6 +18,8 @@
 - [ ] Learn flow (introduce new words from a pack)
 - [ ] Search/add words (unified search bar)
 - [ ] Basic settings (daily goal, notifications)
+- [ ] Manual word entry (for when users run out of AI credits or don't want to use them)
+- [ ] Quick add button on homescreen (add word, bulk add, or pic add)
 
 ## V2 (near-term)
 
