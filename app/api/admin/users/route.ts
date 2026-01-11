@@ -157,6 +157,49 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  try {
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    const result = await getAdminClient(supabase);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+
+    const { adminClient } = result;
+
+    const { userId, action } = await req.json();
+
+    if (!userId || !action) {
+      return NextResponse.json({ error: "User ID and action required" }, { status: 400 });
+    }
+
+    if (action === "reset_onboarding") {
+      const { error } = await adminClient
+        .from("user_profiles")
+        .update({ onboarding_completed: false })
+        .eq("id", userId);
+
+      if (error) {
+        return NextResponse.json(
+          { error: "Failed to reset onboarding" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  } catch {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const cookieStore = cookies();

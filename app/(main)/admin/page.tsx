@@ -58,6 +58,7 @@ import {
   ChevronRight,
   Plus,
   Loader2,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { ContentReviewTab } from "../../components/admin/ContentReviewTab";
@@ -117,6 +118,9 @@ export default function AdminPage() {
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [addUserForm, setAddUserForm] = useState({ email: "", password: "" });
   const [addingUser, setAddingUser] = useState(false);
+
+  // Reset onboarding state
+  const [resettingOnboardingUserId, setResettingOnboardingUserId] = useState<string | null>(null);
 
   // Redirect non-admins/reviewers
   useEffect(() => {
@@ -345,6 +349,35 @@ export default function AdminPage() {
       });
     } finally {
       setAddingUser(false);
+    }
+  }
+
+  async function handleResetOnboarding(userId: string) {
+    setResettingOnboardingUserId(userId);
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: 'reset_onboarding' }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to reset onboarding');
+      }
+
+      toast({
+        title: "Onboarding reset",
+        description: "User will see onboarding on next login",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to reset onboarding",
+        description: error instanceof Error ? error.message : "An error occurred",
+      });
+    } finally {
+      setResettingOnboardingUserId(null);
     }
   }
 
@@ -662,6 +695,20 @@ export default function AdminPage() {
                           <Button
                             size="sm"
                             variant="ghost"
+                            className="h-9 px-3"
+                            onClick={() => handleResetOnboarding(user.id)}
+                            disabled={resettingOnboardingUserId === user.id}
+                            title="Reset onboarding"
+                          >
+                            {resettingOnboardingUserId === user.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RotateCcw className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-red-500 h-9 px-3"
                             onClick={() => setUserToDelete({ id: user.id, email: user.email })}
                             disabled={isCurrentUser}
@@ -723,15 +770,30 @@ export default function AdminPage() {
                             {new Date(user.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-500"
-                              onClick={() => setUserToDelete({ id: user.id, email: user.email })}
-                              disabled={isCurrentUser}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleResetOnboarding(user.id)}
+                                disabled={resettingOnboardingUserId === user.id}
+                                title="Reset onboarding"
+                              >
+                                {resettingOnboardingUserId === user.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <RotateCcw className="h-4 w-4" />
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-red-500"
+                                onClick={() => setUserToDelete({ id: user.id, email: user.email })}
+                                disabled={isCurrentUser}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
