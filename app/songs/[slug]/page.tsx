@@ -227,6 +227,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentLineIndex, setCurrentLineIndex] = useState(-1);
+  const [lineProgress, setLineProgress] = useState(0);
   const [selectedWord, setSelectedWord] = useState<{
     arabic: string;
     transliteration: string;
@@ -304,7 +305,18 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           }
         }
         setCurrentLineIndex(lineIndex);
-      }, 100);
+
+        // Calculate progress within current line
+        if (lineIndex >= 0) {
+          const lineStart = song.lyrics[lineIndex].time;
+          const lineEnd = song.lyrics[lineIndex + 1]?.time || lineStart + 10;
+          const duration = lineEnd - lineStart;
+          const elapsed = time - lineStart;
+          setLineProgress(Math.min(100, (elapsed / duration) * 100));
+        } else {
+          setLineProgress(0);
+        }
+      }, 50);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -464,13 +476,20 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                 <button
                   key={index}
                   onClick={() => handleLineClick(index)}
-                  className={`w-full text-left p-4 rounded-xl transition-all ${
+                  className={`relative w-full text-left p-4 rounded-xl transition-all overflow-hidden border-2 ${
                     currentLineIndex === index
-                      ? "bg-emerald-100 border-2 border-emerald-500"
-                      : "bg-white border border-gray-200 hover:border-gray-300"
+                      ? "border-emerald-500 bg-emerald-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 >
-                  <div className="space-y-1">
+                  {/* Progress bar */}
+                  {currentLineIndex === index && (
+                    <div
+                      className="absolute inset-0 bg-emerald-100 transition-all duration-100"
+                      style={{ width: `${lineProgress}%` }}
+                    />
+                  )}
+                  <div className="relative space-y-1">
                     <p
                       className={`text-2xl font-arabic ${
                         currentLineIndex === index ? "text-emerald-900" : "text-heading"
@@ -492,33 +511,33 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     >
                       {line.english}
                     </p>
-                  </div>
 
-                  {/* Word breakdown */}
-                  {currentLineIndex === index && line.words && (
-                    <div className="mt-4 pt-4 border-t border-emerald-200">
-                      <p className="text-xs text-emerald-600 font-medium mb-2">
-                        TAP A WORD TO LEARN IT
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {line.words.map((word, wordIndex) => (
-                          <button
-                            key={wordIndex}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedWord(word);
-                            }}
-                            className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
-                          >
-                            <span className="text-lg font-arabic">{word.arabic}</span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              {word.english}
-                            </span>
-                          </button>
-                        ))}
+                    {/* Word breakdown */}
+                    {currentLineIndex === index && line.words && (
+                      <div className="mt-4 pt-4 border-t border-emerald-200">
+                        <p className="text-xs text-emerald-600 font-medium mb-2">
+                          TAP A WORD TO LEARN IT
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {line.words.map((word, wordIndex) => (
+                            <button
+                              key={wordIndex}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedWord(word);
+                              }}
+                              className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
+                            >
+                              <span className="text-lg font-arabic">{word.arabic}</span>
+                              <span className="text-xs text-gray-500 ml-2">
+                                {word.english}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </button>
               ))}
 
