@@ -124,6 +124,9 @@ export async function generateMetadata({
       description,
       images: [pack.image_url || "/og.png"],
     },
+    alternates: {
+      canonical: `https://yallaflash.com/packs/${slug}`,
+    },
   };
 }
 
