@@ -487,14 +487,14 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           <div className="lg:w-[40%] flex flex-col min-h-0 relative">
             {/* Fade gradient at top - only visible when scrolled */}
             {showTopFade && (
-              <div className="absolute top-0 left-0 right-2 h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-4 h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
             )}
             {/* Fade gradient at bottom */}
-            <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-4 h-8 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
             <div
               ref={lyricsContainerRef}
               onScroll={(e) => setShowTopFade(e.currentTarget.scrollTop > 10)}
-              className="overflow-y-auto flex-1 space-y-2 pr-2"
+              className="overflow-y-auto flex-1 space-y-2 pr-4"
             >
               {song.lyrics.map((line, index) => (
                 <button
