@@ -15,7 +15,6 @@ import { PackPreviewModal } from "./PackPreviewModal";
 import { DashboardPackCard } from "./DashboardPackCard";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { FluencyProgressBar } from "./FluencyProgressBar";
-import { AppTour } from "./AppTour";
 
 type PackLevel = "beginner" | "intermediate" | "advanced";
 
@@ -357,8 +356,6 @@ export function Dashboard() {
         isUninstalling={uninstallingPackId === selectedPack?.id}
       />
 
-      {/* Post-onboarding tour */}
-      <AppTour />
     </div>
   );
 }

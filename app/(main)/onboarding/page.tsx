@@ -131,7 +131,6 @@ export default function OnboardingPage() {
       // Start all selected packs
       await Promise.all(selectedPacks.map(packId => PackService.startPack(packId)));
 
-      localStorage.setItem("show_app_tour", "true");
       localStorage.setItem("refresh_after_onboarding", "true");
       router.replace("/");
     } catch (error) {
