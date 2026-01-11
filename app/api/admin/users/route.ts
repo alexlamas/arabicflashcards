@@ -106,6 +106,57 @@ export async function GET() {
   }
 }
 
+export async function POST(req: NextRequest) {
+  try {
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    const result = await getAdminClient(supabase);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+
+    const { adminClient } = result;
+
+    const { email, password } = await req.json();
+
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    }
+
+    // Create the user
+    const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Auto-confirm the email
+    });
+
+    if (createError) {
+      return NextResponse.json(
+        { error: createError.message || "Failed to create user" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: newUser.user.id,
+        email: newUser.user.email
+      }
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const cookieStore = cookies();

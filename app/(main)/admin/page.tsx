@@ -23,6 +23,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -98,6 +108,15 @@ export default function AdminPage() {
   });
 
   const [saving, setSaving] = useState(false);
+
+  // Delete user confirmation state
+  const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Add user state
+  const [isAddingUser, setIsAddingUser] = useState(false);
+  const [addUserForm, setAddUserForm] = useState({ email: "", password: "" });
+  const [addingUser, setAddingUser] = useState(false);
 
   // Redirect non-admins/reviewers
   useEffect(() => {
@@ -262,14 +281,15 @@ export default function AdminPage() {
     }
   }
 
-  async function handleDeleteUser(userId: string, email: string) {
-    if (!confirm(`Delete user ${email}? This will permanently delete all their data and cannot be undone.`)) return;
+  async function handleDeleteUser() {
+    if (!userToDelete) return;
+    setIsDeleting(true);
 
     try {
       const response = await fetch('/api/admin/users', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: userToDelete.id }),
       });
 
       if (!response.ok) {
@@ -279,8 +299,9 @@ export default function AdminPage() {
 
       toast({
         title: "User deleted",
-        description: `${email} has been removed`,
+        description: `${userToDelete.email} has been removed`,
       });
+      setUserToDelete(null);
       loadData();
     } catch (error) {
       toast({
@@ -288,6 +309,42 @@ export default function AdminPage() {
         title: "Failed to delete user",
         description: error instanceof Error ? error.message : "An error occurred",
       });
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  async function handleAddUser() {
+    if (!addUserForm.email || !addUserForm.password) return;
+    setAddingUser(true);
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addUserForm),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create user');
+      }
+
+      toast({
+        title: "User created",
+        description: `${addUserForm.email} has been added`,
+      });
+      setIsAddingUser(false);
+      setAddUserForm({ email: "", password: "" });
+      loadData();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to create user",
+        description: error instanceof Error ? error.message : "An error occurred",
+      });
+    } finally {
+      setAddingUser(false);
     }
   }
 
@@ -399,6 +456,10 @@ export default function AdminPage() {
                 </div>
               </DialogContent>
             </Dialog>
+          ) : activeTab === "users" ? (
+            <Button size="sm" variant="outline" className="rounded-full" onClick={() => setIsAddingUser(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Add User
+            </Button>
           ) : undefined
         }
       />
@@ -602,7 +663,7 @@ export default function AdminPage() {
                             size="sm"
                             variant="ghost"
                             className="text-red-500 h-9 px-3"
-                            onClick={() => handleDeleteUser(user.id, user.email)}
+                            onClick={() => setUserToDelete({ id: user.id, email: user.email })}
                             disabled={isCurrentUser}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -666,7 +727,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="ghost"
                               className="text-red-500"
-                              onClick={() => handleDeleteUser(user.id, user.email)}
+                              onClick={() => setUserToDelete({ id: user.id, email: user.email })}
                               disabled={isCurrentUser}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -822,6 +883,62 @@ export default function AdminPage() {
             </div>
             <Button onClick={handleUpdateWord} disabled={saving} className="w-full">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <span className="font-medium text-foreground">{userToDelete?.email}</span> and all their data including words, progress, and settings. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete user
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={isAddingUser} onOpenChange={setIsAddingUser}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={addUserForm.email}
+                onChange={(e) => setAddUserForm({ ...addUserForm, email: e.target.value })}
+                placeholder="user@example.com"
+              />
+            </div>
+            <div>
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={addUserForm.password}
+                onChange={(e) => setAddUserForm({ ...addUserForm, password: e.target.value })}
+                placeholder="Minimum 6 characters"
+              />
+            </div>
+            <Button onClick={handleAddUser} disabled={addingUser || !addUserForm.email || !addUserForm.password} className="w-full">
+              {addingUser ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+              Create user
             </Button>
           </div>
         </DialogContent>
