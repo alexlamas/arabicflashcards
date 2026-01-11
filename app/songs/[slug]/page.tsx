@@ -624,7 +624,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                                     e.stopPropagation();
                                     setSelectedWord(word);
                                   }}
-                                  className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
+                                  className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors shadow-sm"
                                 >
                                   <span className="text-lg font-arabic">{word.arabic}</span>
                                   <span className="text-xs text-gray-500 ml-2">
