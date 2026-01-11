@@ -570,7 +570,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   {/* Progress circle */}
                   {currentLineIndex === index && (
                     <div
-                      className="absolute bottom-0 left-0 bg-emerald-200/50 rounded-full blur-md transition-all duration-100"
+                      className="absolute bottom-0 left-0 bg-emerald-200/30 rounded-full blur-md transition-all duration-100"
                       style={{
                         width: `${lineProgress * 2.5}%`,
                         aspectRatio: '1',
