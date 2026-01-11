@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +37,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AdminService, AdminUser } from "../../../services/adminService";
-import { Trash2, Plus, Loader2, RotateCcw } from "lucide-react";
+import { Trash2, Plus, Loader2, RotateCcw, MoreHorizontal, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+
+type SortField = 'email' | 'word_count' | 'last_sign_in_at' | 'last_review_date' | 'created_at';
+type SortDirection = 'asc' | 'desc';
 
 export default function AdminUsersPage() {
   const { session } = useAuth();
@@ -46,6 +61,10 @@ export default function AdminUsersPage() {
   const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [togglingRole, setTogglingRole] = useState<string | null>(null);
+
+  // Sorting state
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   // Delete user confirmation state
   const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
@@ -209,6 +228,57 @@ export default function AdminUsersPage() {
     }
   }
 
+  function handleSort(field: SortField) {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  }
+
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      const aVal: string | number | null = a[sortField];
+      const bVal: string | number | null = b[sortField];
+
+      // Handle null values - push them to the end
+      if (aVal === null && bVal === null) return 0;
+      if (aVal === null) return 1;
+      if (bVal === null) return -1;
+
+      // Compare based on type
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        const comparison = aVal.localeCompare(bVal);
+        return sortDirection === 'asc' ? comparison : -comparison;
+      }
+
+      // For numbers and dates (dates stored as strings will be compared as strings which works for ISO format)
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [users, sortField, sortDirection]);
+
+  function SortableHeader({ field, children }: { field: SortField; children: React.ReactNode }) {
+    const isActive = sortField === field;
+    return (
+      <TableHead
+        className="cursor-pointer select-none hover:bg-muted/50"
+        onClick={() => handleSort(field)}
+      >
+        <div className="flex items-center gap-1">
+          {children}
+          {isActive && (
+            sortDirection === 'asc'
+              ? <ArrowUp className="h-3 w-3" />
+              : <ArrowDown className="h-3 w-3" />
+          )}
+        </div>
+      </TableHead>
+    );
+  }
+
   return (
     <div className="p-4 pt-12 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-4">
@@ -231,7 +301,7 @@ export default function AdminUsersPage() {
         <>
           {/* Mobile: Card layout */}
           <div className="md:hidden space-y-3">
-            {users.map((user) => {
+            {sortedUsers.map((user) => {
               const roles = userRoles[user.id] || [];
               const currentRole = roles.includes('admin') ? 'admin' : roles.includes('reviewer') ? 'reviewer' : 'standard';
               const isCurrentUser = user.id === session?.user?.id;
@@ -250,143 +320,144 @@ export default function AdminUsersPage() {
                         Last review: {user.last_review_date ? new Date(user.last_review_date).toLocaleDateString() : "Never"}
                       </p>
                     </div>
-                    {user.email_confirmed ? (
-                      <span className="text-green-600 text-xs bg-green-50 px-2 py-0.5 rounded-full flex-shrink-0">Confirmed</span>
-                    ) : (
-                      <span className="text-amber-600 text-xs bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">Pending</span>
-                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleResetOnboarding(user.id)}
+                          disabled={resettingOnboardingUserId === user.id}
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Reset onboarding
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setUserToDelete({ id: user.id, email: user.email })}
+                          disabled={isCurrentUser}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete user
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <div className="flex gap-2">
-                    <Select
-                      value={currentRole}
-                      onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
-                      disabled={togglingRole === user.id || isCurrentUser}
-                    >
-                      <SelectTrigger className="flex-1 h-9 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Standard</SelectItem>
-                        <SelectItem value="reviewer">Reviewer</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-9 px-3"
-                      onClick={() => handleResetOnboarding(user.id)}
-                      disabled={resettingOnboardingUserId === user.id}
-                      title="Reset onboarding"
-                    >
-                      {resettingOnboardingUserId === user.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <RotateCcw className="h-4 w-4" />
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-red-500 h-9 px-3"
-                      onClick={() => setUserToDelete({ id: user.id, email: user.email })}
-                      disabled={isCurrentUser}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Select
+                    value={currentRole}
+                    onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
+                    disabled={togglingRole === user.id || isCurrentUser}
+                  >
+                    <SelectTrigger className="w-full h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="reviewer">Reviewer</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               );
             })}
           </div>
 
           {/* Desktop: Table layout */}
-          <Table className="hidden md:table">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Roles</TableHead>
-                <TableHead>Words</TableHead>
-                <TableHead>Last login</TableHead>
-                <TableHead>Last review</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="w-12"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => {
-                const roles = userRoles[user.id] || [];
-                const currentRole = roles.includes('admin') ? 'admin' : roles.includes('reviewer') ? 'reviewer' : 'standard';
-                const isCurrentUser = user.id === session?.user?.id;
+          <TooltipProvider>
+            <Table className="hidden md:table">
+              <TableHeader>
+                <TableRow>
+                  <SortableHeader field="email">Email</SortableHeader>
+                  <TableHead>Role</TableHead>
+                  <SortableHeader field="word_count">Words</SortableHeader>
+                  <SortableHeader field="last_sign_in_at">Last login</SortableHeader>
+                  <SortableHeader field="last_review_date">Last review</SortableHeader>
+                  <SortableHeader field="created_at">Joined</SortableHeader>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedUsers.map((user) => {
+                  const roles = userRoles[user.id] || [];
+                  const currentRole = roles.includes('admin') ? 'admin' : roles.includes('reviewer') ? 'reviewer' : 'standard';
+                  const isCurrentUser = user.id === session?.user?.id;
 
-                return (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      {user.email_confirmed ? (
-                        <span className="text-green-600 text-xs">Confirmed</span>
-                      ) : (
-                        <span className="text-amber-600 text-xs">Pending</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={currentRole}
-                        onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
-                        disabled={togglingRole === user.id || isCurrentUser}
-                      >
-                        <SelectTrigger className="w-28 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="reviewer">Reviewer</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>{user.word_count}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {user.last_review_date ? new Date(user.last_review_date).toLocaleDateString() : "Never"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleResetOnboarding(user.id)}
-                          disabled={resettingOnboardingUserId === user.id}
-                          title="Reset onboarding"
+                  return (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={currentRole}
+                          onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
+                          disabled={togglingRole === user.id || isCurrentUser}
                         >
-                          {resettingOnboardingUserId === user.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <RotateCcw className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-500"
-                          onClick={() => setUserToDelete({ id: user.id, email: user.email })}
-                          disabled={isCurrentUser}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                          <SelectTrigger className="w-28 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="standard">Standard</SelectItem>
+                            <SelectItem value="reviewer">Reviewer</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>{user.word_count}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {user.last_sign_in_at ? (
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-default">{new Date(user.last_sign_in_at).toLocaleDateString()}</TooltipTrigger>
+                            <TooltipContent>{new Date(user.last_sign_in_at).toLocaleString()}</TooltipContent>
+                          </Tooltip>
+                        ) : "Never"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {user.last_review_date ? (
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-default">{new Date(user.last_review_date).toLocaleDateString()}</TooltipTrigger>
+                            <TooltipContent>{new Date(user.last_review_date).toLocaleString()}</TooltipContent>
+                          </Tooltip>
+                        ) : "Never"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        <Tooltip>
+                          <TooltipTrigger className="cursor-default">{new Date(user.created_at).toLocaleDateString()}</TooltipTrigger>
+                          <TooltipContent>{new Date(user.created_at).toLocaleString()}</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleResetOnboarding(user.id)}
+                              disabled={resettingOnboardingUserId === user.id}
+                            >
+                              <RotateCcw className="h-4 w-4 mr-2" />
+                              Reset onboarding
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setUserToDelete({ id: user.id, email: user.email })}
+                              disabled={isCurrentUser}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete user
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
         </>
       )}
 

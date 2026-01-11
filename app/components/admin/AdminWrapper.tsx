@@ -44,11 +44,13 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
   else if (pathname.includes("/design-system")) activeTab = "design-system";
 
   const tabs: TabConfig[] = [
+    ...(isAdmin ? [
+      { key: "users", label: "Users", href: "/admin/users" },
+    ] : []),
     { key: "review", label: "Review", href: "/admin/review" },
     { key: "packs", label: "Packs", href: "/admin/packs" },
     ...(isAdmin ? [
       { key: "instagram", label: "Instagram", href: "/admin/instagram" },
-      { key: "users", label: "Users", href: "/admin/users" },
       { key: "design-system", label: "Design system", href: "/admin/design-system" },
     ] : []),
   ];
