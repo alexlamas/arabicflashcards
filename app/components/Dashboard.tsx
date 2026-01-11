@@ -6,29 +6,19 @@ import { useProfile } from "../contexts/ProfileContext";
 import { useEffect, useState, useMemo } from "react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CardsThree } from "@phosphor-icons/react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { PackPreviewModal } from "./PackPreviewModal";
-import { DashboardPackCard } from "./DashboardPackCard";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { FluencyProgressBar } from "./FluencyProgressBar";
+import { PackJourney } from "./PackJourney";
 
-type PackLevel = "beginner" | "intermediate" | "advanced";
-
-const LEVEL_CONFIG: Record<PackLevel, { label: string; color: string; bgColor: string }> = {
-  beginner: { label: "Beginner", color: "text-emerald-600", bgColor: "bg-emerald-100" },
-  intermediate: { label: "Intermediate", color: "text-blue-600", bgColor: "bg-blue-100" },
-  advanced: { label: "Advanced", color: "text-purple-600", bgColor: "bg-purple-100" },
-};
-
-const DEFAULT_LEVEL_ORDER: PackLevel[] = ["beginner", "intermediate", "advanced"];
 
 export function Dashboard() {
   const { session } = useAuth();
-  const { firstName: profileFirstName, fluency: userFluency } = useProfile();
+  const { firstName: profileFirstName } = useProfile();
   const {
     words,
     reviewCount,
@@ -39,7 +29,6 @@ export function Dashboard() {
   const [availablePacks, setAvailablePacks] = useState<StarterPack[]>([]);
   const [installedPackIds, setInstalledPackIds] = useState<string[]>([]);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
-  const [packSentenceCounts, setPackSentenceCounts] = useState<Record<string, number>>({});
   const [loadingPacks, setLoadingPacks] = useState(true);
   const [installingPackId, setInstallingPackId] = useState<string | null>(null);
   const [uninstallingPackId, setUninstallingPackId] = useState<string | null>(null);
@@ -62,30 +51,30 @@ export function Dashboard() {
     ).length;
   }, [words]);
 
-  // Calculate progress for each installed pack
+  // Calculate progress for each pack (both installed and not)
   const packProgress = useMemo(() => {
     const progress: Record<string, { total: number; learned: number }> = {};
     const now = new Date();
     const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    installedPackIds.forEach(packId => {
-      // Use packWordCounts for total (from database), not filtered user words
-      const total = packWordCounts[packId] || 0;
+    // Calculate for all packs
+    availablePacks.forEach(pack => {
+      const total = packWordCounts[pack.id] || 0;
 
       // Count learned from user's words with progress on this pack
-      const packWords = words.filter(w => w.pack_id === packId);
+      const packWords = words.filter(w => w.pack_id === pack.id);
       const learnedWords = packWords.filter(w =>
         w.next_review_date && new Date(w.next_review_date) > oneMonthFromNow
       );
 
-      progress[packId] = {
+      progress[pack.id] = {
         total,
         learned: learnedWords.length,
       };
     });
 
     return progress;
-  }, [words, installedPackIds, packWordCounts]);
+  }, [words, availablePacks, packWordCounts]);
 
   async function loadPacks() {
     try {
@@ -97,21 +86,6 @@ export function Dashboard() {
       setAvailablePacks(packs);
       setInstalledPackIds(installed);
       setPackWordCounts(wordCounts);
-
-      // Fetch sentence counts per pack
-      const supabase = createClient();
-      const { data: sentenceData } = await supabase
-        .from("sentences")
-        .select("pack_id")
-        .not("pack_id", "is", null);
-
-      const sentenceCounts: Record<string, number> = {};
-      (sentenceData || []).forEach(row => {
-        if (row.pack_id) {
-          sentenceCounts[row.pack_id] = (sentenceCounts[row.pack_id] || 0) + 1;
-        }
-      });
-      setPackSentenceCounts(sentenceCounts);
     } catch {
       toast({
         variant: "destructive",
@@ -122,19 +96,17 @@ export function Dashboard() {
     }
   }
 
-  // Check if we need to refresh after onboarding
+  // Load packs on mount, and refresh if coming from onboarding
   useEffect(() => {
     const needsRefresh = localStorage.getItem("refresh_after_onboarding") === "true";
     if (needsRefresh) {
       localStorage.removeItem("refresh_after_onboarding");
-      refreshWords(true);
+      // Force refresh words first, then load packs
+      refreshWords(true).then(() => loadPacks());
+    } else {
       loadPacks();
     }
   }, [refreshWords]);
-
-  useEffect(() => {
-    loadPacks();
-  }, []);
 
   // Fetch weekly review stats and streak
   useEffect(() => {
@@ -149,37 +121,6 @@ export function Dashboard() {
     }
     loadWeeklyStats();
   }, [session?.user?.id]);
-
-  // Separate installed and available packs
-  const installedPacks = useMemo(() => {
-    return availablePacks.filter(pack => installedPackIds.includes(pack.id));
-  }, [availablePacks, installedPackIds]);
-
-  const availablePacksByLevel = useMemo(() => {
-    const grouped: Record<PackLevel, StarterPack[]> = {
-      beginner: [],
-      intermediate: [],
-      advanced: [],
-    };
-
-    availablePacks
-      .filter(pack => !installedPackIds.includes(pack.id))
-      .forEach(pack => {
-        const level = (pack.level as PackLevel) || "beginner";
-        grouped[level].push(pack);
-      });
-
-    return grouped;
-  }, [availablePacks, installedPackIds]);
-
-  // Sort level order based on user fluency (recommended level first)
-  const levelOrder = useMemo(() => {
-    if (!userFluency) return DEFAULT_LEVEL_ORDER;
-    return [
-      userFluency as PackLevel,
-      ...DEFAULT_LEVEL_ORDER.filter(l => l !== userFluency)
-    ];
-  }, [userFluency]);
 
   const handleUninstallPack = async (packId: string) => {
     setUninstallingPackId(packId);
@@ -279,69 +220,16 @@ export function Dashboard() {
         </div>
       </Link>
 
-      {/* Installed Packs Section */}
-      {!loadingPacks && installedPacks.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Your packs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {installedPacks.map((pack) => {
-              const progress = packProgress[pack.id] || { total: 0, learned: 0 };
-
-              return (
-                <DashboardPackCard
-                  key={pack.id}
-                  pack={pack}
-                  variant="installed"
-                  progress={progress}
-                  sentenceCount={packSentenceCounts[pack.id] || 0}
-                  onClick={() => openPackPreview(pack)}
-                />
-              );
-            })}
-          </div>
-        </div>
+      {/* Pack Journey */}
+      {!loadingPacks && (
+        <PackJourney
+          packs={availablePacks}
+          installedPackIds={installedPackIds}
+          packProgress={packProgress}
+          packWordCounts={packWordCounts}
+          onPackClick={openPackPreview}
+        />
       )}
-
-      {/* Available Packs by Level */}
-      {!loadingPacks && levelOrder.map(level => {
-        const packs = availablePacksByLevel[level];
-        if (packs.length === 0) return null;
-
-        const config = LEVEL_CONFIG[level];
-        const isRecommended = level === userFluency;
-
-        return (
-          <div key={level}>
-            <div className="mb-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{config.label}</h2>
-                {isRecommended && (
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                    Recommended for you
-                  </span>
-                )}
-              </div>
-              <span className="text-sm text-subtle">{packs.length} {packs.length === 1 ? "pack" : "packs"} available</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {packs.map((pack) => {
-                const wordCount = packWordCounts[pack.id] || 0;
-                return (
-                  <DashboardPackCard
-                    key={pack.id}
-                    pack={pack}
-                    variant="available"
-                    progress={{ learned: 0, total: wordCount }}
-                    sentenceCount={packSentenceCounts[pack.id] || 0}
-                    onClick={() => openPackPreview(pack)}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
 
 
       {/* Pack Preview Modal */}
