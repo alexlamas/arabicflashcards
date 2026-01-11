@@ -46,7 +46,6 @@ interface Song {
   artist: string;
   youtube_id: string;
   description: string | null;
-  cover_url: string | null;
 }
 
 async function getPublishedSongs(): Promise<Song[]> {
@@ -54,7 +53,7 @@ async function getPublishedSongs(): Promise<Song[]> {
 
   const { data: songs, error } = await supabase
     .from("songs")
-    .select("id, slug, title, artist, youtube_id, description, cover_url")
+    .select("id, slug, title, artist, youtube_id, description")
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
@@ -122,12 +121,12 @@ export default async function SongsPage() {
                 href={`/songs/${song.slug}`}
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all"
               >
-                <div className="aspect-video relative bg-gray-100">
+                <div className="aspect-video relative bg-gray-100 overflow-hidden">
                   <Image
-                    src={song.cover_url || `https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`}
+                    src={`https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`}
                     alt={song.title}
                     fill
-                    className="object-cover"
+                    className="object-cover scale-[1.35]"
                   />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
