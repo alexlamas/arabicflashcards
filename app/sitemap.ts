@@ -26,6 +26,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // Song slugs - add new songs here
+  const songSlugs = ["bhibbak-ya-lebnan"];
+
+  const songUrls: MetadataRoute.Sitemap = songSlugs.map((slug) => ({
+    url: `https://yallaflash.com/songs/${slug}`,
+    lastModified: new Date(),
+    priority: 0.8,
+  }));
+
   return [
     {
       url: "https://yallaflash.com",
@@ -34,6 +43,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: "https://yallaflash.com/packs",
+      lastModified: new Date(),
+      priority: 0.9,
+    },
+    {
+      url: "https://yallaflash.com/songs",
       lastModified: new Date(),
       priority: 0.9,
     },
@@ -48,5 +62,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     ...packUrls,
+    ...songUrls,
   ];
 }
