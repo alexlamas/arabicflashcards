@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUserRoles } from "../../hooks/useUserRoles";
 import { SubNav, TabConfig } from "../../components/SubNav";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Plus } from "lucide-react";
 
 export function AdminWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -55,9 +56,22 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
     ] : []),
   ];
 
+  const isUsersPage = pathname.includes("/users");
+
+  const usersActions = (
+    <Button
+      size="sm"
+      variant="outline"
+      className="rounded-full"
+      onClick={() => window.dispatchEvent(new CustomEvent("admin:add-user"))}
+    >
+      <Plus className="h-4 w-4 mr-1" /> Add user
+    </Button>
+  );
+
   return (
     <>
-      <SubNav tabs={tabs} activeTab={activeTab} />
+      <SubNav tabs={tabs} activeTab={activeTab} actions={isUsersPage ? usersActions : undefined} />
       <div className="pt-12">
         {children}
       </div>

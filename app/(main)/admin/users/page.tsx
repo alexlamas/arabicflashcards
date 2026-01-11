@@ -82,6 +82,13 @@ export default function AdminUsersPage() {
     loadData();
   }, []);
 
+  // Listen for add user event from SubNav
+  useEffect(() => {
+    const handleAddUser = () => setIsAddingUser(true);
+    window.addEventListener("admin:add-user", handleAddUser);
+    return () => window.removeEventListener("admin:add-user", handleAddUser);
+  }, []);
+
   async function loadData() {
     setIsLoading(true);
     try {
@@ -281,13 +288,6 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-4 pt-12 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lg font-semibold">Users</h1>
-        <Button size="sm" variant="outline" className="rounded-full" onClick={() => setIsAddingUser(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Add user
-        </Button>
-      </div>
-
       {isLoading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
