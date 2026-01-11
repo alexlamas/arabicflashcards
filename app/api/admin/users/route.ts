@@ -95,12 +95,12 @@ export async function GET() {
     // Get AI usage per user
     const { data: aiUsage } = await adminClient
       .from("ai_usage")
-      .select("user_id, count");
+      .select("user_id, request_count");
 
     const aiUsageCounts = new Map<string, number>();
     for (const usage of aiUsage || []) {
       if (usage.user_id) {
-        aiUsageCounts.set(usage.user_id, (aiUsageCounts.get(usage.user_id) || 0) + (usage.count || 0));
+        aiUsageCounts.set(usage.user_id, (aiUsageCounts.get(usage.user_id) || 0) + (usage.request_count || 0));
       }
     }
 
