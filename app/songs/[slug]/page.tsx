@@ -233,6 +233,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
     english: string;
   } | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const justClickedRef = useRef(false);
 
   // Unwrap params
   useEffect(() => {
@@ -289,6 +290,9 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
 
     if (isPlaying) {
       intervalRef.current = setInterval(() => {
+        // Skip if user just clicked a line (let the seek complete)
+        if (justClickedRef.current) return;
+
         const time = player.getCurrentTime();
 
         // Find current lyric line
@@ -341,8 +345,13 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
     (index: number) => {
       if (!player || !song) return;
       setCurrentLineIndex(index); // Highlight immediately
+      justClickedRef.current = true; // Prevent interval from overriding
       player.seekTo(song.lyrics[index].time, true);
       player.playVideo();
+      // Allow interval to take over after seek completes
+      setTimeout(() => {
+        justClickedRef.current = false;
+      }, 500);
     },
     [player, song]
   );
