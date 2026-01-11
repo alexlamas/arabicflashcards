@@ -7,6 +7,7 @@ export interface Song {
   slug: string;
   youtube_id: string;
   description: string | null;
+  cover_url: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -216,6 +217,7 @@ export class SongService {
     slug: string;
     youtube_id: string;
     description: string | null;
+    cover_url: string | null;
     is_published: boolean;
   }>): Promise<Song> {
     const supabase = createClient();

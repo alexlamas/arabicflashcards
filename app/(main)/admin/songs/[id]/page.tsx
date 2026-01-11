@@ -110,6 +110,7 @@ export default function SongEditorPage({
     slug: "",
     youtube_id: "",
     description: "",
+    cover_url: "",
     is_published: false,
   });
 
@@ -163,6 +164,7 @@ export default function SongEditorPage({
         slug: data.slug,
         youtube_id: data.youtube_id,
         description: data.description || "",
+        cover_url: data.cover_url || "",
         is_published: data.is_published,
       });
     } catch {
@@ -730,6 +732,17 @@ export default function SongEditorPage({
                 value={songForm.description}
                 onChange={(e) => setSongForm({ ...songForm, description: e.target.value })}
               />
+            </div>
+            <div>
+              <Label>Cover image URL (optional)</Label>
+              <Input
+                value={songForm.cover_url}
+                onChange={(e) => setSongForm({ ...songForm, cover_url: e.target.value })}
+                placeholder="https://..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Leave empty to use YouTube thumbnail
+              </p>
             </div>
             <Button onClick={handleUpdateSong} disabled={saving} className="w-full">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}

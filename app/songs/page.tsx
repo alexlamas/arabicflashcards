@@ -46,6 +46,7 @@ interface Song {
   artist: string;
   youtube_id: string;
   description: string | null;
+  cover_url: string | null;
 }
 
 async function getPublishedSongs(): Promise<Song[]> {
@@ -53,7 +54,7 @@ async function getPublishedSongs(): Promise<Song[]> {
 
   const { data: songs, error } = await supabase
     .from("songs")
-    .select("id, slug, title, artist, youtube_id, description")
+    .select("id, slug, title, artist, youtube_id, description, cover_url")
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
@@ -123,7 +124,7 @@ export default async function SongsPage() {
               >
                 <div className="aspect-video relative bg-gray-100">
                   <Image
-                    src={`https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`}
+                    src={song.cover_url || `https://img.youtube.com/vi/${song.youtube_id}/hqdefault.jpg`}
                     alt={song.title}
                     fill
                     className="object-cover"
