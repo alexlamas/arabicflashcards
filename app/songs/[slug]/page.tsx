@@ -615,7 +615,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     )}
                     <p
                       className={`${
-                        currentLineIndex === index ? "text-emerald-800" : "text-body"
+                        currentLineIndex === index ? "" : "text-body"
                       }`}
                     >
                       {line.english}
