@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Types
 interface LyricLine {
@@ -235,6 +236,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
   } | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const justClickedRef = useRef(false);
+  const lyricRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Unwrap params
   useEffect(() => {
@@ -306,11 +308,11 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         }
         setCurrentLineIndex(lineIndex);
 
-        // Calculate progress within current line
+        // Calculate progress within current line (finish slightly before next)
         if (lineIndex >= 0) {
           const lineStart = song.lyrics[lineIndex].time;
           const lineEnd = song.lyrics[lineIndex + 1]?.time || lineStart + 10;
-          const duration = lineEnd - lineStart;
+          const duration = (lineEnd - lineStart) * 0.9; // Finish at 90% of interval
           const elapsed = time - lineStart;
           setLineProgress(Math.min(100, (elapsed / duration) * 100));
         } else {
@@ -329,6 +331,16 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
       }
     };
   }, [isPlaying, player, song]);
+
+  // Auto-scroll to current lyric
+  useEffect(() => {
+    if (currentLineIndex >= 0 && lyricRefs.current[currentLineIndex]) {
+      lyricRefs.current[currentLineIndex]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [currentLineIndex]);
 
   const handlePlayPause = useCallback(() => {
     if (!player || !song) return;
@@ -420,7 +432,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
       </nav>
 
       {/* Main Content - Fixed height layout */}
-      <div className="max-w-6xl mx-auto px-4 pt-24 h-[calc(100vh-2rem)] flex flex-col">
+      <div className="max-w-7xl mx-auto px-4 pt-24 h-[calc(100vh-2rem)] flex flex-col">
         {/* Header */}
         <div className="pb-4">
           <p className="text-emerald-600 font-medium mb-1">{song.artist}</p>
@@ -430,9 +442,9 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
         </div>
 
         {/* Content - Side by Side */}
-        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+        <div className="flex flex-col lg:flex-row gap-8 flex-1 min-h-0">
           {/* Left Side - Video */}
-          <div className="lg:w-[55%] flex-shrink-0">
+          <div className="lg:w-[60%] flex-shrink-0">
             <div className="space-y-4">
               {/* YouTube Player */}
               <div className="aspect-video bg-black rounded-2xl overflow-hidden">
@@ -470,11 +482,12 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           </div>
 
           {/* Right Side - Lyrics (Scrollable) */}
-          <div className="lg:w-[45%] flex flex-col min-h-0">
+          <div className="lg:w-[40%] flex flex-col min-h-0">
             <div className="overflow-y-auto flex-1 space-y-2 pr-2">
               {song.lyrics.map((line, index) => (
                 <button
                   key={index}
+                  ref={(el) => { lyricRefs.current[index] = el; }}
                   onClick={() => handleLineClick(index)}
                   className={`relative w-full text-left p-4 rounded-xl transition-all overflow-hidden border-2 ${
                     currentLineIndex === index
@@ -513,30 +526,40 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     </p>
 
                     {/* Word breakdown */}
-                    {currentLineIndex === index && line.words && (
-                      <div className="mt-4 pt-4 border-t border-emerald-200">
-                        <p className="text-xs text-emerald-600 font-medium mb-2">
-                          TAP A WORD TO LEARN IT
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {line.words.map((word, wordIndex) => (
-                            <button
-                              key={wordIndex}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedWord(word);
-                              }}
-                              className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
-                            >
-                              <span className="text-lg font-arabic">{word.arabic}</span>
-                              <span className="text-xs text-gray-500 ml-2">
-                                {word.english}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {currentLineIndex === index && line.words && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-4 pt-4 border-t border-emerald-200">
+                            <p className="text-xs text-emerald-600 font-medium mb-2">
+                              TAP A WORD TO LEARN IT
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {line.words.map((word, wordIndex) => (
+                                <button
+                                  key={wordIndex}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedWord(word);
+                                  }}
+                                  className="px-3 py-2 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-colors"
+                                >
+                                  <span className="text-lg font-arabic">{word.arabic}</span>
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    {word.english}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </button>
               ))}
