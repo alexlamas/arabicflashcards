@@ -319,35 +319,23 @@ export default function SongEditorPage({
     }
   }
 
-  // Quick mark timestamp - creates a line with just the time
-  async function handleMarkTimestamp() {
-    if (!song || !player) return;
-    const time = player.getCurrentTime();
-    try {
-      const newLine = await SongService.addLine(song.id, {
-        start_time: time,
-        arabic: "",
-        transliteration: "",
-        english: "",
-        line_order: song.lines.length,
-      });
-      loadSong();
-      setExpandedLine(newLine.id);
-      toast({ title: `Marked at ${formatTime(time)}` });
-    } catch {
-      toast({ variant: "destructive", title: "Failed to mark timestamp" });
-    }
-  }
-
   // Set timestamp on a line (used in timestamp mode)
   async function handleSetTimestamp(lineId: string, field: 'start_time' | 'end_time') {
-    if (!player) return;
+    if (!player || !song) return;
     const time = player.getCurrentTime();
     try {
       await SongService.updateLine(lineId, {
         [field]: time,
       });
-      loadSong();
+      // Update local state instead of reloading
+      setSong({
+        ...song,
+        lines: song.lines.map(line =>
+          line.id === lineId
+            ? { ...line, [field]: time }
+            : line
+        )
+      });
       toast({ title: `Set ${field === 'start_time' ? 'start' : 'end'} time to ${formatTime(time)}` });
     } catch {
       toast({ variant: "destructive", title: "Failed to set timestamp" });
@@ -457,13 +445,6 @@ export default function SongEditorPage({
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               <span className="text-sm font-mono">{formatTime(currentTime)}</span>
-              <Button
-                size="sm"
-                onClick={handleMarkTimestamp}
-                className="ml-2"
-              >
-                <Plus className="h-4 w-4 mr-1" /> Mark
-              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Switch
