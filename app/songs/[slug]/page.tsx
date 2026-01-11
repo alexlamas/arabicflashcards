@@ -340,6 +340,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
   const handleLineClick = useCallback(
     (index: number) => {
       if (!player || !song) return;
+      setCurrentLineIndex(index); // Highlight immediately
       player.seekTo(song.lyrics[index].time, true);
       player.playVideo();
     },
