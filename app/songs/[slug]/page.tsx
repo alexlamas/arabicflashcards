@@ -435,17 +435,6 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                 </Button>
               </div>
 
-              {/* CTA */}
-              <div className="p-4 bg-gray-50 rounded-xl text-center">
-                <p className="text-sm text-body mb-3">
-                  Want to learn all these words with flashcards?
-                </p>
-                <Link href="/">
-                  <Button className="rounded-full bg-gray-900 hover:bg-gray-800 px-6">
-                    Start learning free
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
 
@@ -513,6 +502,18 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   )}
                 </button>
               ))}
+
+              {/* CTA */}
+              <div className="p-6 bg-gray-50 rounded-xl text-center mt-4">
+                <p className="text-body mb-3">
+                  Want to learn all these words with flashcards?
+                </p>
+                <Link href="/">
+                  <Button className="rounded-full bg-gray-900 hover:bg-gray-800 px-6">
+                    Start learning free
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
