@@ -276,8 +276,7 @@ export function Review() {
                   initial={{ opacity: 0, filter: "blur(4px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.15 }}
-                  className="absolute bottom-3 left-1/2 text-center text-sm text-body px-3 pointer-events-none"
-                  style={{ x: "-50%" }}
+                  className="absolute bottom-3 left-3 right-3 text-center text-sm text-body pointer-events-none"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {hint}
@@ -299,8 +298,7 @@ export function Review() {
                   initial={{ opacity: 0, filter: "blur(4px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.15 }}
-                  className="absolute bottom-3 left-1/2 text-center text-sm text-body px-3 max-w-md pointer-events-none"
-                  style={{ x: "-50%" }}
+                  className="absolute bottom-3 left-3 right-3 text-center text-sm text-body pointer-events-none"
                 >
                   {currentWord.notes}
                 </motion.div>
