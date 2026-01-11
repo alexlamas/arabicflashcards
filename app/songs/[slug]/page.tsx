@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw } from "lucide-react";
+import { PublicFooter } from "@/app/components/PublicFooter";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Types
@@ -570,7 +571,7 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                   {/* Progress circle */}
                   {currentLineIndex === index && (
                     <div
-                      className="absolute bottom-0 left-0 bg-emerald-200/20 rounded-full blur-md transition-all duration-100"
+                      className="absolute bottom-0 left-0 bg-emerald-200/20 rounded-full blur-xl transition-all duration-100"
                       style={{
                         width: `${lineProgress * 2.5}%`,
                         aspectRatio: '1',
@@ -655,6 +656,8 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
           </div>
         </div>
       </div>
+
+      <PublicFooter />
 
       {/* Word Detail Modal */}
       {selectedWord && (
