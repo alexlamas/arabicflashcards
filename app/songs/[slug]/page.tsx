@@ -568,17 +568,6 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                       : "border-gray-100 bg-white hover:border-gray-200"
                   }`}
                 >
-                  {/* Progress circle */}
-                  {currentLineIndex === index && (
-                    <div
-                      className="absolute bottom-0 left-0 bg-emerald-200/20 rounded-full blur-xl transition-all duration-100"
-                      style={{
-                        width: `${lineProgress * 2.5}%`,
-                        aspectRatio: '1',
-                        transform: `translateX(-50%) translateY(50%)`
-                      }}
-                    />
-                  )}
                   <div className="relative space-y-1">
                     <p
                       className={`text-2xl font-arabic ${
