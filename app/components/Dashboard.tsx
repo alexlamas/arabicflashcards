@@ -42,6 +42,21 @@ export function Dashboard() {
     return words.filter(w => !w.pack_id).length;
   }, [words]);
 
+  // Derive installed packs from words (as fallback/supplement to loaded installedPackIds)
+  const installedPackIdsFromWords = useMemo(() => {
+    const packIds = new Set<string>();
+    words.forEach(w => {
+      if (w.pack_id) packIds.add(w.pack_id);
+    });
+    return Array.from(packIds);
+  }, [words]);
+
+  // Merge loaded installedPackIds with derived ones from words
+  const effectiveInstalledPackIds = useMemo(() => {
+    const combined = new Set([...installedPackIds, ...installedPackIdsFromWords]);
+    return Array.from(combined);
+  }, [installedPackIds, installedPackIdsFromWords]);
+
   // Count learned words (next_review_date > 1 month away) for fluency level
   const learnedCount = useMemo(() => {
     const now = new Date();
@@ -96,17 +111,10 @@ export function Dashboard() {
     }
   }
 
-  // Load packs on mount, and refresh if coming from onboarding
+  // Load packs on mount
   useEffect(() => {
-    const needsRefresh = localStorage.getItem("refresh_after_onboarding") === "true";
-    if (needsRefresh) {
-      localStorage.removeItem("refresh_after_onboarding");
-      // Force refresh words first, then load packs
-      refreshWords(true).then(() => loadPacks());
-    } else {
-      loadPacks();
-    }
-  }, [refreshWords]);
+    loadPacks();
+  }, []);
 
   // Fetch weekly review stats and streak
   useEffect(() => {
@@ -224,7 +232,7 @@ export function Dashboard() {
       {!loadingPacks && (
         <PackJourney
           packs={availablePacks}
-          installedPackIds={installedPackIds}
+          installedPackIds={effectiveInstalledPackIds}
           packProgress={packProgress}
           packWordCounts={packWordCounts}
           onPackClick={openPackPreview}
@@ -237,7 +245,7 @@ export function Dashboard() {
         pack={selectedPack}
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        isInstalled={selectedPack ? installedPackIds.includes(selectedPack.id) : false}
+        isInstalled={selectedPack ? effectiveInstalledPackIds.includes(selectedPack.id) : false}
         userWords={words}
         onInstall={handleInstallPack}
         onUninstall={handleUninstallPack}

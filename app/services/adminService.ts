@@ -8,6 +8,7 @@ export interface AdminUser {
   email_confirmed: boolean;
   word_count: number;
   last_review_date: string | null;
+  last_sign_in_at: string | null;
 }
 
 export interface AdminWord {

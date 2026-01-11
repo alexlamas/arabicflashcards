@@ -131,7 +131,9 @@ export default function OnboardingPage() {
       // Start all selected packs
       await Promise.all(selectedPacks.map(packId => PackService.startPack(packId)));
 
-      localStorage.setItem("refresh_after_onboarding", "true");
+      // Pass installed pack IDs to dashboard for immediate display
+      localStorage.setItem("onboarding_installed_packs", JSON.stringify(selectedPacks));
+
       router.replace("/");
     } catch (error) {
       console.error("Failed to complete onboarding:", error);

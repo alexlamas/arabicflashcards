@@ -95,6 +95,7 @@ export async function GET() {
       email_confirmed: !!authUser.email_confirmed_at,
       word_count: wordCounts.get(authUser.id) || 0,
       last_review_date: lastReviewDates.get(authUser.id) || null,
+      last_sign_in_at: authUser.last_sign_in_at || null,
     }));
 
     return NextResponse.json(users);

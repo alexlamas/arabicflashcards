@@ -24,28 +24,29 @@ interface FluencyProgressBarProps {
 export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, streak }: FluencyProgressBarProps) {
   const { learned, learning } = useMemo(() => {
     const now = new Date();
-    const oneDay = 24 * 60 * 60 * 1000;
-    const oneMonth = 30 * oneDay;
-    const oneDayFromNow = new Date(now.getTime() + oneDay);
+    const oneMonth = 30 * 24 * 60 * 60 * 1000;
     const oneMonthFromNow = new Date(now.getTime() + oneMonth);
 
     let learned = 0;
     let learning = 0;
 
     words.forEach((word) => {
+      // Skip words without status or new words
       if (!word.status || word.status === "new") {
         return;
       }
 
-      if (!word.next_review_date) {
-        return;
+      // Count as "learned" if next_review_date > 1 month from now
+      if (word.next_review_date) {
+        const reviewDate = new Date(word.next_review_date);
+        if (reviewDate > oneMonthFromNow) {
+          learned++;
+          return;
+        }
       }
 
-      const reviewDate = new Date(word.next_review_date);
-
-      if (reviewDate > oneMonthFromNow) {
-        learned++;
-      } else if (reviewDate > oneDayFromNow) {
+      // Count as "learning" if status is "learning" (includes freshly installed pack words)
+      if (word.status === "learning") {
         learning++;
       }
     });
