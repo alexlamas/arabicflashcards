@@ -49,12 +49,14 @@ interface NavLinkProps {
   icon: React.ElementType;
   children: React.ReactNode;
   onClick: () => void;
+  tourId?: string;
 }
 
-function NavLink({  active, badge, icon: Icon, children, onClick }: NavLinkProps) {
+function NavLink({  active, badge, icon: Icon, children, onClick, tourId }: NavLinkProps) {
   return (
     <button
       onClick={onClick}
+      data-tour={tourId}
       className={cn(
         "px-3 py-1.5 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5",
         active
@@ -174,6 +176,7 @@ export function TopNav() {
               active={pathname === "/my-words"}
               icon={CardsThree}
               onClick={() => handleNavigate("/my-words")}
+              tourId="my-words"
             >
               My words
             </NavLink>
@@ -181,6 +184,7 @@ export function TopNav() {
               active={pathname === "/memory-game"}
               icon={GameController}
               onClick={() => handleNavigate("/memory-game")}
+              tourId="play"
             >
               Play
             </NavLink>
@@ -189,6 +193,7 @@ export function TopNav() {
               icon={PlayCircle}
               badge={reviewCount}
               onClick={() => handleNavigate("/review")}
+              tourId="review"
             >
               Review
             </NavLink>

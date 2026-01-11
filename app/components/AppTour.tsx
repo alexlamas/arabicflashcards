@@ -52,30 +52,22 @@ export function AppTour() {
   useEffect(() => {
     if (isVisible) {
       updateTooltipPosition(currentStep);
+
+      // Recalculate on resize
+      const handleResize = () => updateTooltipPosition(currentStep);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [currentStep, isVisible]);
 
   function updateTooltipPosition(stepIndex: number) {
     const step = TOUR_STEPS[stepIndex];
-    // Find the nav element by looking for text content
-    const navLinks = document.querySelectorAll("nav button");
-    let targetElement: Element | null = null;
-
-    navLinks.forEach((link) => {
-      const text = link.textContent?.toLowerCase() || "";
-      if (
-        (step.target === "my-words" && text.includes("my words")) ||
-        (step.target === "review" && text.includes("review")) ||
-        (step.target === "play" && text.includes("play"))
-      ) {
-        targetElement = link;
-      }
-    });
+    const targetElement = document.querySelector(`[data-tour="${step.target}"]`);
 
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
       setTooltipPosition({
-        top: rect.bottom + 12,
+        top: rect.bottom + 16,
         left: rect.left + rect.width / 2,
       });
     }
