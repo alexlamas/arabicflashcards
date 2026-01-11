@@ -99,6 +99,7 @@ export default function SongEditorPage({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [expandedLine, setExpandedLine] = useState<string | null>(null);
+  const [timestampMode, setTimestampMode] = useState(false);
   const timeIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Edit states
@@ -227,6 +228,7 @@ export default function SongEditorPage({
     };
   }, [isPlaying, player]);
 
+
   const captureStartTime = useCallback(() => {
     if (player) {
       setLineForm({ ...lineForm, start_time: formatTime(player.getCurrentTime()) });
@@ -314,6 +316,41 @@ export default function SongEditorPage({
       toast({ title: "Line deleted" });
     } catch {
       toast({ variant: "destructive", title: "Failed to delete line" });
+    }
+  }
+
+  // Quick mark timestamp - creates a line with just the time
+  async function handleMarkTimestamp() {
+    if (!song || !player) return;
+    const time = player.getCurrentTime();
+    try {
+      const newLine = await SongService.addLine(song.id, {
+        start_time: time,
+        arabic: "",
+        transliteration: "",
+        english: "",
+        line_order: song.lines.length,
+      });
+      loadSong();
+      setExpandedLine(newLine.id);
+      toast({ title: `Marked at ${formatTime(time)}` });
+    } catch {
+      toast({ variant: "destructive", title: "Failed to mark timestamp" });
+    }
+  }
+
+  // Set timestamp on a line (used in timestamp mode)
+  async function handleSetTimestamp(lineId: string, field: 'start_time' | 'end_time') {
+    if (!player) return;
+    const time = player.getCurrentTime();
+    try {
+      await SongService.updateLine(lineId, {
+        [field]: time,
+      });
+      loadSong();
+      toast({ title: `Set ${field === 'start_time' ? 'start' : 'end'} time to ${formatTime(time)}` });
+    } catch {
+      toast({ variant: "destructive", title: "Failed to set timestamp" });
     }
   }
 
@@ -420,10 +457,23 @@ export default function SongEditorPage({
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               <span className="text-sm font-mono">{formatTime(currentTime)}</span>
+              <Button
+                size="sm"
+                onClick={handleMarkTimestamp}
+                className="ml-2"
+              >
+                <Plus className="h-4 w-4 mr-1" /> Mark
+              </Button>
             </div>
-            <p className="text-xs text-gray-500">
-              Click timestamps to jump to that point
-            </p>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={timestampMode}
+                onCheckedChange={setTimestampMode}
+              />
+              <span className={`text-sm ${timestampMode ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                {timestampMode ? 'Timestamp mode ON' : 'Timestamp mode'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -474,34 +524,54 @@ export default function SongEditorPage({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <button
-                          className="text-xs font-mono text-blue-600 hover:underline"
+                          className={`text-xs font-mono hover:underline ${
+                            timestampMode
+                              ? 'text-red-600 bg-red-50 px-1 rounded'
+                              : 'text-blue-600'
+                          }`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            seekTo(line.start_time);
+                            if (timestampMode) {
+                              handleSetTimestamp(line.id, 'start_time');
+                            } else {
+                              seekTo(line.start_time);
+                            }
                           }}
+                          title={timestampMode ? 'Click to set start time' : 'Click to seek'}
                         >
                           {formatTime(line.start_time)}
                         </button>
-                        {line.end_time && (
-                          <>
-                            <span className="text-gray-400">-</span>
-                            <button
-                              className="text-xs font-mono text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                seekTo(line.end_time!);
-                              }}
-                            >
-                              {formatTime(line.end_time)}
-                            </button>
-                          </>
-                        )}
+                        <span className="text-gray-400">-</span>
+                        <button
+                          className={`text-xs font-mono hover:underline ${
+                            timestampMode
+                              ? 'text-red-600 bg-red-50 px-1 rounded'
+                              : 'text-blue-600'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (timestampMode) {
+                              handleSetTimestamp(line.id, 'end_time');
+                            } else if (line.end_time) {
+                              seekTo(line.end_time);
+                            }
+                          }}
+                          title={timestampMode ? 'Click to set end time' : 'Click to seek'}
+                        >
+                          {line.end_time ? formatTime(line.end_time) : '--:--'}
+                        </button>
                       </div>
-                      <p className="font-arabic text-lg truncate">{line.arabic}</p>
-                      <p className="text-sm text-gray-600 truncate">
-                        {line.transliteration}
-                      </p>
-                      <p className="text-sm text-gray-500 truncate">{line.english}</p>
+                      {line.arabic ? (
+                        <>
+                          <p className="font-arabic text-lg truncate">{line.arabic}</p>
+                          <p className="text-sm text-gray-600 truncate">
+                            {line.transliteration}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">{line.english}</p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-orange-500 italic">Click to add lyrics...</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       {line.words && line.words.length > 0 && (
