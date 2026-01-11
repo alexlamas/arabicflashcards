@@ -157,24 +157,47 @@ export default function OnboardingPage() {
     return null;
   }
 
+  const stepIndicator = (
+    <div className="flex gap-1.5 mb-6">
+      {[1, 2, 3, 4].map((s) => (
+        <div
+          key={s}
+          className={cn(
+            "h-1.5 rounded-full transition-all duration-300",
+            s === step ? "bg-gray-900 w-6" : s < step ? "bg-gray-900 w-2" : "bg-gray-200 w-2"
+          )}
+        />
+      ))}
+    </div>
+  );
+
+  const nextButton = (
+    <Button
+      onClick={handleNext}
+      disabled={!canProceed() || isSaving}
+      size="lg"
+      className="w-full h-14 text-base rounded-xl bg-gray-900 hover:bg-gray-800"
+    >
+      {isSaving ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : step === 4 ? (
+        "Start learning"
+      ) : (
+        <>
+          Continue
+          <ArrowRight className="h-5 w-5 ml-2" />
+        </>
+      )}
+    </Button>
+  );
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <div className="p-6 flex items-center justify-between">
+      <div className="p-6">
         <div className="flex items-center gap-2">
           <Image src="/logo.svg" alt="Yalla Flash" width={28} height={28} />
           <span className="font-semibold text-lg">Yalla Flash</span>
-        </div>
-        <div className="flex gap-1.5">
-          {[1, 2, 3, 4].map((s) => (
-            <div
-              key={s}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                s === step ? "bg-gray-900 w-6" : s < step ? "bg-gray-900 w-2" : "bg-gray-200 w-2"
-              )}
-            />
-          ))}
         </div>
       </div>
 
@@ -192,7 +215,8 @@ export default function OnboardingPage() {
             {/* Step 1: Name */}
             {step === 1 && (
               <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {stepIndicator}
+                <h1 className="text-3xl font-title text-gray-900 mb-2">
                   What&apos;s your name?
                 </h1>
                 <p className="text-gray-500 mb-8">
@@ -202,23 +226,24 @@ export default function OnboardingPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="text-lg h-14 rounded-xl"
+                  className="text-lg h-14 rounded-xl mb-6"
                   autoFocus
                 />
-                <p className="text-sm text-gray-400 mt-2">You can skip this</p>
+                {nextButton}
               </div>
             )}
 
             {/* Step 2: Avatar */}
             {step === 2 && (
               <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {stepIndicator}
+                <h1 className="text-3xl font-title text-gray-900 mb-2">
                   Pick an avatar
                 </h1>
                 <p className="text-gray-500 mb-8">
                   Choose one that represents you
                 </p>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-5 gap-3 mb-6">
                   {AVATAR_OPTIONS.map((option) => (
                     <button
                       key={option.id}
@@ -239,19 +264,21 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                 </div>
+                {nextButton}
               </div>
             )}
 
             {/* Step 3: Fluency */}
             {step === 3 && (
               <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {stepIndicator}
+                <h1 className="text-3xl font-title text-gray-900 mb-2">
                   Your Arabic level?
                 </h1>
                 <p className="text-gray-500 mb-8">
                   We&apos;ll recommend packs for you
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-3 mb-6">
                   {FLUENCY_OPTIONS.map((option) => (
                     <button
                       key={option.value}
@@ -281,13 +308,15 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                 </div>
+                {nextButton}
               </div>
             )}
 
             {/* Step 4: Pack Selection */}
             {step === 4 && (
               <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full py-4">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {stepIndicator}
+                <h1 className="text-3xl font-title text-gray-900 mb-2">
                   Choose your first pack
                 </h1>
                 <p className="text-gray-500 mb-6">
@@ -298,90 +327,72 @@ export default function OnboardingPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4">
-                    {packs.map((pack) => {
-                      const isRecommended = pack.level === fluency;
-                      const isSelected = selectedPack === pack.id;
-                      return (
-                        <button
-                          key={pack.id}
-                          onClick={() => setSelectedPack(pack.id)}
-                          className={cn(
-                            "relative rounded-2xl overflow-hidden text-left transition-all duration-200 bg-white border-2 group",
-                            isSelected
-                              ? "border-gray-900 shadow-lg scale-[1.02]"
-                              : "border-gray-100 hover:border-gray-300 hover:shadow-md"
-                          )}
-                        >
-                          {/* Pack Image */}
-                          <div className="aspect-square relative bg-gray-100">
-                            {pack.image_url ? (
-                              <Image
-                                src={pack.image_url}
-                                alt={pack.name}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-4xl">
-                                📚
-                              </div>
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4 mb-6">
+                      {packs.map((pack) => {
+                        const isRecommended = pack.level === fluency;
+                        const isSelected = selectedPack === pack.id;
+                        return (
+                          <button
+                            key={pack.id}
+                            onClick={() => setSelectedPack(pack.id)}
+                            className={cn(
+                              "relative rounded-2xl overflow-hidden text-left transition-all duration-200 bg-white border-2 group",
+                              isSelected
+                                ? "border-gray-900 shadow-lg scale-[1.02]"
+                                : "border-gray-100 hover:border-gray-300 hover:shadow-md"
                             )}
-                            {/* Recommended badge */}
-                            {isRecommended && (
-                              <div className="absolute top-2 left-2 bg-amber-400 text-amber-900 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
-                                <Star weight="fill" className="w-3 h-3" />
-                                For you
-                              </div>
-                            )}
-                            {/* Selected checkmark */}
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center">
-                                <Check className="h-4 w-4 text-white" />
-                              </div>
-                            )}
-                          </div>
-                          {/* Pack Info */}
-                          <div className="p-3">
-                            <h3 className="font-semibold text-gray-900 truncate">
-                              {pack.name}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                              {pack.wordCount} words
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                          >
+                            {/* Pack Image */}
+                            <div className="aspect-square relative bg-gray-100">
+                              {pack.image_url ? (
+                                <Image
+                                  src={pack.image_url}
+                                  alt={pack.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-4xl">
+                                  📚
+                                </div>
+                              )}
+                              {/* Recommended badge */}
+                              {isRecommended && (
+                                <div className="absolute top-2 left-2 bg-amber-400 text-amber-900 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+                                  <Star weight="fill" className="w-3 h-3" />
+                                  For you
+                                </div>
+                              )}
+                              {/* Selected checkmark */}
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center">
+                                  <Check className="h-4 w-4 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            {/* Pack Info */}
+                            <div className="p-3">
+                              <h3 className="font-semibold text-gray-900 truncate">
+                                {pack.name}
+                              </h3>
+                              <p className="text-sm text-gray-500">
+                                {pack.wordCount} words
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="max-w-md mx-auto w-full">
+                      {nextButton}
+                    </div>
+                  </>
                 )}
               </div>
             )}
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Bottom button */}
-      <div className="p-6 border-t bg-white">
-        <div className="max-w-md mx-auto">
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed() || isSaving}
-            size="lg"
-            className="w-full h-14 text-base rounded-xl bg-gray-900 hover:bg-gray-800"
-          >
-            {isSaving ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : step === 4 ? (
-              "Start learning"
-            ) : (
-              <>
-                Continue
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </>
-            )}
-          </Button>
-        </div>
       </div>
     </div>
   );
