@@ -587,13 +587,21 @@ export default function SongPage({ params }: { params: Promise<{ slug: string }>
                     >
                       {line.arabic}
                     </p>
-                    <p
-                      className={`text-sm ${
-                        currentLineIndex === index ? "text-emerald-700" : "text-subtle"
-                      }`}
-                    >
-                      {line.transliteration}
-                    </p>
+                    {currentLineIndex === index ? (
+                      <p
+                        className="text-sm bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-emerald-700"
+                        style={{
+                          backgroundSize: '200% 100%',
+                          backgroundPosition: `${100 - lineProgress}% 0`
+                        }}
+                      >
+                        {line.transliteration}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-subtle">
+                        {line.transliteration}
+                      </p>
+                    )}
                     <p
                       className={`${
                         currentLineIndex === index ? "text-emerald-800" : "text-body"
