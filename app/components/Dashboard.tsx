@@ -16,6 +16,19 @@ import { FluencyProgressBar } from "./FluencyProgressBar";
 import { PackJourney } from "./PackJourney";
 
 
+// Get initial pack IDs from URL (runs once, before component mounts)
+function getInitialPackIds(): string[] {
+  if (typeof window === "undefined") return [];
+  const params = new URLSearchParams(window.location.search);
+  const installed = params.get("installed");
+  if (installed) {
+    // Clean up URL immediately
+    window.history.replaceState({}, "", "/");
+    return installed.split(",").filter(Boolean);
+  }
+  return [];
+}
+
 export function Dashboard() {
   const { session } = useAuth();
   const { firstName: profileFirstName } = useProfile();
@@ -27,7 +40,7 @@ export function Dashboard() {
   } = useWords();
 
   const [availablePacks, setAvailablePacks] = useState<StarterPack[]>([]);
-  const [installedPackIds, setInstalledPackIds] = useState<string[]>([]);
+  const [installedPackIds, setInstalledPackIds] = useState<string[]>(getInitialPackIds);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
   const [loadingPacks, setLoadingPacks] = useState(true);
   const [installingPackId, setInstallingPackId] = useState<string | null>(null);
@@ -91,29 +104,30 @@ export function Dashboard() {
     return progress;
   }, [words, availablePacks, packWordCounts]);
 
-  async function loadPacks() {
-    try {
-      const [packs, installed, wordCounts] = await Promise.all([
-        StarterPackService.getAvailablePacks(),
-        StarterPackService.getUserImportedPacks(),
-        StarterPackService.getPackWordCounts(),
-      ]);
-      setAvailablePacks(packs);
-      setInstalledPackIds(installed);
-      setPackWordCounts(wordCounts);
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Failed to load packs",
-      });
-    } finally {
-      setLoadingPacks(false);
-    }
-  }
-
   // Load packs on mount
   useEffect(() => {
-    loadPacks();
+    async function init() {
+      // Load packs from database
+      try {
+        const [packs, installed, wordCounts] = await Promise.all([
+          StarterPackService.getAvailablePacks(),
+          StarterPackService.getUserImportedPacks(),
+          StarterPackService.getPackWordCounts(),
+        ]);
+        setAvailablePacks(packs);
+        // Merge with any existing installed packs (from URL params)
+        setInstalledPackIds(prev => [...new Set([...prev, ...installed])]);
+        setPackWordCounts(wordCounts);
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Failed to load packs",
+        });
+      } finally {
+        setLoadingPacks(false);
+      }
+    }
+    init();
   }, []);
 
   // Fetch weekly review stats and streak

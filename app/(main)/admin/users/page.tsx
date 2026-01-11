@@ -244,6 +244,11 @@ export default function AdminUsersPage() {
                       <p className="text-xs text-gray-500">
                         {user.word_count} words · Joined {new Date(user.created_at).toLocaleDateString()}
                       </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Last login: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
+                        {" · "}
+                        Last review: {user.last_review_date ? new Date(user.last_review_date).toLocaleDateString() : "Never"}
+                      </p>
                     </div>
                     {user.email_confirmed ? (
                       <span className="text-green-600 text-xs bg-green-50 px-2 py-0.5 rounded-full flex-shrink-0">Confirmed</span>
@@ -303,6 +308,8 @@ export default function AdminUsersPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead>Words</TableHead>
+                <TableHead>Last login</TableHead>
+                <TableHead>Last review</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
@@ -340,7 +347,13 @@ export default function AdminUsersPage() {
                       </Select>
                     </TableCell>
                     <TableCell>{user.word_count}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {user.last_review_date ? new Date(user.last_review_date).toLocaleDateString() : "Never"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>

@@ -68,8 +68,8 @@ export async function GET() {
 
     const { data: progress } = await adminClient
       .from("word_progress")
-      .select("user_id, last_review_date")
-      .order("last_review_date", { ascending: false });
+      .select("user_id, updated_at")
+      .order("updated_at", { ascending: false });
 
     // Count words per user
     const wordCounts = new Map<string, number>();
@@ -82,8 +82,8 @@ export async function GET() {
     }
 
     for (const p of progress || []) {
-      if (p.last_review_date && !lastReviewDates.has(p.user_id)) {
-        lastReviewDates.set(p.user_id, p.last_review_date);
+      if (p.updated_at && !lastReviewDates.has(p.user_id)) {
+        lastReviewDates.set(p.user_id, p.updated_at);
       }
     }
 
