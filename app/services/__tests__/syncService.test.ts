@@ -172,7 +172,7 @@ describe("SyncService", () => {
       });
 
       it("should throw for invalid DELETE_WORD payload", async () => {
-        const invalidAction = createTestAction("action-1", "DELETE_WORD", {} as any);
+        const invalidAction = createTestAction("action-1", "DELETE_WORD", {} as unknown as { id: string });
         (OfflineStorage.getPendingActions as Mock).mockReturnValue([invalidAction]);
 
         const result = await SyncService.syncPendingActions();
@@ -231,7 +231,7 @@ describe("SyncService", () => {
       });
 
       it("should throw for invalid UPDATE_WORD payload", async () => {
-        const invalidAction = createTestAction("action-1", "UPDATE_WORD", { id: "word-123" } as any);
+        const invalidAction = createTestAction("action-1", "UPDATE_WORD", { id: "word-123" } as unknown as { id: string; updates: Record<string, unknown> });
         (OfflineStorage.getPendingActions as Mock).mockReturnValue([invalidAction]);
 
         const result = await SyncService.syncPendingActions();
@@ -264,7 +264,7 @@ describe("SyncService", () => {
           userId: "user-1",
           wordId: "word-1",
           // missing rating
-        } as any);
+        } as unknown as { userId: string; wordId: string; rating: number });
         (OfflineStorage.getPendingActions as Mock).mockReturnValue([invalidAction]);
 
         const result = await SyncService.syncPendingActions();
@@ -295,7 +295,7 @@ describe("SyncService", () => {
         const invalidAction = createTestAction("action-1", "START_LEARNING", {
           userId: "user-1",
           // missing wordId
-        } as any);
+        } as unknown as { userId: string; wordId: string });
         (OfflineStorage.getPendingActions as Mock).mockReturnValue([invalidAction]);
 
         const result = await SyncService.syncPendingActions();
@@ -423,8 +423,6 @@ describe("SyncService", () => {
         });
 
         // Force it past the empty check
-        // @ts-expect-error - accessing private method for testing
-        const originalGetPendingActions = OfflineStorage.getPendingActions;
         let callCount = 0;
         (OfflineStorage.getPendingActions as Mock).mockImplementation(() => {
           callCount++;
@@ -434,7 +432,7 @@ describe("SyncService", () => {
           throw new Error("Unexpected error");
         });
 
-        const result = await SyncService.syncPendingActions();
+        await SyncService.syncPendingActions();
 
         expect(SyncService.isSyncing()).toBe(false);
       });
@@ -666,7 +664,7 @@ describe("SyncService", () => {
       const invalidAction = {
         id: "action-1",
         type: "DELETE_WORD" as const,
-        payload: null as any,
+        payload: null as unknown as { id: string },
         timestamp: Date.now(),
         retries: 0,
       };

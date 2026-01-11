@@ -82,7 +82,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
   // First-time user state - no words yet
   if (totalWords === 0) {
     return (
-      <div className="relative overflow-hidden p-5 py-6 pr-12 bg-gray-50">
+      <div className="relative overflow-hidden p-5 py-6 md:pr-12 bg-gray-50">
         <DottedGlowBackground
           gap={16}
           radius={1.5}
@@ -116,7 +116,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
 
   if (reviewCount > 0) {
     return (
-      <div className="relative overflow-hidden p-5 py-6 pr-12 bg-gray-50">
+      <div className="relative overflow-hidden p-5 py-6 md:pr-12 bg-gray-50">
         <DottedGlowBackground
           gap={16}
           radius={1.5}
@@ -155,7 +155,7 @@ export function WelcomeBanner({ firstName, reviewCount, learnedCount = 0, totalW
   }
 
   return (
-    <div className="relative overflow-hidden p-5 py-6 pr-12 bg-gradient-to-br from-sky-50 to-blue-50">
+    <div className="relative overflow-hidden p-5 py-6 md:pr-12 bg-gradient-to-br from-sky-50 to-blue-50">
       <DottedGlowBackground
         gap={16}
         radius={1.5}

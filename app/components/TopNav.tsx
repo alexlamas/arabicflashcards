@@ -147,15 +147,17 @@ export function TopNav() {
               <List className="h-5 w-5" />
             </div>
 
-            {/* Mobile: current page (centered) */}
+            {/* Mobile: current page (absolutely centered) */}
             {!isMobileMenuOpen && (
-              <div className="md:hidden absolute left-1/2 -translate-x-1/2 text-sm font-medium text-heading flex items-center gap-1.5">
-                {pathname === "/" && <><HouseSimple className="h-4 w-4" />Home</>}
-                {pathname === "/my-words" && <><CardsThree className="h-4 w-4" />My words</>}
-                {pathname === "/memory-game" && <><GameController className="h-4 w-4" />Play</>}
-                {pathname === "/review" && <><PlayCircle className="h-4 w-4" />Review</>}
-                {pathname === "/admin" && <><Cube className="h-4 w-4" />Admin</>}
-                {pathname === "/design-system" && <><Swatches className="h-4 w-4" />Design system</>}
+              <div className="md:hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-sm font-medium text-heading flex items-center gap-1.5">
+                  {pathname === "/" && <><HouseSimple className="h-4 w-4" />Home</>}
+                  {pathname === "/my-words" && <><CardsThree className="h-4 w-4" />My words</>}
+                  {pathname === "/memory-game" && <><GameController className="h-4 w-4" />Play</>}
+                  {pathname === "/review" && <><PlayCircle className="h-4 w-4" />Review</>}
+                  {pathname === "/admin" && <><Cube className="h-4 w-4" />Admin</>}
+                  {pathname === "/design-system" && <><Swatches className="h-4 w-4" />Design system</>}
+                </span>
               </div>
             )}
 
@@ -305,7 +307,7 @@ export function TopNav() {
           </div>
 
           {/* Mobile avatar on right - only show when profile is loaded */}
-          <div className="md:hidden flex items-center mr-0.5" onClick={(e) => e.stopPropagation()}>
+          <div className="md:hidden flex items-center ml-auto mr-0.5" onClick={(e) => e.stopPropagation()}>
             {/* AI Usage chip */}
             {usage && (
               <Popover>

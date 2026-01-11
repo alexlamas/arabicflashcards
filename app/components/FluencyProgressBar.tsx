@@ -142,10 +142,10 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
           </Tooltip>
 
           {reviewsThisWeek !== undefined && (
-            <>
+            <div className="hidden md:flex items-center gap-4">
               <div className="h-4 w-px bg-gray-200" />
               <WeeklyStats thisWeek={reviewsThisWeek} lastWeek={reviewsLastWeek} />
-            </>
+            </div>
           )}
 
           {streak !== undefined && streak > 0 && (
