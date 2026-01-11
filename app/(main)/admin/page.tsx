@@ -262,6 +262,35 @@ export default function AdminPage() {
     }
   }
 
+  async function handleDeleteUser(userId: string, email: string) {
+    if (!confirm(`Delete user ${email}? This will permanently delete all their data and cannot be undone.`)) return;
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete user');
+      }
+
+      toast({
+        title: "User deleted",
+        description: `${email} has been removed`,
+      });
+      loadData();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to delete user",
+        description: error instanceof Error ? error.message : "An error occurred",
+      });
+    }
+  }
+
   async function handleRoleChange(userId: string, newRole: 'admin' | 'reviewer' | 'standard') {
     setTogglingRole(userId);
     try {
@@ -554,20 +583,31 @@ export default function AdminPage() {
                             <span className="text-amber-600 text-xs bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">Pending</span>
                           )}
                         </div>
-                        <Select
-                          value={currentRole}
-                          onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
-                          disabled={togglingRole === user.id || isCurrentUser}
-                        >
-                          <SelectTrigger className="w-full h-9 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="standard">Standard</SelectItem>
-                            <SelectItem value="reviewer">Reviewer</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                          <Select
+                            value={currentRole}
+                            onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'reviewer' | 'standard')}
+                            disabled={togglingRole === user.id || isCurrentUser}
+                          >
+                            <SelectTrigger className="flex-1 h-9 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="standard">Standard</SelectItem>
+                              <SelectItem value="reviewer">Reviewer</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-500 h-9 px-3"
+                            onClick={() => handleDeleteUser(user.id, user.email)}
+                            disabled={isCurrentUser}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     );
                   })}
@@ -582,6 +622,7 @@ export default function AdminPage() {
                       <TableHead>Roles</TableHead>
                       <TableHead>Words</TableHead>
                       <TableHead>Joined</TableHead>
+                      <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -619,6 +660,17 @@ export default function AdminPage() {
                           <TableCell>{user.word_count}</TableCell>
                           <TableCell>
                             {new Date(user.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-500"
+                              onClick={() => handleDeleteUser(user.id, user.email)}
+                              disabled={isCurrentUser}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );

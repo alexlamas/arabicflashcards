@@ -1,48 +1,54 @@
 import { createClient } from "@/utils/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+async function getAdminClient(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized", status: 401 };
+  }
+
+  // Check if user is admin
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (roleData?.role !== "admin") {
+    return { error: "Forbidden", status: 403 };
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return { error: "Server configuration error", status: 500 };
+  }
+
+  const adminClient = createAdminClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+
+  return { adminClient, currentUserId: user.id };
+}
 
 export async function GET() {
   try {
-    // First check if the requesting user is an admin
     const cookieStore = cookies();
     const supabase = await createClient(cookieStore);
 
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const result = await getAdminClient(supabase);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    // Check if user is admin
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (roleData?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Create admin client with service role
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 }
-      );
-    }
-
-    const adminClient = createAdminClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
+    const { adminClient } = result;
 
     // Fetch all users from auth.users
     const { data: authUsers, error: authError } = await adminClient.auth.admin.listUsers();
@@ -92,6 +98,79 @@ export async function GET() {
     }));
 
     return NextResponse.json(users);
+  } catch {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    const result = await getAdminClient(supabase);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+
+    const { adminClient, currentUserId } = result;
+
+    const { userId } = await req.json();
+
+    if (!userId) {
+      return NextResponse.json({ error: "User ID required" }, { status: 400 });
+    }
+
+    // Prevent self-deletion
+    if (userId === currentUserId) {
+      return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
+    }
+
+    // Delete user's data first
+    // 1. Delete word progress
+    await adminClient
+      .from("word_progress")
+      .delete()
+      .eq("user_id", userId);
+
+    // 2. Delete user's custom words
+    await adminClient
+      .from("words")
+      .delete()
+      .eq("user_id", userId);
+
+    // 3. Delete user profile
+    await adminClient
+      .from("user_profiles")
+      .delete()
+      .eq("id", userId);
+
+    // 4. Delete user roles
+    await adminClient
+      .from("user_roles")
+      .delete()
+      .eq("user_id", userId);
+
+    // 5. Delete AI usage
+    await adminClient
+      .from("ai_usage")
+      .delete()
+      .eq("user_id", userId);
+
+    // 6. Finally delete the auth user
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
+
+    if (deleteError) {
+      return NextResponse.json(
+        { error: "Failed to delete user" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
