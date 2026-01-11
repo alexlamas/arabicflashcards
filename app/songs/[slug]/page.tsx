@@ -42,12 +42,23 @@ const SONGS: Record<string, Song> = {
         arabic: "بحبك يا لبنان يا وطني بحبك",
         transliteration: "bihabik ya lubnan ya watani bihubk",
         english: "I love you Lebanon, my homeland I love you",
+        words: [
+          { arabic: "بحبك", transliteration: "bihubk", english: "I love you" },
+          { arabic: "يا", transliteration: "ya", english: "oh (vocative)" },
+          { arabic: "لبنان", transliteration: "lubnan", english: "Lebanon" },
+          { arabic: "وطني", transliteration: "watani", english: "my homeland" },
+        ],
       },
       {
         time: 91,
         arabic: "بشمالك، بجنوبك، بسهلك بحبك",
         transliteration: "bishamalika, bijanubika, bisahlik bihubk",
         english: "In your north, your south, your plains I love you",
+        words: [
+          { arabic: "بشمالك", transliteration: "bishamalika", english: "in your north" },
+          { arabic: "بجنوبك", transliteration: "bijanubika", english: "in your south" },
+          { arabic: "بسهلك", transliteration: "bisahlik", english: "in your plains" },
+        ],
       },
       {
         time: 98,
@@ -66,6 +77,12 @@ const SONGS: Record<string, Song> = {
         arabic: "تسأل شو بني وشو اللي ما بني",
         transliteration: "tas'al shw bani washw allly ma buni",
         english: "You ask what's wrong with me and what isn't",
+        words: [
+          { arabic: "تسأل", transliteration: "tas'al", english: "you ask" },
+          { arabic: "شو", transliteration: "shw", english: "what" },
+          { arabic: "بني", transliteration: "bani", english: "in me / wrong with me" },
+          { arabic: "ما", transliteration: "ma", english: "not" },
+        ],
       },
       {
         time: 113,
@@ -102,12 +119,25 @@ const SONGS: Record<string, Song> = {
         arabic: "عندك بدي إبقى ويغيبوا الغياب",
         transliteration: "eindak bidi 'iibqaa wayaghibuu alghiab",
         english: "With you I want to stay, let the absent be gone",
+        words: [
+          { arabic: "عندك", transliteration: "eindak", english: "with you" },
+          { arabic: "بدي", transliteration: "bidi", english: "I want" },
+          { arabic: "إبقى", transliteration: "ibqaa", english: "to stay" },
+          { arabic: "يغيبوا", transliteration: "yaghibuu", english: "let them be absent" },
+          { arabic: "الغياب", transliteration: "alghiab", english: "the absence" },
+        ],
       },
       {
         time: 154,
         arabic: "إتعذب و إشقى ويا محلا العذاب",
         transliteration: "'iitaeadhab w 'iishqaa waya mahalaa aleadhab",
         english: "I'll suffer and toil, and how sweet is the suffering",
+        words: [
+          { arabic: "إتعذب", transliteration: "itaeadhab", english: "I suffer" },
+          { arabic: "إشقى", transliteration: "ishqaa", english: "I toil" },
+          { arabic: "محلا", transliteration: "mahala", english: "how sweet" },
+          { arabic: "العذاب", transliteration: "aleadhab", english: "the suffering" },
+        ],
       },
       {
         time: 160,
@@ -126,12 +156,27 @@ const SONGS: Record<string, Song> = {
         arabic: "وإذا أنت بتتركني يا أغلى الأحباب",
         transliteration: "wa'iidha 'ant bitatrukani ya 'aghlaa al'ahbab",
         english: "And if you leave me, oh dearest of loved ones",
+        words: [
+          { arabic: "إذا", transliteration: "idha", english: "if" },
+          { arabic: "أنت", transliteration: "ant", english: "you" },
+          { arabic: "بتتركني", transliteration: "bitatrukani", english: "you leave me" },
+          { arabic: "أغلى", transliteration: "aghlaa", english: "dearest" },
+          { arabic: "الأحباب", transliteration: "al'ahbab", english: "loved ones" },
+        ],
       },
       {
         time: 174,
         arabic: "الدنيي بترجع كذبة وتاج الأرض تراب",
         transliteration: "aldunyi bitarjue kidhibat wataj al'ard turab",
         english: "The world becomes a lie, and earth's crown turns to dust",
+        words: [
+          { arabic: "الدنيي", transliteration: "aldunyi", english: "the world" },
+          { arabic: "بترجع", transliteration: "bitarjue", english: "becomes/returns" },
+          { arabic: "كذبة", transliteration: "kidhibat", english: "a lie" },
+          { arabic: "تاج", transliteration: "taj", english: "crown" },
+          { arabic: "الأرض", transliteration: "al'ard", english: "the earth" },
+          { arabic: "تراب", transliteration: "turab", english: "dust" },
+        ],
       },
       {
         time: 182,

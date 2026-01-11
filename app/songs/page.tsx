@@ -53,7 +53,7 @@ const SONGS: Song[] = [
     title: "Bahebak Ya Lebnan",
     artist: "Fairuz",
     thumbnail: "https://img.youtube.com/vi/Q5U5eWfsIO4/maxresdefault.jpg",
-    wordCount: 24,
+    wordCount: 30,
     level: "beginner",
   },
 ];
