@@ -236,7 +236,10 @@ export function Dashboard() {
       <PackPreviewModal
         pack={selectedPack}
         isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
+        onClose={() => {
+          setIsPreviewOpen(false);
+          refreshWords(true);
+        }}
         isInstalled={selectedPack ? effectiveInstalledPackIds.includes(selectedPack.id) : false}
         userWords={words}
         onInstall={handleInstallPack}
