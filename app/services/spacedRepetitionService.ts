@@ -232,26 +232,39 @@ export class SpacedRepetitionService {
   static async getWeeklyReviewStats(userId: string): Promise<{ thisWeek: number; lastWeek: number }> {
     const supabase = createClient();
     const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    // Get start of current calendar week (Monday at 00:00 UTC)
+    const startOfThisWeek = new Date(now);
+    const dayOfWeek = now.getUTCDay();
+    const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 6 days ago, Monday = 0
+    startOfThisWeek.setUTCDate(now.getUTCDate() - daysSinceMonday);
+    startOfThisWeek.setUTCHours(0, 0, 0, 0);
+
+    // Get start of last week (Monday at 00:00 UTC)
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setUTCDate(startOfLastWeek.getUTCDate() - 7);
+
+    // Calculate equivalent point in last week (same elapsed time since Monday)
+    const elapsedThisWeek = now.getTime() - startOfThisWeek.getTime();
+    const equivalentPointLastWeek = new Date(startOfLastWeek.getTime() + elapsedThisWeek);
 
     try {
-      // Get reviews from this week
+      // Get reviews from this week (Monday to now)
       const { count: thisWeekCount, error: thisWeekError } = await supabase
         .from("word_progress")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId)
-        .gte("updated_at", oneWeekAgo.toISOString());
+        .gte("updated_at", startOfThisWeek.toISOString());
 
       if (thisWeekError) throw thisWeekError;
 
-      // Get reviews from last week
+      // Get reviews from same period last week (last Monday to equivalent point)
       const { count: lastWeekCount, error: lastWeekError } = await supabase
         .from("word_progress")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId)
-        .gte("updated_at", twoWeeksAgo.toISOString())
-        .lt("updated_at", oneWeekAgo.toISOString());
+        .gte("updated_at", startOfLastWeek.toISOString())
+        .lt("updated_at", equivalentPointLastWeek.toISOString());
 
       if (lastWeekError) throw lastWeekError;
 
