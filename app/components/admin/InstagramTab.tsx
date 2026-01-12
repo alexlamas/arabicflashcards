@@ -15,6 +15,7 @@ interface Song {
   id: string;
   title: string;
   artist: string;
+  youtube_id: string;
 }
 
 interface SongLine {
@@ -149,7 +150,7 @@ export function InstagramTab() {
       const supabase = createClient();
       const { data } = await supabase
         .from("songs")
-        .select("id, title, artist")
+        .select("id, title, artist, youtube_id")
         .order("title");
       if (data) setSongs(data);
     }
@@ -280,7 +281,7 @@ export function InstagramTab() {
     const currentTranslit = mode === "lyric" && selectedLine ? selectedLine.transliteration : transliteration;
     const currentEnglish = mode === "lyric" && selectedLine ? selectedLine.english : english;
     const imagePrompt = mode === "lyric"
-      ? `${currentEnglish}, atmospheric moody background, cinematic lighting, abstract`
+      ? `${currentEnglish}, cinematic atmospheric background, moody lighting, artistic`
       : `${currentEnglish}, simple illustration, black ink on white background`;
 
     try {
@@ -288,7 +289,10 @@ export function InstagramTab() {
         fetch("/api/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: imagePrompt }),
+          body: JSON.stringify({
+            prompt: imagePrompt,
+            imageStyle: mode === "lyric" ? "realistic" : "illustration"
+          }),
         }),
         fetch("/api/generate-caption", {
           method: "POST",
@@ -452,13 +456,118 @@ export function InstagramTab() {
               </div>
             )}
 
-            <Button
-              onClick={generate}
-              disabled={isGenerating || !selectedLine}
-              className="w-full"
-            >
-              {isGenerating ? "Generating..." : "Generate background"}
-            </Button>
+            {/* Background image options */}
+            {selectedSong && (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500 font-medium">Background image</p>
+
+                {/* YouTube thumbnail */}
+                <button
+                  onClick={() => setImageUrl(`https://img.youtube.com/vi/${selectedSong.youtube_id}/maxresdefault.jpg`)}
+                  className="w-full flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`https://img.youtube.com/vi/${selectedSong.youtube_id}/mqdefault.jpg`}
+                    alt="YouTube thumbnail"
+                    className="w-16 h-12 object-cover rounded"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Use YouTube thumbnail</p>
+                    <p className="text-xs text-gray-500">From the music video</p>
+                  </div>
+                </button>
+
+                {/* Drag and drop zone */}
+                <div
+                  className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-gray-300 transition-colors cursor-pointer"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add("border-gray-400", "bg-gray-50");
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove("border-gray-400", "bg-gray-50");
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove("border-gray-400", "bg-gray-50");
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith("image/")) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        if (ev.target?.result) {
+                          setImageUrl(ev.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onClick={() => {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*";
+                    input.onchange = (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          if (ev.target?.result) {
+                            setImageUrl(ev.target.result as string);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <p className="text-sm text-gray-500">Drop image here or click to upload</p>
+                </div>
+
+                {/* Clear button */}
+                {imageUrl && (
+                  <button
+                    onClick={() => setImageUrl("")}
+                    className="text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    Clear image
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Generate caption button */}
+            {selectedLine && (
+              <Button
+                onClick={async () => {
+                  setIsGenerating(true);
+                  try {
+                    const response = await fetch("/api/generate-caption", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        arabic: selectedLine.arabic,
+                        transliteration: selectedLine.transliteration,
+                        english: selectedLine.english,
+                        context: selectedSong
+                          ? `This is a lyric from "${selectedSong.title}" by ${selectedSong.artist}. ${captionContext}`
+                          : captionContext
+                      }),
+                    });
+                    const data = await response.json();
+                    if (data.caption) setCaption(data.caption);
+                  } catch (error) {
+                    console.error("Error generating caption:", error);
+                  } finally {
+                    setIsGenerating(false);
+                  }
+                }}
+                disabled={isGenerating}
+                className="w-full"
+              >
+                {isGenerating ? "Generating..." : "Generate caption"}
+              </Button>
+            )}
           </>
         )}
 
@@ -530,18 +639,22 @@ export function InstagramTab() {
       <div className="flex flex-col items-center gap-4 lg:flex-1">
         <div
           ref={cardRef}
-          className="relative overflow-hidden w-full max-w-[400px] aspect-[4/5]"
-          style={{ background: backgroundStyle }}
+          className="relative overflow-hidden"
+          style={{ background: backgroundStyle, width: 400, height: 500 }}
         >
           {mode === "lyric" && imageUrl ? (
             /* Lyric mode with background image */
             <>
               {/* Full bleed background image */}
-              <div className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
-              </div>
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${imageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
 
               {/* Lyric content */}
               <div className="absolute inset-0 flex flex-col justify-end p-[8%]">
@@ -567,12 +680,9 @@ export function InstagramTab() {
                 )}
 
                 {showLogo && (
-                  <div className="flex items-center justify-center gap-1.5">
+                  <div className="flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
-                    <span className="font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] text-white">
-                      Yalla Flash
-                    </span>
+                    <img src="/avatars/pomegranate.svg" alt="" className="w-6 h-6" />
                   </div>
                 )}
               </div>
@@ -607,24 +717,18 @@ export function InstagramTab() {
                     </p>
                   </div>
                   {showLogo && (
-                    <div className="absolute bottom-[5%] left-0 right-0 flex items-center justify-center gap-1.5">
+                    <div className="absolute bottom-[5%] left-0 right-0 flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
-                      <span className={`font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] ${currentTheme.text}`}>
-                        Yalla Flash
-                      </span>
+                      <img src="/avatars/pomegranate.svg" alt="" className="w-6 h-6" />
                     </div>
                   )}
                 </>
               ) : (
                 <div className="absolute bottom-0 left-0 right-0 p-[6%] flex items-end justify-between">
                   {showLogo ? (
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
-                      <span className={`font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] ${currentTheme.text}`}>
-                        Yalla Flash
-                      </span>
+                      <img src="/avatars/pomegranate.svg" alt="" className="w-6 h-6" />
                     </div>
                   ) : (
                     <div />
@@ -652,10 +756,10 @@ export function InstagramTab() {
               >
                 {displayArabic}
               </h1>
-              <p className={`text-[clamp(0.875rem,3.5vw,1rem)] mb-2 ${currentTheme.subtext}`}>
+              <p className={`text-[clamp(0.875rem,3.5vw,1rem)] mb-2 text-center ${currentTheme.subtext}`}>
                 {displayTranslit}
               </p>
-              <p className={`text-[clamp(0.875rem,3.5vw,1rem)] font-medium mb-4 ${currentTheme.subtext}`}>
+              <p className={`text-[clamp(0.875rem,3.5vw,1rem)] font-medium mb-4 text-center ${currentTheme.subtext}`}>
                 {displayEnglish}
               </p>
 
@@ -666,12 +770,9 @@ export function InstagramTab() {
               )}
 
               {showLogo && (
-                <div className="absolute bottom-[6%] left-0 right-0 flex items-center justify-center gap-1.5">
+                <div className="absolute bottom-[6%] left-0 right-0 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
-                  <span className={`font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] ${currentTheme.text}`}>
-                    Yalla Flash
-                  </span>
+                  <img src="/avatars/pomegranate.svg" alt="" className="w-6 h-6" />
                 </div>
               )}
             </div>
@@ -697,12 +798,9 @@ export function InstagramTab() {
               </p>
 
               {showLogo && (
-                <div className="absolute bottom-[6%] left-0 right-0 flex items-center justify-center gap-1.5">
+                <div className="absolute bottom-[6%] left-0 right-0 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
-                  <span className={`font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] ${currentTheme.text}`}>
-                    Yalla Flash
-                  </span>
+                  <img src="/avatars/pomegranate.svg" alt="" className="w-6 h-6" />
                 </div>
               )}
             </div>

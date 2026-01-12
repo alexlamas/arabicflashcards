@@ -299,16 +299,18 @@ export function calculateNextReview(
       interval = Math.max(1 / 24, currentInterval * 0.25); // At least 1 hour
     }
   } else {
-    // Successful review
-    if (reviewCount === 0) {
-      // First success: 1 day
+    // Successful review - use SM-2 intervals
+    if (reviewCount === 0 || currentInterval < 1) {
+      // First success OR recovering from a fail: 1 day
       interval = 1;
-    } else if (reviewCount === 1) {
-      // Second success: 3 days (was 6, but 3 feels better for learning)
-      interval = 3;
+    } else if (reviewCount === 1 || currentInterval < 6) {
+      // Second success: 6 days (SM-2 standard)
+      interval = 6;
     } else {
       // Subsequent: multiply by ease factor
       interval = Math.round(currentInterval * easeFactor);
+      // Ensure minimum progression (at least 20% increase)
+      interval = Math.max(interval, Math.round(currentInterval * 1.2));
     }
 
     // Bonus for "Easy" - 1.3x the calculated interval
