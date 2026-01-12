@@ -36,10 +36,29 @@ interface ExtractedWord {
 
 interface AddWordDialogProps {
   onWordAdded: (word: Word) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialImage?: File | null;
+  initialText?: string;
 }
 
-export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
-  const [open, setOpen] = useState(false);
+export default function AddWordDialog({
+  onWordAdded,
+  open: controlledOpen,
+  onOpenChange,
+  initialImage,
+  initialText,
+}: AddWordDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (value: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(value);
+    } else {
+      setInternalOpen(value);
+    }
+  };
   const [mode, setMode] = useState<Mode>("single");
 
   // Single mode state
@@ -65,6 +84,27 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const { words: existingWords } = useWords();
 
   const wordTypes: WordType[] = ["noun", "verb", "adjective", "phrase"];
+
+  // Handle initial values from drops
+  useEffect(() => {
+    if (open && (initialImage || initialText)) {
+      setMode("bulk");
+      setBulkStep("input");
+
+      if (initialImage) {
+        // Convert image file to data URL for preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreview(e.target?.result as string);
+          setBulkText("");
+        };
+        reader.readAsDataURL(initialImage);
+      } else if (initialText) {
+        setBulkText(initialText);
+        setImagePreview(null);
+      }
+    }
+  }, [open, initialImage, initialText]);
 
   // Debounced search for pack words
   useEffect(() => {
@@ -573,6 +613,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
             }}
           >
             <div className="space-y-4">
+              <p className="text-xs text-subtle">Check translations — AI can make mistakes</p>
               <div className="grid gap-4">
                 <div>
                   <Input
@@ -778,6 +819,7 @@ export default function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         {/* Bulk mode - preview */}
         {mode === "bulk" && bulkStep === "preview" && (
           <div className="space-y-4">
+            <p className="text-xs text-subtle">Check translations — AI can make mistakes</p>
             {/* Word list with checkboxes */}
             <div className="max-h-80 overflow-y-auto border rounded-lg divide-y">
               {extractedWords.map((word) => (

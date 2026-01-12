@@ -6,14 +6,13 @@ import { useProfile } from "../contexts/ProfileContext";
 import { useEffect, useState, useMemo } from "react";
 import { StarterPackService, StarterPack } from "../services/starterPackService";
 import { SpacedRepetitionService } from "../services/spacedRepetitionService";
-import { Button } from "@/components/ui/button";
-import { CardsThree } from "@phosphor-icons/react";
-import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { PackPreviewModal } from "./PackPreviewModal";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { FluencyProgressBar } from "./FluencyProgressBar";
 import { PackJourney } from "./PackJourney";
+import { MyWordsSection } from "./MyWordsSection";
+import AddWordDialog from "./AddWordDialog";
 
 
 export function Dashboard() {
@@ -26,6 +25,7 @@ export function Dashboard() {
     refreshWords,
   } = useWords();
 
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [availablePacks, setAvailablePacks] = useState<StarterPack[]>([]);
   const [installedPackIds, setInstalledPackIds] = useState<string[]>([]);
   const [packWordCounts, setPackWordCounts] = useState<Record<string, number>>({});
@@ -36,6 +36,8 @@ export function Dashboard() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [weeklyStats, setWeeklyStats] = useState<{ thisWeek: number; lastWeek: number } | null>(null);
   const [streak, setStreak] = useState<number>(0);
+  const [droppedImage, setDroppedImage] = useState<File | null>(null);
+  const [droppedText, setDroppedText] = useState<string>("");
 
   // Count personal words (words without a source pack)
   const myWordsCount = useMemo(() => {
@@ -205,29 +207,24 @@ export function Dashboard() {
       </div>
 
       {/* My Words Section */}
-      <Link href="/my-words" className="block">
-        <div className="bg-white border rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                <CardsThree className="w-6 h-6 text-body" />
-              </div>
-              <div>
-                <h3 className="font-medium text-heading">My words</h3>
-                <p className="text-sm text-body">
-                  {myWordsCount > 0
-                    ? `${myWordsCount} personal ${myWordsCount === 1 ? 'word' : 'words'} & expressions`
-                    : "Add your own words and expressions"
-                  }
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-              {myWordsCount > 0 ? "View all" : "Add words"}
-            </Button>
-          </div>
-        </div>
-      </Link>
+      <MyWordsSection
+        wordCount={myWordsCount}
+        onAddClick={() => {
+          setDroppedImage(null);
+          setDroppedText("");
+          setAddDialogOpen(true);
+        }}
+        onFileDrop={(file) => {
+          setDroppedImage(file);
+          setDroppedText("");
+          setAddDialogOpen(true);
+        }}
+        onTextDrop={(text) => {
+          setDroppedText(text);
+          setDroppedImage(null);
+          setAddDialogOpen(true);
+        }}
+      />
 
       {/* Pack Journey */}
       {!loadingPacks && (
@@ -252,6 +249,17 @@ export function Dashboard() {
         onUninstall={handleUninstallPack}
         isInstalling={installingPackId === selectedPack?.id}
         isUninstalling={uninstallingPackId === selectedPack?.id}
+      />
+
+      {/* Add Word Dialog */}
+      <AddWordDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        initialImage={droppedImage}
+        initialText={droppedText}
+        onWordAdded={() => {
+          refreshWords(true);
+        }}
       />
 
     </div>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Copy, ChevronRight, Play } from "lucide-react";
 import { DashboardPackCard } from "@/app/components/DashboardPackCard";
 import { WelcomeBanner } from "@/app/components/WelcomeBanner";
+import { MyWordsSection } from "@/app/components/MyWordsSection";
 import { StarterPackService, StarterPack } from "@/app/services/starterPackService";
 import Image from "next/image";
 
@@ -136,6 +137,7 @@ export default function DesignSystemPage() {
                 "Logo",
                 "DashboardPackCard",
                 "WelcomeBanner",
+                "MyWordsSection",
                 "Button",
                 "RatingButtons",
               ].map((name) => (
@@ -338,6 +340,37 @@ export default function DesignSystemPage() {
               <div>
                 <StateLabel label="Loading" />
                 <WelcomeBanner firstName="Alex" reviewCount={0} learnedCount={0} totalWords={0} isLoading />
+              </div>
+            </div>
+          </ComponentSection>
+        </div>
+
+        {/* My Words Section */}
+        <div id="mywordssection">
+          <ComponentSection
+            name="MyWordsSection"
+            path="app/components/MyWordsSection.tsx"
+            description="Drop zone for adding words from class notes or vocab lists"
+          >
+            <div className="space-y-6">
+              <div>
+                <StateLabel label="New User (full width add card)" />
+                <MyWordsSection
+                  wordCount={0}
+                  onAddClick={() => alert("Add clicked")}
+                  onFileDrop={(file) => alert(`File dropped: ${file.name}`)}
+                  onTextDrop={(text) => alert(`Text dropped: ${text.slice(0, 50)}...`)}
+                />
+              </div>
+
+              <div>
+                <StateLabel label="Has Words (side-by-side cards)" />
+                <MyWordsSection
+                  wordCount={12}
+                  onAddClick={() => alert("Add clicked")}
+                  onFileDrop={(file) => alert(`File dropped: ${file.name}`)}
+                  onTextDrop={(text) => alert(`Text dropped: ${text.slice(0, 50)}...`)}
+                />
               </div>
             </div>
           </ComponentSection>
