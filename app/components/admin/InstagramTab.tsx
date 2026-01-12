@@ -3,12 +3,27 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { Shuffle, DownloadSimple, Circle, Square } from "@phosphor-icons/react";
+import { Shuffle, DownloadSimple, Circle, Square, MusicNotes, TextAa } from "@phosphor-icons/react";
 import html2canvas from "html2canvas";
 
 const EXAMPLE_IMAGE = "/instagram-example.webp";
 
 type ThemeStyle = "auto" | "dark" | "light";
+type PostMode = "word" | "lyric";
+
+interface Song {
+  id: string;
+  title: string;
+  artist: string;
+}
+
+interface SongLine {
+  id: string;
+  arabic: string;
+  transliteration: string;
+  english: string;
+  line_order: number;
+}
 
 // Extract dominant colors from an image using canvas
 function extractColors(imageUrl: string): Promise<{ primary: string; secondary: string }> {
@@ -93,10 +108,23 @@ const THEMES: Record<ThemeStyle, { bg: string; text: string; subtext: string; la
 };
 
 export function InstagramTab() {
+  // Mode toggle
+  const [mode, setMode] = useState<PostMode>("word");
+
+  // Word mode state
   const [arabic, setArabic] = useState("قهوة");
   const [transliteration, setTransliteration] = useState("ahwe");
   const [english, setEnglish] = useState("coffee");
   const [customWord, setCustomWord] = useState("");
+
+  // Lyric mode state
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [selectedSongId, setSelectedSongId] = useState<string>("");
+  const [songLines, setSongLines] = useState<SongLine[]>([]);
+  const [selectedLine, setSelectedLine] = useState<SongLine | null>(null);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+
+  // Shared state
   const [imageUrl, setImageUrl] = useState(EXAMPLE_IMAGE);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -115,7 +143,41 @@ export function InstagramTab() {
 
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const prompt = `${english}, simple illustration, black ink on white background`;
+  // Load songs on mount
+  useEffect(() => {
+    async function loadSongs() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("songs")
+        .select("id, title, artist")
+        .order("title");
+      if (data) setSongs(data);
+    }
+    loadSongs();
+  }, []);
+
+  // Load song lines when song is selected
+  useEffect(() => {
+    async function loadLines() {
+      if (!selectedSongId) {
+        setSongLines([]);
+        setSelectedLine(null);
+        return;
+      }
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("song_lines")
+        .select("id, arabic, transliteration, english, line_order")
+        .eq("song_id", selectedSongId)
+        .order("line_order");
+      if (data) setSongLines(data);
+
+      const song = songs.find(s => s.id === selectedSongId);
+      setSelectedSong(song || null);
+    }
+    loadLines();
+  }, [selectedSongId, songs]);
+
   const currentTheme = THEMES[theme];
   const isAuto = theme === "auto";
   const isCircle = imageCrop === "circle";
@@ -213,17 +275,32 @@ export function InstagramTab() {
     setIsGenerating(true);
     setCaption("");
     setImageUrl("");
+
+    const currentArabic = mode === "lyric" && selectedLine ? selectedLine.arabic : arabic;
+    const currentTranslit = mode === "lyric" && selectedLine ? selectedLine.transliteration : transliteration;
+    const currentEnglish = mode === "lyric" && selectedLine ? selectedLine.english : english;
+    const imagePrompt = mode === "lyric"
+      ? `${currentEnglish}, atmospheric moody background, cinematic lighting, abstract`
+      : `${currentEnglish}, simple illustration, black ink on white background`;
+
     try {
       const [imageResponse, captionResponse] = await Promise.all([
         fetch("/api/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
+          body: JSON.stringify({ prompt: imagePrompt }),
         }),
         fetch("/api/generate-caption", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ arabic, transliteration, english, context: captionContext }),
+          body: JSON.stringify({
+            arabic: currentArabic,
+            transliteration: currentTranslit,
+            english: currentEnglish,
+            context: mode === "lyric" && selectedSong
+              ? `This is a lyric from "${selectedSong.title}" by ${selectedSong.artist}. ${captionContext}`
+              : captionContext
+          }),
         }),
       ]);
       const [imageData, captionData] = await Promise.all([
@@ -240,6 +317,11 @@ export function InstagramTab() {
     }
   };
 
+  // Get current display values based on mode
+  const displayArabic = mode === "lyric" && selectedLine ? selectedLine.arabic : arabic;
+  const displayTranslit = mode === "lyric" && selectedLine ? selectedLine.transliteration : transliteration;
+  const displayEnglish = mode === "lyric" && selectedLine ? selectedLine.english : english;
+
   const cycleTheme = () => {
     const themes: ThemeStyle[] = ["auto", "dark", "light"];
     const currentIndex = themes.indexOf(theme);
@@ -251,51 +333,134 @@ export function InstagramTab() {
     <div className="max-w-5xl mx-auto p-4 flex flex-col lg:flex-row lg:gap-8 lg:items-start gap-6">
       {/* Controls */}
       <div className="bg-white rounded-xl p-4 space-y-4 border lg:flex-1 lg:max-w-md">
-        <h2 className="font-semibold text-gray-900">Word of the Day Generator</h2>
-
-        {/* Custom word input */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={customWord}
-            onChange={(e) => setCustomWord(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && translateWord()}
-            placeholder="Type any word in English..."
-            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-            disabled={isTranslating}
-          />
-          <Button
-            variant="outline"
-            onClick={translateWord}
-            disabled={isTranslating || !customWord.trim()}
+        {/* Mode Toggle */}
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+          <button
+            onClick={() => setMode("word")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              mode === "word" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            {isTranslating ? "..." : "Translate"}
-          </Button>
+            <TextAa className="w-4 h-4" />
+            Word
+          </button>
+          <button
+            onClick={() => setMode("lyric")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              mode === "lyric" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <MusicNotes className="w-4 h-4" />
+            Lyric
+          </button>
         </div>
 
-        <div className="text-center py-4 border rounded-lg bg-gray-50">
-          <p className="text-3xl font-arabic mb-1" dir="rtl">{arabic}</p>
-          <p className="text-gray-500">{transliteration}</p>
-          <p className="text-gray-700 font-medium">{english}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={shuffleWord}
-            disabled={isShuffling || isGenerating || isTranslating}
-            className="flex-1"
-          >
-            <Shuffle className="w-4 h-4 mr-2" />
-            {isShuffling ? "..." : "Shuffle"}
-          </Button>
-          <Button
-            onClick={generate}
-            disabled={isGenerating || isShuffling || isTranslating}
-            className="flex-1"
-          >
-            {isGenerating ? "Generating..." : "Generate"}
-          </Button>
-        </div>
+        {mode === "word" ? (
+          <>
+            {/* Word Mode Controls */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customWord}
+                onChange={(e) => setCustomWord(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && translateWord()}
+                placeholder="Type any word in English..."
+                className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                disabled={isTranslating}
+              />
+              <Button
+                variant="outline"
+                onClick={translateWord}
+                disabled={isTranslating || !customWord.trim()}
+              >
+                {isTranslating ? "..." : "Translate"}
+              </Button>
+            </div>
+
+            <div className="text-center py-4 border rounded-lg bg-gray-50">
+              <p className="text-3xl font-arabic mb-1" dir="rtl">{arabic}</p>
+              <p className="text-gray-500">{transliteration}</p>
+              <p className="text-gray-700 font-medium">{english}</p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={shuffleWord}
+                disabled={isShuffling || isGenerating || isTranslating}
+                className="flex-1"
+              >
+                <Shuffle className="w-4 h-4 mr-2" />
+                {isShuffling ? "..." : "Shuffle"}
+              </Button>
+              <Button
+                onClick={generate}
+                disabled={isGenerating || isShuffling || isTranslating}
+                className="flex-1"
+              >
+                {isGenerating ? "Generating..." : "Generate"}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Lyric Mode Controls */}
+            <div className="space-y-3">
+              <select
+                value={selectedSongId}
+                onChange={(e) => {
+                  setSelectedSongId(e.target.value);
+                  setSelectedLine(null);
+                  setImageUrl("");
+                }}
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+              >
+                <option value="">Select a song...</option>
+                {songs.map((song) => (
+                  <option key={song.id} value={song.id}>
+                    {song.title} - {song.artist}
+                  </option>
+                ))}
+              </select>
+
+              {songLines.length > 0 && (
+                <div className="max-h-48 overflow-y-auto border rounded-lg divide-y">
+                  {songLines.map((line) => (
+                    <button
+                      key={line.id}
+                      onClick={() => setSelectedLine(line)}
+                      className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors ${
+                        selectedLine?.id === line.id ? "bg-emerald-50 border-l-2 border-emerald-500" : ""
+                      }`}
+                    >
+                      <p className="font-arabic text-sm" dir="rtl">{line.arabic}</p>
+                      <p className="text-xs text-gray-500 truncate">{line.english}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {selectedLine && (
+              <div className="text-center py-4 border rounded-lg bg-gray-50">
+                <p className="text-2xl font-arabic mb-1" dir="rtl">{selectedLine.arabic}</p>
+                <p className="text-gray-500 text-sm">{selectedLine.transliteration}</p>
+                <p className="text-gray-700">{selectedLine.english}</p>
+                {selectedSong && (
+                  <p className="text-xs text-gray-400 mt-2">— {selectedSong.title}, {selectedSong.artist}</p>
+                )}
+              </div>
+            )}
+
+            <Button
+              onClick={generate}
+              disabled={isGenerating || !selectedLine}
+              className="w-full"
+            >
+              {isGenerating ? "Generating..." : "Generate background"}
+            </Button>
+          </>
+        )}
 
         {/* Style Controls */}
         <div className="flex flex-wrap gap-2 pt-2 border-t">
@@ -368,7 +533,52 @@ export function InstagramTab() {
           className="relative overflow-hidden w-full max-w-[400px] aspect-[4/5]"
           style={{ background: backgroundStyle }}
         >
-          {imageUrl ? (
+          {mode === "lyric" && imageUrl ? (
+            /* Lyric mode with background image */
+            <>
+              {/* Full bleed background image */}
+              <div className="absolute inset-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+              </div>
+
+              {/* Lyric content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-[8%]">
+                <div className="text-center mb-4">
+                  <h1
+                    className="font-arabic text-[clamp(1.5rem,7vw,2rem)] text-white mb-2 leading-relaxed"
+                    dir="rtl"
+                  >
+                    {displayArabic}
+                  </h1>
+                  <p className="text-[clamp(0.875rem,3.5vw,1rem)] text-white/80 mb-1">
+                    {displayTranslit}
+                  </p>
+                  <p className="text-[clamp(0.875rem,3.5vw,1rem)] text-white/90 font-medium">
+                    {displayEnglish}
+                  </p>
+                </div>
+
+                {selectedSong && (
+                  <p className="text-[clamp(0.65rem,2.5vw,0.75rem)] text-white/60 text-center mb-4">
+                    — {selectedSong.title}, {selectedSong.artist}
+                  </p>
+                )}
+
+                {showLogo && (
+                  <div className="flex items-center justify-center gap-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
+                    <span className="font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] text-white">
+                      Yalla Flash
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : imageUrl ? (
+            /* Word mode with image */
             <>
               <div
                 className={`absolute overflow-hidden ${
@@ -378,7 +588,7 @@ export function InstagramTab() {
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imageUrl} alt={english} className="w-full h-full object-cover" />
+                <img src={imageUrl} alt={displayEnglish} className="w-full h-full object-cover" />
               </div>
 
               {isCircle ? (
@@ -390,10 +600,10 @@ export function InstagramTab() {
                       className={`font-arabic mb-1 text-[clamp(1.5rem,8vw,2.25rem)] ${currentTheme.text}`}
                       dir="rtl"
                     >
-                      {arabic}
+                      {displayArabic}
                     </h1>
                     <p className={`text-[clamp(0.75rem,3.5vw,1rem)] ${currentTheme.subtext}`}>
-                      {transliteration} · {english}
+                      {displayTranslit} · {displayEnglish}
                     </p>
                   </div>
                   {showLogo && (
@@ -424,16 +634,49 @@ export function InstagramTab() {
                       className={`font-arabic text-[clamp(2rem,10vw,3rem)] ${currentTheme.text} mb-1`}
                       dir="rtl"
                     >
-                      {arabic}
+                      {displayArabic}
                     </h1>
                     <p className={`text-[clamp(0.75rem,3.5vw,1rem)] ${currentTheme.subtext}`}>
-                      {transliteration} · {english}
+                      {displayTranslit} · {displayEnglish}
                     </p>
                   </div>
                 </div>
               )}
             </>
+          ) : mode === "lyric" && selectedLine ? (
+            /* Lyric mode without image */
+            <div className="h-full flex flex-col items-center justify-center px-[8%]">
+              <h1
+                className={`text-[clamp(1.5rem,7vw,2rem)] font-arabic mb-[4%] text-center leading-relaxed ${currentTheme.text}`}
+                dir="rtl"
+              >
+                {displayArabic}
+              </h1>
+              <p className={`text-[clamp(0.875rem,3.5vw,1rem)] mb-2 ${currentTheme.subtext}`}>
+                {displayTranslit}
+              </p>
+              <p className={`text-[clamp(0.875rem,3.5vw,1rem)] font-medium mb-4 ${currentTheme.subtext}`}>
+                {displayEnglish}
+              </p>
+
+              {selectedSong && (
+                <p className={`text-[clamp(0.65rem,2.5vw,0.75rem)] ${currentTheme.subtext} opacity-60 mb-6`}>
+                  — {selectedSong.title}, {selectedSong.artist}
+                </p>
+              )}
+
+              {showLogo && (
+                <div className="absolute bottom-[6%] left-0 right-0 flex items-center justify-center gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/avatars/pomegranate.svg" alt="" className="w-4 h-4" />
+                  <span className={`font-pphatton font-bold leading-none text-[clamp(0.7rem,3vw,0.875rem)] ${currentTheme.text}`}>
+                    Yalla Flash
+                  </span>
+                </div>
+              )}
+            </div>
           ) : (
+            /* Word mode without image */
             <div className="h-full flex flex-col items-center justify-center px-[10%]">
               <p
                 className={`text-[clamp(0.7rem,3vw,0.875rem)] uppercase tracking-widest mb-[6%] ${currentTheme.subtext}`}
@@ -444,13 +687,13 @@ export function InstagramTab() {
                 className={`text-[clamp(2.5rem,12vw,3.75rem)] font-arabic mb-[3%] ${currentTheme.text}`}
                 dir="rtl"
               >
-                {arabic}
+                {displayArabic}
               </h1>
               <p className={`text-[clamp(1rem,4vw,1.25rem)] mb-2 ${currentTheme.subtext}`}>
-                {transliteration}
+                {displayTranslit}
               </p>
               <p className={`text-[clamp(1rem,4vw,1.25rem)] font-medium ${currentTheme.subtext}`}>
-                {english}
+                {displayEnglish}
               </p>
 
               {showLogo && (

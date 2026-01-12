@@ -32,7 +32,13 @@ export function PublicFooter({ maxWidth = "max-w-4xl" }: PublicFooterProps) {
               href="/packs"
               className="hover:text-heading transition-colors"
             >
-              All Packs
+              Vocabulary
+            </Link>
+            <Link
+              href="/songs"
+              className="hover:text-heading transition-colors"
+            >
+              Songs
             </Link>
             <Link
               href="/resources"

@@ -12,6 +12,7 @@
 - [x] Design system page
 - [x] Streaks + motivation
 - [x] Bulk import word lists
+- [x] Songs feature (learn through lyrics with synced YouTube videos)
 
 ## MVP (ship this)
 

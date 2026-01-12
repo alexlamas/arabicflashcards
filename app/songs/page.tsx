@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
+import { MusicNote, CursorClick, Brain } from "@phosphor-icons/react/dist/ssr";
 import { PublicFooter } from "../components/PublicFooter";
 
 export const metadata: Metadata = {
@@ -165,47 +166,45 @@ export default async function SongsPage() {
 
       {/* How it works */}
       <div className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="font-pphatton text-2xl font-bold text-heading mb-8 text-center">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="font-pphatton text-2xl font-bold text-heading mb-10 text-center">
             How it works
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl">🎵</span>
+          <div className="space-y-6">
+            {[
+              {
+                icon: MusicNote,
+                title: "Listen and follow along",
+                desc: "Play the song and watch the lyrics highlight in real-time. See both Arabic script and transliteration as you sing.",
+              },
+              {
+                icon: CursorClick,
+                title: "Tap any word to learn it",
+                desc: "Click on any word to see its meaning and pronunciation. Add it to your flashcards with one tap.",
+              },
+              {
+                icon: Brain,
+                title: "Build lasting memory",
+                desc: "Our spaced repetition system reviews words right before you'd forget them, turning lyrics into vocabulary you'll keep.",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100"
+              >
+                <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                  <item.icon className="w-5 h-5 text-gray-700" weight="duotone" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-heading mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-body text-sm leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold text-heading mb-2">
-                1. Listen & follow
-              </h3>
-              <p className="text-body text-sm">
-                Play the song and watch the lyrics highlight in real-time as
-                you sing along.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl">👆</span>
-              </div>
-              <h3 className="font-semibold text-heading mb-2">
-                2. Tap any word
-              </h3>
-              <p className="text-body text-sm">
-                Click on any word to see its meaning, pronunciation, and add it
-                to your flashcards.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl">🧠</span>
-              </div>
-              <h3 className="font-semibold text-heading mb-2">
-                3. Remember forever
-              </h3>
-              <p className="text-body text-sm">
-                Our spaced repetition system shows you words right before you
-                forget them.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </div>
