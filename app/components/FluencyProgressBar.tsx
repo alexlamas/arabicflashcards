@@ -28,14 +28,9 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
     let learning = 0;
 
     words.forEach((word) => {
-      // Skip words without progress (not started yet)
-      if (!word.status || word.status === "new") {
-        return;
-      }
-
       // Use interval as source of truth:
       // - "learned" = interval >= 7 days (proven retention over time)
-      // - "learning" = interval < 7 days (still building retention)
+      // - "learning" = everything else (not started or interval < 7 days)
       if (word.interval && word.interval >= LEARNED_INTERVAL_THRESHOLD) {
         learned++;
       } else {
