@@ -20,28 +20,28 @@ describe("calculateNextReview", () => {
   });
 
   describe("second review (reviewCount = 1)", () => {
-    it("should return 3 days for Remembered", () => {
+    it("should return 6 days for Remembered (SM-2 standard)", () => {
       const result = calculateNextReview(1, 2.5, 2, 1);
-      expect(result.interval).toBe(3);
+      expect(result.interval).toBe(6);
     });
 
-    it("should return 4 days for Easy (3 days * 1.3 bonus)", () => {
+    it("should return 8 days for Easy (6 days * 1.3 bonus)", () => {
       const result = calculateNextReview(1, 2.5, 3, 1);
-      expect(result.interval).toBe(4); // round(3 * 1.3) = 4
+      expect(result.interval).toBe(8); // round(6 * 1.3) = 8
     });
   });
 
-  describe("subsequent reviews (reviewCount >= 2)", () => {
+  describe("subsequent reviews (reviewCount >= 2, interval >= 6)", () => {
     it("should multiply interval by ease factor for Remembered", () => {
-      const result = calculateNextReview(3, 2.5, 2, 2);
-      // 3 * 2.5 = 7.5, rounded = 8
-      expect(result.interval).toBe(8);
+      const result = calculateNextReview(6, 2.5, 2, 2);
+      // 6 * 2.5 = 15
+      expect(result.interval).toBe(15);
     });
 
     it("should give bonus multiplier for Easy", () => {
-      const result = calculateNextReview(3, 2.5, 3, 2);
-      // 3 * 2.65 (increased EF) = 7.95, rounded = 8, then * 1.3 = 10.4, rounded = 10
-      expect(result.interval).toBe(10);
+      const result = calculateNextReview(6, 2.5, 3, 2);
+      // 6 * 2.65 (increased EF) = 15.9, rounded = 16, then * 1.3 = 20.8, rounded = 21
+      expect(result.interval).toBe(21);
     });
   });
 
@@ -113,14 +113,14 @@ describe("calculateNextReview", () => {
       expect(result.interval).toBe(1); // See tomorrow
       expect(result.easeFactor).toBe(2.65);
 
-      // Day 2: Still easy
+      // Day 2: Still easy - SM-2 gives 6 days, * 1.3 bonus = 8
       result = calculateNextReview(result.interval, result.easeFactor, 3, 1);
-      expect(result.interval).toBe(4); // See in 4 days
+      expect(result.interval).toBe(8); // See in 8 days
       expect(result.easeFactor).toBe(2.8);
 
-      // Day 6: Still easy - 4 * 2.95 = 11.8 → 12, * 1.3 = 15.6 → 16
+      // Day 10: Still easy - 8 * 2.95 = 23.6 → 24, * 1.3 = 31.2 → 31
       result = calculateNextReview(result.interval, result.easeFactor, 3, 2);
-      expect(result.interval).toBe(16); // See in ~2 weeks
+      expect(result.interval).toBe(31); // See in ~1 month
       expect(result.easeFactor).toBeCloseTo(2.95, 2);
     });
 

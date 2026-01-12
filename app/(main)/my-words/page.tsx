@@ -39,23 +39,20 @@ function MyWordsContent() {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
 
-  // Filter based on active tab
-  const now = new Date();
-  const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const LEARNED_INTERVAL_THRESHOLD = 7; // days
 
+  // Filter based on active tab using interval as source of truth
   const tabFilteredWords = words.filter(w => {
     if (activeTab === "all") return true;
 
+    const isLearned = w.interval && w.interval >= LEARNED_INTERVAL_THRESHOLD;
+
     if (activeTab === "learned") {
-      if (!w.next_review_date) return false;
-      const reviewDate = new Date(w.next_review_date);
-      return reviewDate > oneMonthFromNow;
+      return isLearned;
     }
 
-    // learning - words not yet "learned"
-    if (!w.next_review_date) return true;
-    const reviewDate = new Date(w.next_review_date);
-    return reviewDate <= oneMonthFromNow;
+    // learning - words not yet at the learned threshold
+    return !isLearned;
   });
 
   const filteredWords = useFilteredWords({
@@ -88,12 +85,8 @@ function MyWordsContent() {
     return sorted;
   }, [filteredWords, sortBy]);
 
-  // Count for badges
-  const learnedCount = words.filter(w => {
-    if (!w.next_review_date) return false;
-    const reviewDate = new Date(w.next_review_date);
-    return reviewDate > oneMonthFromNow;
-  }).length;
+  // Count for badges using interval as source of truth
+  const learnedCount = words.filter(w => w.interval && w.interval >= LEARNED_INTERVAL_THRESHOLD).length;
   const learningCount = words.length - learnedCount;
 
   if (isAuthLoading || isWordsLoading) {

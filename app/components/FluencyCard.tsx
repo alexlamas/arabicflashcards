@@ -9,13 +9,13 @@ interface FluencyCardProps {
   isLoading?: boolean;
 }
 
-const FLUENCY_TARGET = 600;
+const FLUENCY_TARGET = 350;
 
 const MILESTONES = [
-  { name: "Tourist", words: 50 },
-  { name: "Visitor", words: 150 },
-  { name: "Resident", words: 350 },
-  { name: "Local", words: 600 },
+  { name: "Tourist", words: 0 },
+  { name: "Visitor", words: 50 },
+  { name: "Resident", words: 150 },
+  { name: "Local", words: 350 },
 ];
 
 export function FluencyCard({ learnedCount, reviewCount, isLoading }: FluencyCardProps) {
