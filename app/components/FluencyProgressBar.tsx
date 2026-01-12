@@ -23,30 +23,17 @@ interface FluencyProgressBarProps {
 
 export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, streak }: FluencyProgressBarProps) {
   const { learned, learning } = useMemo(() => {
-    const now = new Date();
-    const oneMonth = 30 * 24 * 60 * 60 * 1000;
-    const oneMonthFromNow = new Date(now.getTime() + oneMonth);
-
     let learned = 0;
     let learning = 0;
 
     words.forEach((word) => {
-      // Skip words without status or new words
-      if (!word.status || word.status === "new") {
-        return;
-      }
-
-      // Count as "learned" if next_review_date > 1 month from now
-      if (word.next_review_date) {
-        const reviewDate = new Date(word.next_review_date);
-        if (reviewDate > oneMonthFromNow) {
-          learned++;
-          return;
-        }
-      }
-
-      // Count as "learning" if status is "learning" (includes freshly installed pack words)
-      if (word.status === "learning") {
+      // Use status field as source of truth
+      // - "learned" = user has passed reviews on this word
+      // - "learning" = user is actively working on this word
+      // - "new" or no status = not started yet (don't count)
+      if (word.status === "learned") {
+        learned++;
+      } else if (word.status === "learning") {
         learning++;
       }
     });
@@ -125,7 +112,7 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Words you&apos;ve mastered (next review &gt; 1 month)</p>
+              <p>Words you&apos;ve passed in review</p>
             </TooltipContent>
           </Tooltip>
 
@@ -138,7 +125,7 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Words you&apos;re actively reviewing</p>
+              <p>Words you&apos;re still working on</p>
             </TooltipContent>
           </Tooltip>
 

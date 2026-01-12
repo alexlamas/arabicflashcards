@@ -39,23 +39,16 @@ function MyWordsContent() {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
 
-  // Filter based on active tab
-  const now = new Date();
-  const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
+  // Filter based on active tab using status field as source of truth
   const tabFilteredWords = words.filter(w => {
     if (activeTab === "all") return true;
 
     if (activeTab === "learned") {
-      if (!w.next_review_date) return false;
-      const reviewDate = new Date(w.next_review_date);
-      return reviewDate > oneMonthFromNow;
+      return w.status === "learned";
     }
 
-    // learning - words not yet "learned"
-    if (!w.next_review_date) return true;
-    const reviewDate = new Date(w.next_review_date);
-    return reviewDate <= oneMonthFromNow;
+    // learning - words with status "learning" or no status yet (new custom words)
+    return w.status === "learning" || !w.status || w.status === "new";
   });
 
   const filteredWords = useFilteredWords({
@@ -88,13 +81,9 @@ function MyWordsContent() {
     return sorted;
   }, [filteredWords, sortBy]);
 
-  // Count for badges
-  const learnedCount = words.filter(w => {
-    if (!w.next_review_date) return false;
-    const reviewDate = new Date(w.next_review_date);
-    return reviewDate > oneMonthFromNow;
-  }).length;
-  const learningCount = words.length - learnedCount;
+  // Count for badges using status field as source of truth
+  const learnedCount = words.filter(w => w.status === "learned").length;
+  const learningCount = words.filter(w => w.status === "learning" || !w.status || w.status === "new").length;
 
   if (isAuthLoading || isWordsLoading) {
     return null;
