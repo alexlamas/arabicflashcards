@@ -35,6 +35,7 @@ export interface Word {
   type: WordType | string;
   status?: ProgressState;
   next_review_date?: string;
+  interval?: number | null;
   notes?: string;
   pack_id?: string | null;
   user_id?: string | null;

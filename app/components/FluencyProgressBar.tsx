@@ -23,17 +23,22 @@ interface FluencyProgressBarProps {
 
 export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, streak }: FluencyProgressBarProps) {
   const { learned, learning } = useMemo(() => {
+    const LEARNED_INTERVAL_THRESHOLD = 7; // days
     let learned = 0;
     let learning = 0;
 
     words.forEach((word) => {
-      // Use status field as source of truth
-      // - "learned" = user has passed reviews on this word
-      // - "learning" = user is actively working on this word
-      // - "new" or no status = not started yet (don't count)
-      if (word.status === "learned") {
+      // Skip words without progress (not started yet)
+      if (!word.status || word.status === "new") {
+        return;
+      }
+
+      // Use interval as source of truth:
+      // - "learned" = interval >= 7 days (proven retention over time)
+      // - "learning" = interval < 7 days (still building retention)
+      if (word.interval && word.interval >= LEARNED_INTERVAL_THRESHOLD) {
         learned++;
-      } else if (word.status === "learning") {
+      } else {
         learning++;
       }
     });
@@ -112,7 +117,7 @@ export function FluencyProgressBar({ words, reviewsThisWeek, reviewsLastWeek, st
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Words you&apos;ve passed in review</p>
+              <p>Words with 7+ day review intervals</p>
             </TooltipContent>
           </Tooltip>
 

@@ -18,7 +18,8 @@ export class WordService {
         *,
         progress:word_progress(
           status,
-          next_review_date
+          next_review_date,
+          interval
         )
       `
       )
@@ -34,6 +35,7 @@ export class WordService {
         `
         status,
         next_review_date,
+        interval,
         words!inner(
           id,
           english,
@@ -59,6 +61,7 @@ export class WordService {
         ...word,
         status: item.status || null,
         next_review_date: item.next_review_date || null,
+        interval: item.interval || null,
       };
     });
 
@@ -68,6 +71,7 @@ export class WordService {
         ...word,
         status: word.progress?.[0]?.status || null,
         next_review_date: word.progress?.[0]?.next_review_date || null,
+        interval: word.progress?.[0]?.interval || null,
       })),
       ...packWordsWithProgress,
     ];
@@ -130,25 +134,27 @@ export class WordService {
           *,
           progress:word_progress(
             status,
-            next_review_date
+            next_review_date,
+            interval
           )
         `
         )
         .eq("id", id)
         .single();
-      
+
       if (fetchError) {
         throw fetchError;
       }
-      
+
       if (!currentWord) {
         throw new Error(`Word with id ${id} not found`);
       }
-      
+
       return {
         ...currentWord,
         status: currentWord.progress?.[0]?.status || null,
         next_review_date: currentWord.progress?.[0]?.next_review_date || null,
+        interval: currentWord.progress?.[0]?.interval || null,
       };
     }
 
@@ -161,7 +167,8 @@ export class WordService {
         *,
         progress:word_progress(
           status,
-          next_review_date
+          next_review_date,
+          interval
         )
       `
       );
@@ -180,6 +187,7 @@ export class WordService {
       ...updatedWord,
       status: updatedWord.progress?.[0]?.status || null,
       next_review_date: updatedWord.progress?.[0]?.next_review_date || null,
+      interval: updatedWord.progress?.[0]?.interval || null,
     };
   }
 

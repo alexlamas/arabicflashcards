@@ -39,16 +39,20 @@ function MyWordsContent() {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
 
-  // Filter based on active tab using status field as source of truth
+  const LEARNED_INTERVAL_THRESHOLD = 7; // days
+
+  // Filter based on active tab using interval as source of truth
   const tabFilteredWords = words.filter(w => {
     if (activeTab === "all") return true;
 
+    const isLearned = w.interval && w.interval >= LEARNED_INTERVAL_THRESHOLD;
+
     if (activeTab === "learned") {
-      return w.status === "learned";
+      return isLearned;
     }
 
-    // learning - words with status "learning" or no status yet (new custom words)
-    return w.status === "learning" || !w.status || w.status === "new";
+    // learning - words not yet at the learned threshold
+    return !isLearned;
   });
 
   const filteredWords = useFilteredWords({
@@ -81,9 +85,9 @@ function MyWordsContent() {
     return sorted;
   }, [filteredWords, sortBy]);
 
-  // Count for badges using status field as source of truth
-  const learnedCount = words.filter(w => w.status === "learned").length;
-  const learningCount = words.filter(w => w.status === "learning" || !w.status || w.status === "new").length;
+  // Count for badges using interval as source of truth
+  const learnedCount = words.filter(w => w.interval && w.interval >= LEARNED_INTERVAL_THRESHOLD).length;
+  const learningCount = words.length - learnedCount;
 
   if (isAuthLoading || isWordsLoading) {
     return null;
