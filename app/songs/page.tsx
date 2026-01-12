@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
-import { MusicNote, CursorClick, Brain } from "@phosphor-icons/react/dist/ssr";
+import { MusicNote, CursorClick, ArrowsClockwise } from "@phosphor-icons/react/dist/ssr";
 import { PublicFooter } from "../components/PublicFooter";
 
 export const metadata: Metadata = {
@@ -183,7 +183,7 @@ export default async function SongsPage() {
                 desc: "Click on any word to see its meaning and pronunciation. Add it to your flashcards with one tap.",
               },
               {
-                icon: Brain,
+                icon: ArrowsClockwise,
                 title: "Build lasting memory",
                 desc: "Our spaced repetition system reviews words right before you'd forget them, turning lyrics into vocabulary you'll keep.",
               },
@@ -193,7 +193,7 @@ export default async function SongsPage() {
                 className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100"
               >
                 <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-5 h-5 text-gray-700" weight="duotone" />
+                  <item.icon className="w-5 h-5 text-gray-700" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-heading mb-1">
