@@ -1,5 +1,5 @@
 const CACHE_VERSION = 'v1';
-const CACHE_NAME = `arabic-flashcards-${CACHE_VERSION}`;
+const CACHE_NAME = `yallaflash-${CACHE_VERSION}`;
 const OFFLINE_PAGE = '/';
 
 // Assets that must be cached for offline functionality
@@ -39,7 +39,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((cacheName) => cacheName.startsWith('arabic-flashcards-') && cacheName !== CACHE_NAME)
+            .filter((cacheName) => cacheName.startsWith('yallaflash-') && cacheName !== CACHE_NAME)
             .map((cacheName) => caches.delete(cacheName))
         );
       })

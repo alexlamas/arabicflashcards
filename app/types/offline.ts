@@ -43,7 +43,7 @@ export interface OfflineState {
 }
 
 export const OFFLINE_CONSTANTS = {
-  STORAGE_KEY: "arabicflashcards_offline",
+  STORAGE_KEY: "yallaflash_offline",
   MAX_RETRIES: 3,
   SYNC_CHECK_INTERVAL: 5000,
 } as const;

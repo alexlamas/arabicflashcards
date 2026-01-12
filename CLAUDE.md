@@ -1,4 +1,4 @@
-# Arabic Flashcards - Project Documentation
+# YallaFlash - Project Documentation
 
 ## Overview
 
