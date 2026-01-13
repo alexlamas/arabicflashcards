@@ -90,7 +90,7 @@ export default function AdminHomePage() {
 
   return (
     <div className="p-4 pt-12 max-w-4xl mx-auto">
-      <h1 className="text-lg font-semibold mb-6">Dashboard</h1>
+      <h1 className="text-lg font-semibold mb-6">Summary</h1>
 
       {/* This week's activity */}
       <div className="mb-8">

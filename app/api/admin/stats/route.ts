@@ -14,14 +14,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
+    // Check if user is admin or reviewer
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
       .single();
 
-    if (roleData?.role !== "admin") {
+    if (roleData?.role !== "admin" && roleData?.role !== "reviewer") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
