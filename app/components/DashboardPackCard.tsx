@@ -67,6 +67,7 @@ export function DashboardPackCard({
             src={pack.image_url}
             alt={pack.name}
             fill
+            unoptimized
             className="object-cover"
           />
         </div>

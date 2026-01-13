@@ -300,7 +300,7 @@ export function LandingPage() {
           onTouchStart={() => setIsCarouselPaused(true)}
           onTouchEnd={() => setIsCarouselPaused(false)}
         >
-          {packs.map((pack, index) => (
+          {packs.slice(0, 20).map((pack, index) => (
             <motion.div
               key={pack.id}
               initial={{ opacity: 0, y: 20 }}
@@ -316,6 +316,7 @@ export function LandingPage() {
                       src={pack.image_url}
                       alt={pack.name}
                       fill
+                      unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
                   </div>
@@ -333,6 +334,24 @@ export function LandingPage() {
               </div>
             </motion.div>
           ))}
+          {/* View all packs card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 + 20 * 0.03, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            onClick={() => setShowAuthDialog(true)}
+            className="flex-shrink-0 snap-start cursor-pointer group"
+          >
+            <div className="w-48 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300">
+              <div className="aspect-square bg-gray-50 flex flex-col items-center justify-center">
+                <span className="text-3xl mb-2 text-gray-400 group-hover:text-gray-600 transition-colors">→</span>
+              </div>
+              <div className="p-3">
+                <h3 className="font-medium text-heading text-sm">View all packs</h3>
+                <p className="text-xs text-subtle">{packs.length} packs available</p>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -377,6 +396,7 @@ export function LandingPage() {
                       src={selectedPack.image_url}
                       alt={selectedPack.name}
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

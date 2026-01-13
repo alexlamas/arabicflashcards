@@ -88,6 +88,7 @@ export function PackJourneyNode({
               alt={pack.name}
               width={72}
               height={72}
+              unoptimized
               className="object-cover w-[72px] h-[72px] rounded-full"
             />
           ) : (

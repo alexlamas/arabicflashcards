@@ -295,6 +295,7 @@ export function ContentReviewTab() {
             alt={pack.name}
             width={48}
             height={48}
+            unoptimized
             className="w-12 h-12 rounded-lg object-cover shrink-0"
           />
         ) : (
@@ -348,6 +349,7 @@ export function ContentReviewTab() {
                       alt={selectedPackData.name}
                       width={40}
                       height={40}
+                      unoptimized
                       className="w-10 h-10 rounded-lg object-cover shrink-0"
                     />
                   ) : (

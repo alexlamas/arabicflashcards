@@ -187,6 +187,7 @@ export default async function PacksIndexPage() {
                                 alt={pack.name}
                                 width={80}
                                 height={80}
+                                unoptimized
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                               />
                             ) : (

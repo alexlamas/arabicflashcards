@@ -365,6 +365,7 @@ export default function OnboardingPage() {
                                   src={pack.image_url}
                                   alt={pack.name}
                                   fill
+                                  unoptimized
                                   className="object-cover"
                                 />
                               ) : (
