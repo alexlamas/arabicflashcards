@@ -1,8 +1,8 @@
-# Arabic Flashcards - Project Documentation
+# Yalla Flash - Project Documentation
 
 ## Overview
 
-A Next.js web application for learning Lebanese Arabic using spaced repetition. Users can learn vocabulary words and phrases through flashcard-style review sessions.
+A Next.js web application for learning Lebanese Arabic using spaced repetition. Users can learn vocabulary words and phrases through flashcard-style review sessions. Live at https://yallaflash.com
 
 ## Tech Stack
 
@@ -12,6 +12,34 @@ A Next.js web application for learning Lebanese Arabic using spaced repetition. 
 - **AI**: Anthropic Claude API (for sentence generation)
 - **Deployment**: Vercel
 - **Animations**: Framer Motion
+- **Analytics**: PostHog (via MCP)
+
+## PostHog Analytics
+
+Project ID: 289335
+
+### Tracked Events
+
+| Event | Location | Description |
+|-------|----------|-------------|
+| `signup_cta_clicked` | LandingPage.tsx | User clicks any signup CTA (includes `location` property) |
+| `signup_completed` | AuthProvider.tsx | User completes signup (also calls `posthog.identify`) |
+| `onboarding_completed` | onboarding/page.tsx | User finishes onboarding (includes `fluency_level`, `packs_selected`) |
+| `word_reviewed` | Review.tsx | User reviews a word (includes `rating`) |
+
+### Active Experiments
+
+| Experiment | Flag Key | Description |
+|------------|----------|-------------|
+| Hero Copy A/B Test | `hero-copy-test-exp` | Testing landing page hero copy. Control: "Learn Lebanese Arabic" / Teta copy. Variant: "Lebanese Arabic flashcards" / memory app positioning. |
+
+### Using PostHog MCP
+
+The PostHog MCP is configured for this project. Use it to:
+- Query analytics data: `mcp__posthog__query-run`
+- Check experiment results: `mcp__posthog__experiment-results-get`
+- Create/update experiments: `mcp__posthog__experiment-create`, `mcp__posthog__experiment-update`
+- Manage feature flags: `mcp__posthog__feature-flag-get-all`, `mcp__posthog__update-feature-flag`
 
 ## Project Structure
 
@@ -23,9 +51,10 @@ app/
 │   ├── my-words/        # User's vocabulary (all/learning/learned tabs)
 │   ├── this-week/       # Weekly progress
 │   ├── this-month/      # Monthly progress
-│   ├── admin/           # Admin panel (admin/reviewer roles - includes content review)
-│   ├── design-system/   # Component library reference
-│   └── memory-game/     # Memory matching game
+│   ├── onboarding/      # New user onboarding flow
+│   ├── play/            # Games (memory/, speed-match/)
+│   └── admin/           # Admin panel (packs, users, songs, review, design-system)
+├── packs/               # Public pack browsing (SEO pages)
 ├── api/                 # API routes
 │   ├── generate-sentence/  # AI sentence generation
 │   ├── generate-hint/      # AI hints
@@ -130,6 +159,8 @@ Required in `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 ANTHROPIC_API_KEY=your_anthropic_key (for AI features)
+NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
 ## Database
@@ -150,7 +181,7 @@ Key tables:
 ### Adding a new page
 1. Create folder in `app/(main)/your-page/`
 2. Add `page.tsx` with component
-3. Update navigation in `AppSidebar.tsx`
+3. Update navigation in `TopNav.tsx`
 
 ### Adding a new word field
 1. Update `app/types/word.ts`
