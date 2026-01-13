@@ -46,6 +46,12 @@ export function createSupabaseMock() {
     },
   });
 
+  // Store original mocks for reset
+  const originalThenMock = chainableMock.then;
+  const originalSingleMock = chainableMock.single;
+  const originalMaybeSingleMock = chainableMock.maybeSingle;
+  const originalRpcMock = chainableMock.rpc;
+
   return {
     mock: thenableMock,
     mockResult,
@@ -63,6 +69,26 @@ export function createSupabaseMock() {
       mockResult.count = count;
       mockResult.data = null;
       mockResult.error = error;
+    },
+    /**
+     * Reset the mock to its initial state.
+     * Call this in beforeEach after vi.clearAllMocks() to ensure
+     * any overridden mock implementations are restored.
+     */
+    reset: () => {
+      mockResult.data = null;
+      mockResult.error = null;
+      mockResult.count = undefined;
+      // Restore original mocks (in case they were replaced, not just re-implemented)
+      chainableMock.then = originalThenMock;
+      chainableMock.single = originalSingleMock;
+      chainableMock.maybeSingle = originalMaybeSingleMock;
+      chainableMock.rpc = originalRpcMock;
+      // Also reset the implementations to defaults
+      chainableMock.then.mockImplementation((resolve) => resolve(mockResult));
+      chainableMock.single.mockImplementation(() => Promise.resolve(mockResult));
+      chainableMock.maybeSingle.mockImplementation(() => Promise.resolve(mockResult));
+      chainableMock.rpc.mockImplementation(() => Promise.resolve({ data: null, error: null }));
     },
   };
 }
