@@ -38,15 +38,18 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
   }
 
   // Determine active tab from pathname
-  let activeTab = "review";
-  if (pathname.includes("/packs")) activeTab = "packs";
+  let activeTab = "home";
+  if (pathname.includes("/users")) activeTab = "users";
+  else if (pathname.includes("/review")) activeTab = "review";
+  else if (pathname.includes("/packs")) activeTab = "packs";
   else if (pathname.includes("/songs")) activeTab = "songs";
   else if (pathname.includes("/instagram")) activeTab = "instagram";
-  else if (pathname.includes("/users")) activeTab = "users";
   else if (pathname.includes("/design-system")) activeTab = "design-system";
+  else if (pathname === "/admin") activeTab = "home";
 
   const tabs: TabConfig[] = [
     ...(isAdmin ? [
+      { key: "home", label: "Home", href: "/admin" },
       { key: "users", label: "Users", href: "/admin/users" },
     ] : []),
     { key: "review", label: "Review", href: "/admin/review" },
