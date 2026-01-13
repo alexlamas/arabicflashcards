@@ -64,12 +64,14 @@ export async function GET() {
     const { data: words } = await adminClient
       .from("words")
       .select("user_id")
-      .not("user_id", "is", null);
+      .not("user_id", "is", null)
+      .limit(10000);
 
     const { data: progress } = await adminClient
       .from("word_progress")
       .select("user_id, updated_at, review_count")
-      .order("updated_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      .limit(10000);
 
     // Count words per user and sum review counts
     const wordCounts = new Map<string, number>();
