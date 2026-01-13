@@ -1,4 +1,4 @@
-# Arabic Flashcards - Roadmap
+# Yalla Flash - Roadmap
 
 ## Done
 
@@ -13,6 +13,8 @@
 - [x] Streaks + motivation
 - [x] Bulk import word lists
 - [x] Songs feature (learn through lyrics with synced YouTube videos)
+- [x] Onboarding for new users (fluency level, pack selection)
+- [x] PostHog analytics + A/B testing infrastructure
 
 ## MVP (ship this)
 
@@ -40,6 +42,14 @@
 - [ ] Payments for AI credits
 - [ ] Mobile app
 - [ ] Weekly/monthly stats improvements
-- [ ] Onboarding for new users
 - [ ] Social (share progress, leaderboards)
 - [ ] Full offline mode
+
+## Tech Debt
+
+- [ ] Add error logging to empty catch blocks (AuthProvider, WordsProvider)
+- [ ] Add Error Boundary component for graceful error handling
+- [ ] Add ARIA labels to Review.tsx feedback icons (accessibility)
+- [ ] Replace console.error with proper logging in API routes
+- [ ] Fix 25 'any' type usages for better type safety
+- [ ] Split WordsContext into granular contexts (performance)
