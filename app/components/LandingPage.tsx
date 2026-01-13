@@ -29,7 +29,7 @@ export function LandingPage() {
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   // A/B test: hero copy variant
-  const isVariantB = useFeatureFlagEnabled("hero-copy-test");
+  const isVariantB = useFeatureFlagEnabled("hero-copy-test-exp");
 
   // Track CTA clicks for conversion funnel
   const handleCtaClick = (location: string) => {
