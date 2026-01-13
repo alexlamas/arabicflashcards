@@ -56,9 +56,15 @@ app/
 │   └── admin/           # Admin panel (packs, users, songs, review, design-system)
 ├── packs/               # Public pack browsing (SEO pages)
 ├── api/                 # API routes
+│   ├── admin/              # Admin endpoints (roles, stats, users)
+│   ├── ai-usage/           # AI credit usage tracking
+│   ├── feedback/           # User feedback submission
 │   ├── generate-sentence/  # AI sentence generation
-│   ├── generate-hint/      # AI hints
-│   └── words/              # Word creation
+│   ├── generate-hint/      # AI hints for words
+│   ├── generate-caption/   # AI captions for Instagram
+│   ├── generate-image/     # AI image generation
+│   ├── stylize-image/      # AI image stylization
+│   └── words/              # Word operations (create, bulk-extract)
 ├── components/          # UI components
 │   ├── review/          # Review-specific components
 │   └── ...              # Shared components
@@ -66,6 +72,16 @@ app/
 │   ├── AuthContext.tsx  # Authentication state
 │   ├── WordsContext.tsx # Word data state
 │   └── ProfileContext.tsx # User profile state
+├── providers/           # Context providers
+│   ├── AuthProvider.tsx    # Auth state + PostHog identify
+│   ├── WordsProvider.tsx   # Words data fetching
+│   └── PostHogProvider.tsx # Analytics initialization
+├── hooks/               # Custom React hooks
+│   ├── useAIUsage.ts       # AI credit tracking
+│   ├── useFilteredWords.ts # Word filtering logic
+│   ├── useOfflineSync.ts   # Offline sync status
+│   ├── useOfflineNavigation.ts # Offline-aware navigation
+│   └── useUserRoles.ts     # User role checking
 ├── services/            # Business logic
 │   ├── wordService.ts         # Word CRUD operations
 │   ├── sentenceService.ts     # Sentence CRUD operations
@@ -73,8 +89,15 @@ app/
 │   ├── adminService.ts        # Admin operations
 │   ├── spacedRepetitionService.ts  # SRS algorithm
 │   ├── offlineStorage.ts      # localStorage caching
+│   ├── offlineQueue.ts        # Offline action queue
 │   ├── syncService.ts         # Offline sync
-│   └── claudeService.ts       # AI integration
+│   ├── claudeService.ts       # AI integration
+│   ├── aiUsageService.ts      # Monthly AI credit limits
+│   ├── profileService.ts      # User profiles & avatars
+│   ├── songService.ts         # Songs feature
+│   ├── contentReviewService.ts # Content review workflow
+│   ├── transliterationService.ts # Arabic transliteration
+│   └── userService.ts         # User role caching
 ├── types/               # TypeScript types
 │   └── word.ts          # Word & progress types
 └── utils/               # Utility functions
@@ -90,7 +113,7 @@ utils/supabase/          # Supabase client setup
 
 **Word**
 - `id`, `arabic`, `english`, `transliteration`
-- `type`: noun | verb | adjective | phrase
+- `type`: noun | verb | adjective | adverb | pronoun | particle | phrase
 - `pack_id`: Links to vocabulary pack (null for custom words)
 - `user_id`: Owner for custom words (null for pack words)
 - `notes`: User notes
@@ -133,6 +156,24 @@ Pre-built vocabulary sets that users can learn:
 - User progress tracked in `word_progress` table linking `user_id` to `word_id`
 - See `packService.ts` for pack operations
 
+### Songs Feature
+
+Learn Arabic through song lyrics with synced YouTube videos:
+- Public routes: `/songs`, `/songs/[slug]`
+- Admin routes: `/admin/songs`, `/admin/songs/[id]`
+- Database tables: `songs`, `song_lines`, `song_line_words`
+- `songService.ts` handles song data with `SongLine` and `SongLineWord` types
+- SongPlayer component syncs lyrics with YouTube playback
+
+### AI Usage & Credits
+
+Monthly AI credit system for sentence generation:
+- 20 free requests/month for regular users
+- Unlimited for admin/reviewer roles
+- Tracked in `ai_usage` table
+- `useAIUsage` hook for checking remaining credits
+- `/api/ai-usage` endpoint for usage data
+
 ## Development
 
 ```bash
@@ -173,8 +214,13 @@ Key tables:
 - `word_sentences` - Join table linking words to sentences (many-to-many)
 - `word_progress` - User progress tracking (links user_id to word_id)
 - `packs` - Vocabulary pack metadata
-- `user_profiles` - User profile data
+- `user_profiles` - User profile data (includes fluency level, avatar)
 - `user_roles` - Admin/user role management
+- `ai_usage` - Monthly AI credit tracking per user
+- `songs` - Song metadata (title, artist, YouTube URL)
+- `song_lines` - Individual lyric lines with timestamps
+- `song_line_words` - Words within each song line
+- `transliteration_rules` - Database-driven transliteration mappings
 
 ## Common Tasks
 
