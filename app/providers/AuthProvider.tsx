@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import posthog from "posthog-js";
 
 import { AuthContext } from "../contexts/AuthContext";
 
@@ -26,9 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setShowAuthDialog(false);
+
+      // Track signup/signin in PostHog
+      if (event === "SIGNED_IN" && session?.user) {
+        posthog.identify(session.user.id, {
+          email: session.user.email,
+        });
+        posthog.capture("signup_completed");
+      }
     });
 
     return () => subscription.unsubscribe();

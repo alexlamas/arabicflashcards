@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { Star } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import posthog from "posthog-js";
 
 const FLUENCY_OPTIONS: {
   value: FluencyLevel;
@@ -130,6 +131,12 @@ export default function OnboardingPage() {
       });
 
       await Promise.all(selectedPacks.map(packId => PackService.startPack(packId)));
+
+      // Track onboarding completion
+      posthog.capture("onboarding_completed", {
+        fluency_level: fluency,
+        packs_selected: selectedPacks.length,
+      });
 
       // Use hard navigation to ensure clean state - this is the only reliable way
       // to avoid race conditions with React context updates

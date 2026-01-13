@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import localFont from "next/font/local";
 import { GoogleAds } from "./components/GoogleAds";
 import { Hotjar } from "./components/Hotjar";
+import { PostHogProvider } from "./providers/PostHogProvider";
 import "./globals.css";
 import { SchemaOrg } from "./schema";
 
@@ -137,7 +138,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${ppHatton.variable} antialiased min-h-screen`}
       >
-        {children}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
         <GoogleAds />
         <Hotjar />
         <Analytics />

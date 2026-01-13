@@ -17,6 +17,8 @@ import Script from "next/script";
 import { PublicFooter } from "./PublicFooter";
 import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { StarterPackService, StarterPack, PackWord } from "../services/starterPackService";
+import { useFeatureFlagEnabled } from "posthog-js/react";
+import posthog from "posthog-js";
 
 export function LandingPage() {
   const { showAuthDialog, setShowAuthDialog } = useAuth();
@@ -25,6 +27,15 @@ export function LandingPage() {
   const [selectedPack, setSelectedPack] = useState<StarterPack | null>(null);
   const [previewWords, setPreviewWords] = useState<PackWord[]>([]);
   const [loadingPreview, setLoadingPreview] = useState(false);
+
+  // A/B test: hero copy variant
+  const isVariantB = useFeatureFlagEnabled("hero-copy-test");
+
+  // Track CTA clicks for conversion funnel
+  const handleCtaClick = (location: string) => {
+    posthog.capture("signup_cta_clicked", { location });
+    setShowAuthDialog(true);
+  };
 
   // Sample demoCards for demo
   const demoCards = [
@@ -227,14 +238,14 @@ export function LandingPage() {
           <div className="flex-1" />
 
           <Button
-            onClick={() => setShowAuthDialog(true)}
+            onClick={() => handleCtaClick("nav_login")}
             className="rounded-full"
             variant={"ghost"}
           >
             Log in
           </Button>
           <Button
-            onClick={() => setShowAuthDialog(true)}
+            onClick={() => handleCtaClick("nav_get_started")}
             className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 text-sm font-medium"
           >
             Get started
@@ -251,7 +262,7 @@ export function LandingPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="font-pphatton text-4xl sm:text-5xl md:text-6xl font-bold text-heading mb-5 tracking-tight"
           >
-            Learn Lebanese Arabic
+            {isVariantB ? "Lebanese Arabic flashcards" : "Learn Lebanese Arabic"}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
@@ -259,7 +270,9 @@ export function LandingPage() {
             transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-body mb-4 max-w-lg mx-auto"
           >
-            Smart flashcards to help you finally understand what Teta is saying about you.
+            {isVariantB
+              ? "AI translations. Spaced repetition. Ready-made packs. The memory app for serious learners."
+              : "Smart flashcards to help you finally understand what Teta is saying about you."}
           </motion.p>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
@@ -276,7 +289,7 @@ export function LandingPage() {
           >
             <Button
               size="lg"
-              onClick={() => setShowAuthDialog(true)}
+              onClick={() => handleCtaClick("hero")}
               className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8 pl-5 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
               <PlayCircle className="!size-6" weight="fill" />
@@ -339,7 +352,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 + 20 * 0.03, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            onClick={() => setShowAuthDialog(true)}
+            onClick={() => handleCtaClick("view_all_packs")}
             className="flex-shrink-0 snap-start cursor-pointer group"
           >
             <div className="w-48 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300">
@@ -448,7 +461,7 @@ export function LandingPage() {
                 <Button
                   onClick={() => {
                     setSelectedPack(null);
-                    setShowAuthDialog(true);
+                    handleCtaClick("pack_preview_start");
                   }}
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full py-6"
                 >
@@ -960,7 +973,7 @@ export function LandingPage() {
               </p>
               <Button
                 size="lg"
-                onClick={() => setShowAuthDialog(true)}
+                onClick={() => handleCtaClick("footer_cta")}
                 className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-10 py-6 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
                 Get started free

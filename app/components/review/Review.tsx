@@ -24,6 +24,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAIUsage } from "../../hooks/useAIUsage";
+import posthog from "posthog-js";
 
 export function Review() {
   const { session } = useAuth();
@@ -169,6 +170,9 @@ export function Review() {
           rating
         )
     );
+
+    // Track review for funnel analysis
+    posthog.capture("word_reviewed", { rating });
 
     // Calculate next review time text
     let nextReviewText = "";
