@@ -67,24 +67,42 @@ export async function GET() {
       return created >= startOfLastWeek && created < endOfLastWeek;
     }).length || 0;
 
-    // Get WAU - users who reviewed this week
+    // Get WAU - users who reviewed on at least 2 different days this week
     const { data: wauData } = await adminClient
       .from("word_progress")
-      .select("user_id")
+      .select("user_id, updated_at")
       .gte("updated_at", startOfThisWeek.toISOString());
 
-    const wauUsers = new Set(wauData?.map(w => w.user_id) || []);
-    const wau = wauUsers.size;
+    // Count unique days per user
+    const userDays = new Map<string, Set<string>>();
+    for (const row of wauData || []) {
+      if (!row.user_id || !row.updated_at) continue;
+      const day = new Date(row.updated_at).toISOString().split('T')[0];
+      if (!userDays.has(row.user_id)) {
+        userDays.set(row.user_id, new Set());
+      }
+      userDays.get(row.user_id)!.add(day);
+    }
+    // Active = reviewed on 2+ different days
+    const wau = Array.from(userDays.values()).filter(days => days.size >= 2).length;
 
-    // Get WAU last week for comparison
+    // Get WAU last week for comparison (same logic)
     const { data: wauLastWeekData } = await adminClient
       .from("word_progress")
-      .select("user_id")
+      .select("user_id, updated_at")
       .gte("updated_at", startOfLastWeek.toISOString())
       .lt("updated_at", endOfLastWeek.toISOString());
 
-    const wauLastWeekUsers = new Set(wauLastWeekData?.map(w => w.user_id) || []);
-    const wauChange = wauLastWeekUsers.size;
+    const userDaysLastWeek = new Map<string, Set<string>>();
+    for (const row of wauLastWeekData || []) {
+      if (!row.user_id || !row.updated_at) continue;
+      const day = new Date(row.updated_at).toISOString().split('T')[0];
+      if (!userDaysLastWeek.has(row.user_id)) {
+        userDaysLastWeek.set(row.user_id, new Set());
+      }
+      userDaysLastWeek.get(row.user_id)!.add(day);
+    }
+    const wauChange = Array.from(userDaysLastWeek.values()).filter(days => days.size >= 2).length;
 
     // Get reviews this week (sum of review_count increases would be complex, so count updated rows)
     const { count: reviewsThisWeek } = await adminClient
