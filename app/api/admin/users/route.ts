@@ -60,37 +60,32 @@ export async function GET() {
       );
     }
 
-    // Get word counts per user (custom words only)
-    const { data: words } = await adminClient
+    // Get word counts per user (aggregated in SQL)
+    const { data: wordCounts } = await adminClient
       .from("words")
       .select("user_id")
-      .not("user_id", "is", null)
-      .limit(10000);
+      .not("user_id", "is", null);
 
-    const { data: progress } = await adminClient
-      .from("word_progress")
-      .select("user_id, updated_at, review_count")
-      .order("updated_at", { ascending: false })
-      .limit(10000);
-
-    // Count words per user and sum review counts
-    const wordCounts = new Map<string, number>();
-    const lastReviewDates = new Map<string, string>();
-    const reviewCounts = new Map<string, number>();
-
-    for (const word of words || []) {
-      if (word.user_id) {
-        wordCounts.set(word.user_id, (wordCounts.get(word.user_id) || 0) + 1);
+    // Aggregate word counts in JS (words table is usually smaller)
+    const wordCountMap = new Map<string, number>();
+    for (const w of wordCounts || []) {
+      if (w.user_id) {
+        wordCountMap.set(w.user_id, (wordCountMap.get(w.user_id) || 0) + 1);
       }
     }
 
-    for (const p of progress || []) {
-      if (p.updated_at && !lastReviewDates.has(p.user_id)) {
-        lastReviewDates.set(p.user_id, p.updated_at);
-      }
-      // Sum up review counts
-      if (p.review_count) {
-        reviewCounts.set(p.user_id, (reviewCounts.get(p.user_id) || 0) + p.review_count);
+    // Get review stats aggregated per user using RPC or raw SQL
+    const { data: reviewStats } = await adminClient.rpc('get_user_review_stats');
+
+    const reviewCounts = new Map<string, number>();
+    const lastReviewDates = new Map<string, string>();
+
+    for (const stat of reviewStats || []) {
+      if (stat.user_id) {
+        reviewCounts.set(stat.user_id, stat.total_reviews || 0);
+        if (stat.last_review) {
+          lastReviewDates.set(stat.user_id, stat.last_review);
+        }
       }
     }
 
@@ -112,7 +107,7 @@ export async function GET() {
       email: authUser.email || "No email",
       created_at: authUser.created_at,
       email_confirmed: !!authUser.email_confirmed_at,
-      word_count: wordCounts.get(authUser.id) || 0,
+      word_count: wordCountMap.get(authUser.id) || 0,
       review_count: reviewCounts.get(authUser.id) || 0,
       ai_credits_used: aiUsageCounts.get(authUser.id) || 0,
       last_review_date: lastReviewDates.get(authUser.id) || null,
