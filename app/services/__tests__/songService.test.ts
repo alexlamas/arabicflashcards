@@ -8,7 +8,7 @@ vi.mock("@/utils/supabase/client", () => ({
   createClient: vi.fn(() => supabaseMock.mock),
 }));
 
-import { SongService, Song, SongLine, SongLineWord, SongWithLines } from "../songService";
+import { SongService, Song, SongLine, SongLineWord } from "../songService";
 
 // Test fixtures
 const mockSong: Song = {

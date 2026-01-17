@@ -8,7 +8,7 @@ vi.mock("@/utils/supabase/client", () => ({
   createClient: vi.fn(() => supabaseMock.mock),
 }));
 
-import { ContentReviewService, WordWithSentences, ReviewStats } from "../contentReviewService";
+import { ContentReviewService } from "../contentReviewService";
 
 // Test fixtures
 const mockUser = { id: "user-1", email: "test@example.com" };

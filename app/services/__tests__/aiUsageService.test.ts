@@ -81,12 +81,12 @@ describe("aiUsageService", () => {
   beforeAll(async () => {
     // Force re-import of the module to pick up mocks
     vi.resetModules();
-    const module = await import("../aiUsageService");
-    getCurrentPeriod = module.getCurrentPeriod;
-    getUsageCount = module.getUsageCount;
-    getUsageInfo = module.getUsageInfo;
-    checkAIUsage = module.checkAIUsage;
-    incrementUsage = module.incrementUsage;
+    const aiUsageModule = await import("../aiUsageService");
+    getCurrentPeriod = aiUsageModule.getCurrentPeriod;
+    getUsageCount = aiUsageModule.getUsageCount;
+    getUsageInfo = aiUsageModule.getUsageInfo;
+    checkAIUsage = aiUsageModule.checkAIUsage;
+    incrementUsage = aiUsageModule.incrementUsage;
   });
 
   beforeEach(() => {
