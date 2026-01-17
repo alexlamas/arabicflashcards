@@ -4,9 +4,24 @@ import { useState, useEffect } from "react";
 import { Review } from "../../components/review/Review";
 import { useWords } from "../../contexts/WordsContext";
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 export default function ReviewPage() {
   const { reviewCount } = useWords();
   const [initialCount, setInitialCount] = useState<number | null>(null);
+
+  // Track Google Ads conversion on page load
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "conversion", {
+        send_to: "AW-17868033888/KnAFCNWos-cbEOCekshC",
+      });
+    }
+  }, []);
 
   // Capture initial count on first load
   useEffect(() => {
