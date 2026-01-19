@@ -53,7 +53,7 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
       { key: "users", label: "Users", href: "/admin/users" },
     ] : []),
     { key: "review", label: "Review", href: "/admin/review" },
-    ...(isAdmin ? [
+    ...(isAdmin || isReviewer ? [
       { key: "packs", label: "Packs", href: "/admin/packs" },
     ] : []),
     { key: "songs", label: "Songs", href: "/admin/songs" },

@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -59,6 +60,7 @@ export function ContentReviewTab() {
   const [formEnglish, setFormEnglish] = useState("");
   const [formTransliteration, setFormTransliteration] = useState("");
   const [formType, setFormType] = useState("noun");
+  const [formNotes, setFormNotes] = useState("");
 
   // Flatten words and sentences into a single reviewable list
   const reviewableItems: ReviewableItem[] = useMemo(() => {
@@ -83,10 +85,12 @@ export function ContentReviewTab() {
       setFormEnglish(currentItem.data.english);
       setFormTransliteration(currentItem.data.transliteration || "");
       setFormType(currentItem.data.type || "noun");
+      setFormNotes(currentItem.data.notes || "");
     } else {
       setFormArabic(currentItem.data.arabic);
       setFormEnglish(currentItem.data.english);
       setFormTransliteration(currentItem.data.transliteration || "");
+      setFormNotes("");
     }
   }, [currentItem]);
 
@@ -169,6 +173,7 @@ export function ContentReviewTab() {
         if (formEnglish !== currentItem.data.english) updates.english = formEnglish;
         if (formTransliteration !== currentItem.data.transliteration) updates.transliteration = formTransliteration;
         if (formType !== currentItem.data.type) updates.type = formType;
+        if (formNotes !== (currentItem.data.notes || "")) updates.notes = formNotes;
 
         await ContentReviewService.updateAndApproveWord(currentItem.data.id, updates);
 
@@ -216,7 +221,7 @@ export function ContentReviewTab() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentItem, selectedPack, isSubmitting, formArabic, formEnglish, formTransliteration, formType, currentIndex, reviewableItems.length, toast]);
+  }, [currentItem, selectedPack, isSubmitting, formArabic, formEnglish, formTransliteration, formType, formNotes, currentIndex, reviewableItems.length, toast]);
 
   const handleUnapprove = useCallback(async () => {
     if (!currentItem || !selectedPack) return;
@@ -498,6 +503,20 @@ export function ContentReviewTab() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+
+              {/* Notes - only for words */}
+              {currentItem.type === "word" && (
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    value={formNotes}
+                    onChange={(e) => setFormNotes(e.target.value)}
+                    placeholder="Add notes for this word..."
+                    className="min-h-[80px]"
+                  />
                 </div>
               )}
 

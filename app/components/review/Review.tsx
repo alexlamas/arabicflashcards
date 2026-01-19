@@ -232,7 +232,7 @@ export function Review() {
   }
 
   if (!isLoading && !currentWord) {
-    if (!session) return null;
+    if (!session?.user?.id) return null;
     return <BoostReview userId={session.user.id} loadNextWord={loadNextWord} />;
   }
 
